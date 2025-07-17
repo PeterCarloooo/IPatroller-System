@@ -1,6 +1,9 @@
-import React, { useEffect, useRef } from 'react';
-// Import Swiper JS
-import Swiper from 'swiper';
+import React from 'react';
+// Import Swiper React components
+import { Swiper, SwiperSlide } from 'swiper/react';
+// Import Swiper modules
+import { Navigation, Pagination, Scrollbar } from 'swiper/modules';
+
 // Import Swiper styles
 import 'swiper/css';
 import 'swiper/css/navigation';
@@ -9,59 +12,41 @@ import 'swiper/css/scrollbar';
 import './Slider.css';
 
 const Slider = () => {
-  const swiperRef = useRef(null);
-
-  useEffect(() => {
-    // Initialize Swiper
-    const swiper = new Swiper('.swiper', {
-      // Optional parameters
-      direction: 'vertical',
-      loop: true,
-
-      // If we need pagination
-      pagination: {
+  return (
+    <Swiper
+      modules={[Navigation, Pagination, Scrollbar]}
+      direction={'vertical'}
+      loop={true}
+      pagination={{
         el: '.swiper-pagination',
-      },
-
-      // Navigation arrows
-      navigation: {
+        clickable: true,
+      }}
+      navigation={{
         nextEl: '.swiper-button-next',
         prevEl: '.swiper-button-prev',
-      },
-
-      // And if we need scrollbar
-      scrollbar: {
+      }}
+      scrollbar={{
         el: '.swiper-scrollbar',
-      },
-    });
-
-    // Cleanup
-    return () => {
-      if (swiper) swiper.destroy();
-    };
-  }, []);
-
-  return (
-    // Slider main container
-    <div className="swiper">
-      {/* Additional required wrapper */}
-      <div className="swiper-wrapper">
-        {/* Slides */}
-        <div className="swiper-slide">Slide 1</div>
-        <div className="swiper-slide">Slide 2</div>
-        <div className="swiper-slide">Slide 3</div>
-      </div>
-
-      {/* If we need pagination */}
-      <div className="swiper-pagination"></div>
-
-      {/* If we need navigation buttons */}
-      <div className="swiper-button-prev"></div>
-      <div className="swiper-button-next"></div>
-
-      {/* If we need scrollbar */}
-      <div className="swiper-scrollbar"></div>
-    </div>
+        draggable: true,
+      }}
+      className="mySwiper"
+    >
+      <SwiperSlide>
+        <div className="flex items-center justify-center h-full bg-gray-200">
+          <h2 className="text-2xl">Slide 1</h2>
+        </div>
+      </SwiperSlide>
+      <SwiperSlide>
+        <div className="flex items-center justify-center h-full bg-gray-300">
+          <h2 className="text-2xl">Slide 2</h2>
+        </div>
+      </SwiperSlide>
+      <SwiperSlide>
+        <div className="flex items-center justify-center h-full bg-gray-400">
+          <h2 className="text-2xl">Slide 3</h2>
+        </div>
+      </SwiperSlide>
+    </Swiper>
   );
 };
 
