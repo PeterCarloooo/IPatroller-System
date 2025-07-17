@@ -1,8 +1,20 @@
 {
   "rewrites": [
+    { "source": "/login", "destination": "/" },
+    { "source": "/signup", "destination": "/" },
+    { "source": "/dashboard", "destination": "/" },
+    { "source": "/ipatroller", "destination": "/" },
+    { "source": "/command-center", "destination": "/" },
+    { "source": "/illegals", "destination": "/" },
+    { "source": "/report", "destination": "/" },
+    { "source": "/setup", "destination": "/" },
+    { "source": "/(.*)", "destination": "/" }
+  ],
+  "routes": [
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "/[^.]+",
+      "dest": "/",
+      "status": 200
     }
   ],
   "headers": [
@@ -11,7 +23,7 @@
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "s-maxage=1, stale-while-revalidate"
+          "value": "no-cache, no-store, must-revalidate"
         }
       ]
     }

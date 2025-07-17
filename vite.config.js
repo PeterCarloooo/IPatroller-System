@@ -14,6 +14,7 @@ export default defineConfig({
         secure: false,
       },
     },
+    historyApiFallback: true,
   },
   build: {
     outDir: 'dist',
@@ -24,5 +25,16 @@ export default defineConfig({
         drop_console: true,
       },
     },
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+        },
+      },
+    },
+  },
+  preview: {
+    port: 3003,
+    historyApiFallback: true,
   },
 });
