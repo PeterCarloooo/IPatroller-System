@@ -1,0 +1,39 @@
+.swiper {
+  width: 600px;
+  height: 300px;
+}
+
+.swiper-slide {
+  /* Center slide text vertically */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Add some basic styling */
+  background: #f1f1f1;
+  font-size: 18px;
+}
+
+/* Custom colors for navigation arrows */
+.swiper-button-next,
+.swiper-button-prev {
+  color: #000;
+}
+
+/* Custom colors for pagination bullets */
+.swiper-pagination-bullet {
+  background: #000;
+}
+
+.swiper-pagination-bullet-active {
+  background: #007aff;
+}
+
+/* Custom scrollbar styling */
+.swiper-scrollbar {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.swiper-scrollbar-drag {
+  background: rgba(0, 0, 0, 0.5);
+} 
