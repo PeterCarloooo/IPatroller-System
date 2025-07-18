@@ -1,43 +1,46 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { resolve } from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   base: '/',
   server: {
-    port: 3003,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-        secure: false,
-      },
-    },
-    historyApiFallback: true,
+    port: 3000,
+    open: true,
+    host: true,
+    strictPort: true
+  },
+  preview: {
+    port: 3000,
+    open: true,
+    strictPort: true
   },
   build: {
     outDir: 'dist',
-    assetsDir: 'assets',
     sourcemap: true,
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: false,
-      },
-    },
+    emptyOutDir: true,
     rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html')
+      },
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-          ui: ['@mui/material', '@mui/icons-material', 'react-bootstrap'],
-          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore']
-        },
-      },
+          'vendor': ['react', 'react-dom', 'react-router-dom'],
+          'firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore'],
+          'material-ui': ['@mui/material', '@mui/icons-material']
+        }
+      }
     },
+    chunkSizeWarningLimit: 1000
   },
-  preview: {
-    port: 3003,
-    historyApiFallback: true,
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src')
+    }
   },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom', '@mui/material', '@mui/icons-material']
+  }
 });
