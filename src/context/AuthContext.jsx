@@ -1,4 +1,4 @@
-import { createContext, useState, useContext, useEffect } from 'react';
+import { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { auth } from '../api/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -20,26 +20,40 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Debounced navigation to prevent throttling
+  const debouncedNavigate = useCallback((path) => {
+    setTimeout(() => {
+      navigate(path);
+    }, 100);
+  }, [navigate]);
+
   useEffect(() => {
+    let mounted = true;
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!mounted) return;
+
       setCurrentUser(user);
       setLoading(false);
 
       // If user is logged in and on login/signup page, redirect to dashboard
       if (user && ['/login', '/signup'].includes(location.pathname)) {
-        navigate('/dashboard');
+        debouncedNavigate('/dashboard');
       }
     });
 
-    return () => unsubscribe();
-  }, [navigate, location]);
+    return () => {
+      mounted = false;
+      unsubscribe();
+    };
+  }, [location, debouncedNavigate]);
 
   // Login function
   const login = async (username, password) => {
     try {
       const user = await authService.login(username, password);
       setCurrentUser(user);
-      navigate('/dashboard');
+      debouncedNavigate('/dashboard');
       return user;
     } catch (error) {
       throw error;
@@ -59,7 +73,7 @@ export const AuthProvider = ({ children }) => {
       // After successful signup, automatically log in
       if (user) {
         setCurrentUser(user);
-        navigate('/dashboard');
+        debouncedNavigate('/dashboard');
       }
       return user;
     } catch (error) {
@@ -72,7 +86,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await authService.logout();
       setCurrentUser(null);
-      navigate('/login');
+      debouncedNavigate('/login');
     } catch (error) {
       console.error('Logout error:', error);
       throw error;
