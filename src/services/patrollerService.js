@@ -13,11 +13,19 @@ class PatrollerService {
     this.reportsCollection = 'reports';
   }
 
+  // Helper function to format date to YYYY-MM-DD
+  formatDate(date) {
+    return date.toISOString().split('T')[0];
+  }
+
   // Helper function to get start and end dates for a month
   getMonthDateRange(year, month) {
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0); // Last day of the month
-    return { startDate, endDate };
+    return {
+      startDate: this.formatDate(startDate),
+      endDate: this.formatDate(endDate)
+    };
   }
 
   // Helper function to generate dates array for a month
@@ -25,18 +33,14 @@ class PatrollerService {
     const { startDate, endDate } = this.getMonthDateRange(year, month);
     const dates = [];
     const currentDate = new Date(startDate);
+    const lastDate = new Date(endDate);
 
-    while (currentDate <= endDate) {
-      dates.push(new Date(currentDate));
+    while (currentDate <= lastDate) {
+      dates.push(this.formatDate(currentDate));
       currentDate.setDate(currentDate.getDate() + 1);
     }
 
     return dates;
-  }
-
-  // Format date to YYYY-MM-DD for consistent storage
-  formatDate(date) {
-    return date.toISOString().split('T')[0];
   }
 
   // Initialize empty report data with default structure
@@ -87,8 +91,7 @@ class PatrollerService {
 
       // Initialize data structure for all days in the month
       dates.forEach(date => {
-        const dateStr = date.toISOString().split('T')[0];
-        reports[dateStr] = {
+        reports[date] = {
           '1ST DISTRICT': {
             'BINMALEY': null,
             'LINGAYEN': null,
@@ -119,20 +122,22 @@ class PatrollerService {
 
       // Get existing data from Firestore
       const reportsRef = collection(db, this.reportsCollection);
-      const startDateStr = dates[0].toISOString().split('T')[0];
-      const endDateStr = dates[dates.length - 1].toISOString().split('T')[0];
+      const { startDate, endDate } = this.getMonthDateRange(year, month);
 
       const q = query(
         reportsRef,
-        where('date', '>=', startDateStr),
-        where('date', '<=', endDateStr)
+        where('date', '>=', startDate),
+        where('date', '<=', endDate)
       );
 
       const querySnapshot = await getDocs(q);
       querySnapshot.forEach(doc => {
         const data = doc.data();
         if (data.date && data.district && data.municipality && data.count !== undefined) {
-          reports[data.date][data.district][data.municipality] = data.count;
+          // Only include data if the date is within our generated dates
+          if (dates.includes(data.date)) {
+            reports[data.date][data.district][data.municipality] = data.count;
+          }
         }
       });
 
@@ -233,6 +238,12 @@ class PatrollerService {
       
       for (const update of updates) {
         const { date, district, municipality, count } = update;
+        
+        // Validate that the date is properly formatted
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+          throw new Error('Invalid date format. Expected YYYY-MM-DD');
+        }
+
         const docId = `${date}_${district}_${municipality}`.replace(/\s+/g, '_');
         const docRef = doc(db, this.reportsCollection, docId);
         

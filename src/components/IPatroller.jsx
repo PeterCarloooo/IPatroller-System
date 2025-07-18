@@ -19,10 +19,9 @@ import patrollerService from '../services/patrollerService';
 const formatDate = (dateStr) => {
   const date = new Date(dateStr);
   return date.toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
+    year: 'numeric'
   });
 };
 
@@ -320,7 +319,7 @@ const IPatroller = () => {
     }));
   }, []);
 
-  // Get the date range for the selected month with more detailed formatting
+  // Get the date range for the selected month with simplified formatting
   const dateRange = useMemo(() => {
     const startDate = new Date(selectedYear, selectedMonth - 1, 1);
     const endDate = new Date(selectedYear, selectedMonth, 0);
@@ -389,11 +388,20 @@ const IPatroller = () => {
     }
   });
 
-  // Get sorted dates
+  // Get sorted dates for the current month only
   const dates = useMemo(() => {
     if (!reportsData) return [];
-    return Object.keys(reportsData).sort();
-  }, [reportsData]);
+    
+    const startDate = new Date(selectedYear, selectedMonth - 1, 1);
+    const endDate = new Date(selectedYear, selectedMonth, 0);
+    
+    return Object.keys(reportsData)
+      .filter(dateStr => {
+        const date = new Date(dateStr);
+        return date >= startDate && date <= endDate;
+      })
+      .sort();
+  }, [reportsData, selectedYear, selectedMonth]);
 
   // Combine reportsData with localData for display
   const displayData = useMemo(() => {
