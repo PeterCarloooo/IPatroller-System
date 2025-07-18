@@ -20,25 +20,82 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 // Configure React Router future flags
 import { UNSAFE_NavigationContext as NavigationContext } from 'react-router-dom';
 
+// Create a custom error handler
+const handleError = (error) => {
+  // Log error to your error tracking service
+  console.error('Application Error:', error);
+
+  // Handle specific error types
+  if (error.name === 'FirebaseError') {
+    switch (error.code) {
+      case 'permission-denied':
+        return 'You do not have permission to perform this action.';
+      case 'unauthenticated':
+        return 'Please log in to continue.';
+      case 'unavailable':
+        return 'Service is temporarily unavailable. Please try again later.';
+      case 'failed-precondition':
+        return 'Operation cannot be performed in the current state.';
+      case 'resource-exhausted':
+        return 'Too many requests. Please try again later.';
+      default:
+        return error.message || 'An unexpected error occurred.';
+    }
+  }
+
+  // Handle network errors
+  if (error.name === 'NetworkError' || !navigator.onLine) {
+    return 'Unable to connect to the server. Please check your internet connection.';
+  }
+
+  // Handle other errors
+  return 'An unexpected error occurred. Please try again.';
+};
+
+// Configure Query Client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
-      retry: 1,
-      staleTime: 5 * 60 * 1000,
+      retry: (failureCount, error) => {
+        // Don't retry on 404s or auth errors
+        if (error.code === 'permission-denied' || error.code === 'not-found') {
+          return false;
+        }
+        // Retry other errors up to 2 times
+        return failureCount < 2;
+      },
+      staleTime: 5 * 60 * 1000, // Data considered fresh for 5 minutes
+      cacheTime: 30 * 60 * 1000, // Keep unused data in cache for 30 minutes
       suspense: false,
-      useErrorBoundary: false,
+      useErrorBoundary: (error) => {
+        // Only use error boundary for network errors and fatal app errors
+        return error.name === 'NetworkError' || error.isFatal;
+      },
       onError: (error) => {
-        console.error('Query Error:', error);
+        const message = handleError(error);
+        // You can show a toast notification here
+        console.error('Query Error:', message);
       }
     },
     mutations: {
+      retry: 1,
       useErrorBoundary: false,
       onError: (error) => {
-        console.error('Mutation Error:', error);
+        const message = handleError(error);
+        // You can show a toast notification here
+        console.error('Mutation Error:', message);
       }
     }
-  },
+  }
+});
+
+// Add global error handler
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('Unhandled Promise Rejection:', event.reason);
+  event.preventDefault();
+  const message = handleError(event.reason);
+  // You can show a global error notification here
 });
 
 const App = () => {

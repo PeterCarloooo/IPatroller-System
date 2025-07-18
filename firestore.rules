@@ -1,0 +1,89 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isManager() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'manager';
+    }
+    
+    function isPatroller() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'patroller';
+    }
+    
+    function isValidDate() {
+      return request.resource.data.date is string &&
+        request.resource.data.date.matches('^\\d{4}-\\d{2}-\\d{2}$');
+    }
+    
+    function isValidCount() {
+      return request.resource.data.count is number &&
+        request.resource.data.count >= 0 &&
+        request.resource.data.count <= 150;
+    }
+    
+    function isValidDistrict() {
+      let validDistricts = ['1ST DISTRICT', '2ND DISTRICT', '3RD DISTRICT'];
+      return request.resource.data.district in validDistricts;
+    }
+    
+    function isValidMunicipality() {
+      let municipalities = {
+        '1ST DISTRICT': ['ABUCAY', 'HERMOSA', 'ORANI', 'SAMAL'],
+        '2ND DISTRICT': ['BALANGA', 'ORION', 'LIMAY', 'PILAR'],
+        '3RD DISTRICT': ['BAGAC', 'DINALUPIHAN', 'MARIVELES', 'MORONG']
+      };
+      return request.resource.data.municipality in municipalities[request.resource.data.district];
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin();
+      allow update: if isAdmin() || request.auth.uid == userId;
+      allow delete: if isAdmin();
+    }
+
+    // Reports collection
+    match /reports/{reportId} {
+      allow read: if isAuthenticated();
+      allow create: if (isPatroller() || isManager() || isAdmin()) &&
+        isValidDate() &&
+        isValidCount() &&
+        isValidDistrict() &&
+        isValidMunicipality();
+      allow update: if (isPatroller() || isManager() || isAdmin()) &&
+        isValidCount() &&
+        resource.data.district == request.resource.data.district &&
+        resource.data.municipality == request.resource.data.municipality;
+      allow delete: if isAdmin();
+    }
+
+    // Patroller logs collection
+    match /patroller_logs/{logId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if false;
+    }
+
+    // Illegal reports collection
+    match /illegal_reports/{reportId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() &&
+        request.resource.data.createdBy == request.auth.uid;
+      allow update: if isAuthenticated() &&
+        (resource.data.createdBy == request.auth.uid || isAdmin() || isManager());
+      allow delete: if isAdmin();
+    }
+  }
+} 
