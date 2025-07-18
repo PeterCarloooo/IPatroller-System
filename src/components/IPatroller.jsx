@@ -17,13 +17,19 @@ import patrollerService from '../services/patrollerService';
 
 // Memoized formatDate function
 const formatDate = (dateStr) => {
-  const date = new Date(dateStr + 'T12:00:00'); // Add time to ensure consistent date handling
+  const date = new Date(dateStr + 'T12:00:00Z'); // Use UTC time
   return date.toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
     year: 'numeric'
   });
+};
+
+// Helper function to check if a date is in the selected month
+const isDateInMonth = (dateStr, year, month) => {
+  const date = new Date(dateStr + 'T12:00:00Z'); // Use UTC time
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1;
 };
 
 // Memoized header cell component
@@ -52,12 +58,9 @@ const HeaderCell = memo(({ children, isFirst = false }) => (
 
 // Memoized table header component
 const TableHeader = memo(({ dates, selectedYear, selectedMonth }) => {
-  const isDateInSelectedMonth = (dateStr) => {
-    const date = new Date(dateStr + 'T12:00:00');
-    return date.getFullYear() === selectedYear && date.getMonth() === selectedMonth - 1;
-  };
-
-  const filteredDates = dates.filter(isDateInSelectedMonth);
+  const filteredDates = useMemo(() => {
+    return dates.filter(date => isDateInMonth(date, selectedYear, selectedMonth));
+  }, [dates, selectedYear, selectedMonth]);
 
   return (
     <thead>
@@ -66,9 +69,10 @@ const TableHeader = memo(({ dates, selectedYear, selectedMonth }) => {
         {filteredDates.map(date => (
           <HeaderCell key={date}>{formatDate(date)}</HeaderCell>
         ))}
-            </tr>
-          </thead>
-));
+      </tr>
+    </thead>
+  );
+});
 
 // Memoized district header component
 const DistrictHeader = memo(({ district, colSpan }) => (
@@ -412,48 +416,40 @@ const IPatroller = () => {
   const dates = useMemo(() => {
     if (!reportsData) return [];
     
-    const startDate = new Date(selectedYear, selectedMonth - 1, 1, 12, 0, 0);
-    const endDate = new Date(selectedYear, selectedMonth, 0, 12, 0, 0);
-    
+    // Get all dates and filter strictly
     return Object.keys(reportsData)
-      .filter(dateStr => {
-        const date = new Date(dateStr + 'T12:00:00');
-        return (
-          date.getFullYear() === selectedYear &&
-          date.getMonth() === selectedMonth - 1 &&
-          date >= startDate &&
-          date <= endDate
-        );
-      })
-      .sort();
+      .filter(dateStr => isDateInMonth(dateStr, selectedYear, selectedMonth))
+      .sort((a, b) => new Date(a) - new Date(b));
   }, [reportsData, selectedYear, selectedMonth]);
 
   // Combine reportsData with localData for display
   const displayData = useMemo(() => {
     if (!reportsData) return {};
     
-    // Create a clean copy without lastUpdated
+    // Create a clean copy without lastUpdated and filter dates
     const cleanData = {};
     Object.entries(reportsData).forEach(([date, data]) => {
-      const { lastUpdated, ...rest } = data;
-      cleanData[date] = rest;
+      if (isDateInMonth(date, selectedYear, selectedMonth)) {
+        const { lastUpdated, ...rest } = data;
+        cleanData[date] = rest;
+      }
     });
-    
-    const combined = JSON.parse(JSON.stringify(cleanData));
     
     // Overlay local changes
     Object.entries(localData).forEach(([date, districts]) => {
-      if (!combined[date]) combined[date] = {};
-      Object.entries(districts).forEach(([district, municipalities]) => {
-        if (!combined[date][district]) combined[date][district] = {};
-        Object.entries(municipalities).forEach(([municipality, value]) => {
-          combined[date][district][municipality] = value;
+      if (isDateInMonth(date, selectedYear, selectedMonth)) {
+        if (!cleanData[date]) cleanData[date] = {};
+        Object.entries(districts).forEach(([district, municipalities]) => {
+          if (!cleanData[date][district]) cleanData[date][district] = {};
+          Object.entries(municipalities).forEach(([municipality, value]) => {
+            cleanData[date][district][municipality] = value;
+          });
         });
-      });
+      }
     });
     
-    return combined;
-  }, [reportsData, localData]);
+    return cleanData;
+  }, [reportsData, localData, selectedYear, selectedMonth]);
 
   const handleInputChange = useCallback((date, district, municipality, value) => {
     const numValue = value === '' ? null : Number(value);

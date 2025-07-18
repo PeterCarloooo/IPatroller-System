@@ -13,26 +13,22 @@ class PatrollerService {
     this.reportsCollection = 'reports';
   }
 
-  // Helper function to format date to YYYY-MM-DD with timezone handling
+  // Helper function to format date to YYYY-MM-DD with UTC handling
   formatDate(date) {
-    // Set time to noon to avoid timezone issues
-    const d = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
-    // Adjust for timezone
-    const utcDate = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
-    return utcDate.toISOString().split('T')[0];
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0));
+    return d.toISOString().split('T')[0];
   }
 
   // Helper function to check if a date is within a specific month
   isDateInMonth(dateStr, year, month) {
-    const date = new Date(dateStr + 'T12:00:00');
-    return date.getFullYear() === year && date.getMonth() === month - 1;
+    const date = new Date(dateStr + 'T12:00:00Z');
+    return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1;
   }
 
   // Helper function to get start and end dates for a month
   getMonthDateRange(year, month) {
-    // Set time to noon to avoid timezone issues
-    const startDate = new Date(year, month - 1, 1, 12, 0, 0);
-    const endDate = new Date(year, month, 0, 12, 0, 0);
+    const startDate = new Date(Date.UTC(year, month - 1, 1, 12, 0, 0));
+    const endDate = new Date(Date.UTC(year, month, 0, 12, 0, 0));
     return {
       startDate: this.formatDate(startDate),
       endDate: this.formatDate(endDate)
@@ -43,15 +39,15 @@ class PatrollerService {
   generateMonthDates(year, month) {
     const { startDate, endDate } = this.getMonthDateRange(year, month);
     const dates = [];
-    const currentDate = new Date(startDate + 'T12:00:00');
-    const lastDate = new Date(endDate + 'T12:00:00');
+    const currentDate = new Date(startDate + 'T12:00:00Z');
+    const lastDate = new Date(endDate + 'T12:00:00Z');
 
     while (currentDate <= lastDate) {
-      // Only add dates that are within the specified month
-      if (this.isDateInMonth(this.formatDate(currentDate), year, month)) {
-        dates.push(this.formatDate(currentDate));
+      const dateStr = this.formatDate(currentDate);
+      if (this.isDateInMonth(dateStr, year, month)) {
+        dates.push(dateStr);
       }
-      currentDate.setDate(currentDate.getDate() + 1);
+      currentDate.setUTCDate(currentDate.getUTCDate() + 1);
     }
 
     return dates;
@@ -256,7 +252,7 @@ class PatrollerService {
       for (const update of updates) {
         const { date, district, municipality, count } = update;
         
-        // Validate that the date is properly formatted
+        // Validate that the date is properly formatted and in the correct month
         if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
           throw new Error('Invalid date format. Expected YYYY-MM-DD');
         }
