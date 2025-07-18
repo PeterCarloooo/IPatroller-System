@@ -79,12 +79,12 @@ const isDateInMonth = (dateStr, year, month) => {
   return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1;
 };
 
-// Memoized header cell component
+// Memoized header cell component with sticky positioning
 const HeaderCell = memo(({ children, isFirst = false }) => (
   <th 
-    className={`text-center align-middle ${isFirst ? 'position-sticky start-0' : ''}`}
-                style={{ 
-                  top: 0,
+    className={`text-center align-middle ${isFirst ? 'position-sticky start-0 z-index-2' : ''}`}
+    style={{ 
+      top: 0,
       minWidth: isFirst ? 200 : 180,
       padding: '1rem',
       fontSize: '1rem',
@@ -100,7 +100,7 @@ const HeaderCell = memo(({ children, isFirst = false }) => (
     }}
   >
     {children}
-              </th>
+  </th>
 ));
 
 // Memoized table header component
@@ -121,24 +121,25 @@ const TableHeader = memo(({ dates, selectedYear, selectedMonth }) => {
   );
 });
 
-// Memoized district header component
+// Memoized district header component with sticky positioning
 const DistrictHeader = memo(({ district, colSpan }) => (
-                <tr>
-                  <td
+  <tr className="district-header">
+    <td
       colSpan={colSpan}
       className="fw-bold position-sticky start-0"
-                    style={{ 
+      style={{ 
         padding: '0.75rem 1rem',
         fontSize: '1.1rem',
         zIndex: 1,
         backgroundColor: '#0dcaf0',
         color: 'white',
-        height: '45px'
+        height: '45px',
+        position: 'relative'
       }}
     >
       {district}
-                  </td>
-                </tr>
+    </td>
+  </tr>
 ));
 
 // Memoized data input cell component
@@ -197,7 +198,7 @@ const StatusCell = memo(({ value }) => {
   );
 });
 
-// Memoized municipality row component
+// Memoized municipality row component with fixed positioning
 const MunicipalityRow = memo(({ 
   municipality, 
   district, 
@@ -207,18 +208,21 @@ const MunicipalityRow = memo(({
   onInputChange, 
   isEditMode 
 }) => (
-  <tr>
+  <tr className="municipality-row">
     <td 
-      className="position-sticky start-0 bg-white fw-medium border-end"
-                      style={{ 
+      className="position-sticky start-0 bg-white fw-medium border-end municipality-cell"
+      style={{ 
         zIndex: 1,
         padding: '0.75rem 1rem',
         height: '45px',
-        minWidth: '200px'
+        minWidth: '200px',
+        backgroundColor: '#ffffff',
+        borderRight: '1px solid #dee2e6',
+        position: 'relative'
       }}
     >
       {municipality}
-                    </td>
+    </td>
     {dates.map(date => {
       const value = reportsData[date]?.[district]?.[municipality];
       return isStatus ? (
@@ -232,7 +236,7 @@ const MunicipalityRow = memo(({
         />
       );
     })}
-                  </tr>
+  </tr>
 ));
 
 // Update DistrictSection to use fixed order
@@ -275,7 +279,8 @@ const ReportTable = memo(({
     maxHeight: 'calc(100vh - 250px)',
     border: '1px solid #dee2e6',
     borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+    position: 'relative'
   }}>
     <Table bordered hover size="sm" className="table-sticky mb-0">
       <TableHeader 
@@ -687,13 +692,17 @@ const IPatroller = () => {
 
       <style>
         {`
+          .table-sticky {
+            position: relative;
+          }
+
           .table-sticky thead th {
             position: sticky;
             top: 0;
             z-index: 2;
             background-color: #0d6efd;
           }
-          
+
           .table-sticky td:first-child,
           .table-sticky th:first-child {
             position: sticky;
@@ -705,6 +714,41 @@ const IPatroller = () => {
             z-index: 3;
           }
 
+          .district-header td {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+          }
+
+          .municipality-row {
+            position: relative;
+          }
+
+          .municipality-cell {
+            position: sticky;
+            left: 0;
+            background-color: #ffffff !important;
+            border-right: 1px solid #dee2e6;
+          }
+
+          .municipality-row:hover .municipality-cell {
+            background-color: #f8f9fa !important;
+          }
+
+          .municipality-row:hover td {
+            background-color: #f8f9fa;
+          }
+
+          /* District grouping styles */
+          .district-header + .municipality-row .municipality-cell {
+            border-top: 2px solid #dee2e6;
+          }
+
+          .district-header {
+            border-top: 2px solid #0dcaf0;
+          }
+
+          /* Improved scrollbar styling */
           .table-responsive {
             scrollbar-width: thin;
             scrollbar-color: #6c757d #f8f9fa;
@@ -730,17 +774,11 @@ const IPatroller = () => {
             background: #f8f9fa;
           }
 
-          tr:hover td {
-            background-color: rgba(0,0,0,0.05);
-          }
-
-          tr:hover td:first-child {
-            background-color: white;
-          }
-
+          /* Table cell styles */
           .table td, .table th {
             vertical-align: middle;
             white-space: nowrap;
+            position: relative;
           }
 
           .table-bordered > :not(caption) > * > * {
@@ -748,11 +786,13 @@ const IPatroller = () => {
             border-color: #dee2e6;
           }
 
+          /* Input styles */
           .form-control:focus {
             border-color: #0d6efd;
             box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
           }
 
+          /* Navigation styles */
           .nav-tabs .nav-link {
             color: #6c757d;
           }
@@ -765,6 +805,21 @@ const IPatroller = () => {
           .nav-tabs .nav-link:hover {
             border-color: #e9ecef #e9ecef #dee2e6;
             isolation: isolate;
+          }
+
+          /* Status cell styles */
+          .status-cell {
+            font-weight: 500;
+          }
+
+          .status-cell.active {
+            background-color: #198754 !important;
+            color: white;
+          }
+
+          .status-cell.inactive {
+            background-color: #dc3545 !important;
+            color: white;
           }
 
           /* Add styles for number input */
