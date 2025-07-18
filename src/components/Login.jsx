@@ -1,39 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Form, Button, Image } from 'react-bootstrap';
-import { generateCaptcha } from '../utils/common';
 
 const Login = () => {
   const navigate = useNavigate();
   const [credentials, setCredentials] = useState({
     username: '',
-    password: '',
-    captchaInput: ''
+    password: ''
   });
-  const [captcha, setCaptcha] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    refreshCaptcha();
-  }, []);
-
-  const refreshCaptcha = () => {
-    const newCaptcha = generateCaptcha(6);
-    setCaptcha(newCaptcha);
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    
-    if (credentials.captchaInput.toUpperCase() !== captcha) {
-      setError('Invalid CAPTCHA. Please try again.');
-      refreshCaptcha();
-      setCredentials(prev => ({ ...prev, captchaInput: '' }));
-      return;
-    }
-
     setIsLoading(true);
     
     try {
@@ -101,44 +81,6 @@ const Login = () => {
               className="py-2"
             />
           </Form.Group>
-
-          <div className="mb-3">
-            <div className="border p-2 mb-2 bg-light text-center">
-              <span style={{ 
-                fontFamily: 'monospace',
-                fontSize: '24px',
-                letterSpacing: '3px',
-                userSelect: 'none'
-              }}>
-                {captcha}
-              </span>
-            </div>
-            <div className="d-flex gap-2">
-              <Form.Control
-                type="text"
-                name="captchaInput"
-                value={credentials.captchaInput}
-                onChange={handleChange}
-                placeholder="Enter text above"
-                required
-                className="py-2"
-              />
-              <Button 
-                variant="outline-secondary" 
-                onClick={refreshCaptcha}
-                type="button"
-              >
-                ↻
-              </Button>
-            </div>
-            <div className="mt-1">
-              <small>
-                <a href="#" onClick={(e) => { e.preventDefault(); refreshCaptcha(); }} style={{ color: '#0066cc', textDecoration: 'none' }}>
-                  Can't read this? Try Another
-                </a>
-              </small>
-            </div>
-          </div>
 
           <Button 
             type="submit" 
