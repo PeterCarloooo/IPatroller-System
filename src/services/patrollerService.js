@@ -1,33 +1,23 @@
 import { db } from '../api/firebase';
 import { collection, doc, getDoc, setDoc, updateDoc, query, where, getDocs } from 'firebase/firestore';
 
-// Define fixed data structure with arrays for proper iteration
+// Define fixed district and municipality structure
 const DISTRICTS = {
   '1ST DISTRICT': ['ABUCAY', 'HERMOSA', 'ORANI', 'SAMAL'],
   '2ND DISTRICT': ['BALANGA', 'ORION', 'LIMAY', 'PILAR'],
   '3RD DISTRICT': ['BAGAC', 'DINALUPIHAN', 'MARIVELES', 'MORONG']
 };
 
-// Initialize data structure
-const INITIAL_DATA = {
-  '1ST DISTRICT': {
-    'ABUCAY': null,
-    'HERMOSA': null,
-    'ORANI': null,
-    'SAMAL': null
-  },
-  '2ND DISTRICT': {
-    'BALANGA': null,
-    'ORION': null,
-    'LIMAY': null,
-    'PILAR': null
-  },
-  '3RD DISTRICT': {
-    'BAGAC': null,
-    'DINALUPIHAN': null,
-    'MARIVELES': null,
-    'MORONG': null
-  }
+// Initialize empty data structure
+const createInitialData = () => {
+  const data = {};
+  Object.entries(DISTRICTS).forEach(([district, municipalities]) => {
+    data[district] = {};
+    municipalities.forEach(municipality => {
+      data[district][municipality] = null;
+    });
+  });
+  return data;
 };
 
 class PatrollerService {
@@ -80,9 +70,9 @@ class PatrollerService {
       const dates = this.generateMonthDates(year, month);
       const reports = {};
 
-      // Initialize data structure for all days in the month with fixed order
+      // Initialize data structure for all days in the month
       dates.forEach(date => {
-        reports[date] = JSON.parse(JSON.stringify(INITIAL_DATA));
+        reports[date] = createInitialData();
       });
 
       // Get existing data from Firestore
@@ -103,9 +93,11 @@ class PatrollerService {
           data.district && 
           data.municipality && 
           data.count !== undefined &&
-          this.isDateInMonth(data.date, year, month) &&
-          INITIAL_DATA[data.district]?.[data.municipality] !== undefined
+          DISTRICTS[data.district]?.includes(data.municipality)
         ) {
+          if (!reports[data.date]) {
+            reports[data.date] = createInitialData();
+          }
           reports[data.date][data.district][data.municipality] = data.count;
         }
       });
@@ -129,7 +121,7 @@ class PatrollerService {
       let districtStats = {};
 
       // Initialize district stats
-      Object.keys(INITIAL_DATA).forEach(district => {
+      Object.keys(DISTRICTS).forEach(district => {
         districtStats[district] = {
           incidents: 0,
           activePatrollers: 0,
@@ -183,7 +175,6 @@ class PatrollerService {
     }
   }
 
-  // Get report for a specific date
   async getDailyReport(date, district, municipality) {
     try {
       const formattedDate = this.formatDate(new Date(date));
