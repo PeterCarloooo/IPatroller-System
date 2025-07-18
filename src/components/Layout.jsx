@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Container, Button, Navbar } from 'react-bootstrap';
+import { Container, Button } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 import {
   FaTachometerAlt,
@@ -48,31 +48,21 @@ const Layout = () => {
 
   return (
     <div className="layout-wrapper">
-      {/* Top Header */}
-      <Navbar className="top-header" variant="dark" expand="lg">
-        <Container fluid className="px-4">
-          <div className="d-flex align-items-center">
-            <Button
-              variant="link"
-              className="d-lg-none me-3 p-0 text-white"
-              onClick={() => setIsMobileOpen(!isMobileOpen)}
-            >
-              <FaBars size={24} />
-            </Button>
-            <Navbar.Brand className="m-0">IPatroller System</Navbar.Brand>
-          </div>
-          <Button 
-            variant="outline-light" 
-            size="sm"
-            onClick={handleLogout}
-          >
-            Logout
-          </Button>
-        </Container>
-      </Navbar>
+      {/* Mobile Menu Toggle */}
+      <Button
+        variant="primary"
+        className="mobile-menu-toggle d-lg-none"
+        onClick={() => setIsMobileOpen(!isMobileOpen)}
+      >
+        <FaBars />
+      </Button>
 
       {/* Side Navigation */}
       <div className={`side-nav ${isMobileOpen ? 'open' : ''}`}>
+        <div className="side-nav-header">
+          <h1 className="app-title">IPatroller System</h1>
+        </div>
+        
         <div className="nav-items">
           {menuItems.map((item) => (
             <div
@@ -84,6 +74,17 @@ const Layout = () => {
               <span className="nav-label">{item.label}</span>
             </div>
           ))}
+        </div>
+
+        <div className="side-nav-footer">
+          <Button 
+            variant="outline-primary" 
+            className="logout-button"
+            onClick={handleLogout}
+          >
+            <FaSignOutAlt className="me-2" />
+            Logout
+          </Button>
         </div>
       </div>
 
