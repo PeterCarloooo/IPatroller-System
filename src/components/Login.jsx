@@ -23,7 +23,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const { values, handleChange } = useForm({
-    email: '',
+    username: '',
     password: ''
   });
 
@@ -33,7 +33,7 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      await login(values.email, values.password);
+      await login(values.username, values.password);
       navigate('/dashboard');
     } catch (err) {
       setError(err.message || 'Failed to log in');
@@ -75,17 +75,17 @@ const Login = () => {
 
                 <Form onSubmit={handleSubmit}>
                   <Form.Group className="mb-3">
-                    <Form.Label className="small fw-medium">Email Address</Form.Label>
+                    <Form.Label className="small fw-medium">Username</Form.Label>
                     <InputGroup>
                       <InputGroup.Text className="bg-light border-end-0">
-                        <i className="bi bi-envelope text-muted"></i>
+                        <i className="bi bi-person text-muted"></i>
                       </InputGroup.Text>
                       <Form.Control
-                        type="email"
-                        name="email"
-                        value={values.email}
+                        type="text"
+                        name="username"
+                        value={values.username}
                         onChange={handleChange}
-                        placeholder="Enter your email"
+                        placeholder="Enter your username"
                         className="border-start-0 ps-0"
                         required
                       />

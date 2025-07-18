@@ -25,7 +25,7 @@ const Signup = () => {
   const { values, handleChange } = useForm({
     firstName: '',
     lastName: '',
-    email: '',
+    username: '',
     password: '',
     confirmPassword: '',
     phoneNumber: '',
@@ -133,17 +133,17 @@ const Signup = () => {
                   </Row>
 
                   <Form.Group className="mb-3">
-                    <Form.Label className="small fw-medium">Email Address</Form.Label>
+                    <Form.Label className="small fw-medium">Username</Form.Label>
                     <InputGroup>
                       <InputGroup.Text className="bg-light border-end-0">
-                        <i className="bi bi-envelope text-muted"></i>
+                        <i className="bi bi-person-badge text-muted"></i>
                       </InputGroup.Text>
                       <Form.Control
-                        type="email"
-                        name="email"
-                        value={values.email}
+                        type="text"
+                        name="username"
+                        value={values.username}
                         onChange={handleChange}
-                        placeholder="Enter your email"
+                        placeholder="Choose a username"
                         className="border-start-0 ps-0"
                         required
                       />
