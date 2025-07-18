@@ -116,25 +116,25 @@ class PatrollerService {
       const reportsRef = collection(db, this.reportsCollection);
       const { startDate, endDate } = this.getMonthDateRange(year, month);
 
-      // Create query with proper ordering to match the index
-      const q = query(
-        reportsRef,
-        where('status', '==', 'active'),
-        where('date', '>=', startDate),
-        where('date', '<=', endDate),
-        orderBy('date', 'asc')
-      );
-
       try {
-        const querySnapshot = await getDocs(q);
+        // First, get all reports within the date range
+        const dateQuery = query(
+          reportsRef,
+          where('date', '>=', startDate),
+          where('date', '<=', endDate)
+        );
+
+        const querySnapshot = await getDocs(dateQuery);
         querySnapshot.forEach(doc => {
           const data = doc.data();
+          // Filter active status in memory
           if (
             data.date && 
             data.district && 
             data.municipality && 
             data.count !== undefined &&
-            DISTRICTS[data.district]?.includes(data.municipality)
+            DISTRICTS[data.district]?.includes(data.municipality) &&
+            data.status === 'active'  // Filter in memory instead of in query
           ) {
             if (!reports[data.date]) {
               reports[data.date] = createInitialData();
@@ -145,14 +145,33 @@ class PatrollerService {
 
         return reports;
       } catch (queryError) {
+        console.error('Query error:', queryError);
+        // If the error is about missing index, try alternative query
         if (queryError.code === 'failed-precondition') {
-          // Index doesn't exist
-          console.error('Required index is missing:', queryError);
-          throw new Error('Database configuration error. Please contact support.');
-        } else if (queryError.code === 'resource-exhausted') {
-          // Query exceeded resource limits
-          console.error('Query resource limits exceeded:', queryError);
-          throw new Error('Too many records to process. Please try a smaller date range.');
+          // Get all documents and filter in memory
+          const simpleQuery = query(reportsRef);
+          const allDocs = await getDocs(simpleQuery);
+          
+          allDocs.forEach(doc => {
+            const data = doc.data();
+            if (
+              data.date &&
+              data.date >= startDate &&
+              data.date <= endDate &&
+              data.status === 'active' &&
+              data.district &&
+              data.municipality &&
+              data.count !== undefined &&
+              DISTRICTS[data.district]?.includes(data.municipality)
+            ) {
+              if (!reports[data.date]) {
+                reports[data.date] = createInitialData();
+              }
+              reports[data.date][data.district][data.municipality] = data.count;
+            }
+          });
+          
+          return reports;
         }
         throw queryError;
       }
