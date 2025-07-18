@@ -43,10 +43,10 @@ const Login = () => {
       <div className="bg-white p-4 rounded shadow" style={{ maxWidth: '400px', width: '100%' }}>
         <div className="text-center mb-4">
           <Image 
-            src="/src/assets/bataan-logo.svg"
-            alt="Bataan Logo"
+            src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Ph_seal_bataan2.png"
+            alt="Bataan Seal"
             style={{ 
-              width: '150px', 
+              width: '180px', 
               height: 'auto', 
               marginBottom: '1.5rem',
               filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
