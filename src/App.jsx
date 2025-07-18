@@ -4,6 +4,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { AuthProvider } from './context/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
+import PrivateRoute from './components/PrivateRoute';
 import Login from './components/Login';
 import Signup from './components/Signup';
 import Layout from './components/Layout';
@@ -107,9 +108,19 @@ const App = () => {
           <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <AuthProvider>
               <Routes>
+                {/* Public routes */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
-                <Route path="/" element={<Layout />}>
+
+                {/* Protected routes */}
+                <Route
+                  path="/"
+                  element={
+                    <PrivateRoute>
+                      <Layout />
+                    </PrivateRoute>
+                  }
+                >
                   <Route index element={<Navigate to="/dashboard" replace />} />
                   <Route path="dashboard" element={<Dashboard />} />
                   <Route path="illegals" element={<Illegals />} />
@@ -118,7 +129,9 @@ const App = () => {
                   <Route path="report" element={<Report />} />
                   <Route path="setup" element={<Setup />} />
                 </Route>
-                <Route path="*" element={<Navigate to="/" replace />} />
+
+                {/* Redirect all unknown routes to login */}
+                <Route path="*" element={<Navigate to="/login" replace />} />
               </Routes>
             </AuthProvider>
           </Router>

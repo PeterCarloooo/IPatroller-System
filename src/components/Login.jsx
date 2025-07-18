@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Container, Form, Button, Image, Card, InputGroup } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 import { FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const Login = () => {
   const { login } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [credentials, setCredentials] = useState({
     username: '',
     password: ''
@@ -14,6 +16,9 @@ const Login = () => {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
+  // Get the return URL from location state or default to dashboard
+  const from = location.state?.from?.pathname || '/dashboard';
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -21,6 +26,8 @@ const Login = () => {
     
     try {
       await login(credentials.username, credentials.password);
+      // Navigate to the return URL after successful login
+      navigate(from, { replace: true });
     } catch (error) {
       console.error('Login error:', error);
       setError(error.message || 'Invalid username or password');
