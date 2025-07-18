@@ -1,5 +1,17 @@
 import { db } from '../api/firebase';
-import { collection, doc, getDoc, setDoc, updateDoc, query, where, getDocs } from 'firebase/firestore';
+import {
+  collection,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  query,
+  where,
+  getDocs,
+  serverTimestamp,
+  writeBatch
+} from 'firebase/firestore';
+import { auth } from '../api/firebase';
 
 // Define fixed district and municipality structure
 const DISTRICTS = {
@@ -23,6 +35,7 @@ const createInitialData = () => {
 class PatrollerService {
   constructor() {
     this.reportsCollection = 'reports';
+    this.patrollerLogsCollection = 'patroller_logs';
   }
 
   // Helper function to format date to YYYY-MM-DD with UTC handling
@@ -65,6 +78,29 @@ class PatrollerService {
     return dates;
   }
 
+  // Helper function to validate count value
+  validateCount(count) {
+    if (count === null) return true;
+    if (typeof count !== 'number') return false;
+    if (count < 0 || count > 150) return false;
+    return Number.isInteger(count);
+  }
+
+  // Helper function to create report metadata
+  createReportMetadata(date, district, municipality) {
+    const user = auth.currentUser;
+    return {
+      createdBy: user?.uid || 'system',
+      createdByEmail: user?.email || 'system',
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      year: new Date(date).getUTCFullYear(),
+      month: new Date(date).getUTCMonth() + 1,
+      status: 'active',
+      version: 1
+    };
+  }
+
   async getMonthlyReports(year, month) {
     try {
       const dates = this.generateMonthDates(year, month);
@@ -82,7 +118,8 @@ class PatrollerService {
       const q = query(
         reportsRef,
         where('date', '>=', startDate),
-        where('date', '<=', endDate)
+        where('date', '<=', endDate),
+        where('status', '==', 'active')
       );
 
       const querySnapshot = await getDocs(q);
@@ -182,7 +219,10 @@ class PatrollerService {
       const reportDoc = await getDoc(reportRef);
 
       if (reportDoc.exists()) {
-        return reportDoc.data();
+        const data = reportDoc.data();
+        if (data.status === 'active') {
+          return data;
+        }
       }
 
       return null;
@@ -194,12 +234,18 @@ class PatrollerService {
 
   async batchUpdateCounts(updates) {
     try {
-      const batch = [];
+      // Create a new batch
+      const batch = writeBatch(db);
+      const user = auth.currentUser;
       
+      if (!user) {
+        throw new Error('User must be authenticated to update reports');
+      }
+
       for (const update of updates) {
         const { date, district, municipality, count } = update;
         
-        // Validate that the date is properly formatted and municipality exists
+        // Validate inputs
         if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
           throw new Error('Invalid date format. Expected YYYY-MM-DD');
         }
@@ -208,31 +254,93 @@ class PatrollerService {
           throw new Error(`Invalid district or municipality: ${district} - ${municipality}`);
         }
 
+        if (!this.validateCount(count)) {
+          throw new Error(`Invalid count value for ${district} - ${municipality}: ${count}`);
+        }
+
         const docId = `${date}_${district}_${municipality}`.replace(/\s+/g, '_');
         const docRef = doc(db, this.reportsCollection, docId);
-        
         const docSnap = await getDoc(docRef);
+
         if (docSnap.exists()) {
-          batch.push(updateDoc(docRef, {
+          // Update existing document
+          batch.update(docRef, {
             count,
-            lastUpdated: new Date().toISOString()
-          }));
+            updatedAt: serverTimestamp(),
+            updatedBy: user.uid,
+            updatedByEmail: user.email,
+            version: (docSnap.data().version || 1) + 1
+          });
+
+          // Log the update
+          const logRef = doc(collection(db, this.patrollerLogsCollection));
+          batch.set(logRef, {
+            reportId: docId,
+            date,
+            district,
+            municipality,
+            oldCount: docSnap.data().count,
+            newCount: count,
+            updatedAt: serverTimestamp(),
+            updatedBy: user.uid,
+            updatedByEmail: user.email,
+            action: 'update'
+          });
         } else {
-          batch.push(setDoc(docRef, {
+          // Create new document
+          batch.set(docRef, {
             date,
             district,
             municipality,
             count,
-            lastUpdated: new Date().toISOString()
-          }));
+            ...this.createReportMetadata(date, district, municipality)
+          });
+
+          // Log the creation
+          const logRef = doc(collection(db, this.patrollerLogsCollection));
+          batch.set(logRef, {
+            reportId: docId,
+            date,
+            district,
+            municipality,
+            newCount: count,
+            createdAt: serverTimestamp(),
+            createdBy: user.uid,
+            createdByEmail: user.email,
+            action: 'create'
+          });
         }
       }
       
-      await Promise.all(batch);
+      // Commit the batch
+      await batch.commit();
       return true;
     } catch (error) {
       console.error('Error updating counts:', error);
-      throw new Error('Failed to update reports');
+      throw new Error(error.message || 'Failed to update reports');
+    }
+  }
+
+  // New method to get update history for a report
+  async getReportHistory(date, district, municipality) {
+    try {
+      const docId = `${date}_${district}_${municipality}`.replace(/\s+/g, '_');
+      const logsRef = collection(db, this.patrollerLogsCollection);
+      const q = query(
+        logsRef,
+        where('reportId', '==', docId),
+        where('date', '==', date)
+      );
+
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        updatedAt: doc.data().updatedAt?.toDate().toISOString()
+      }));
+    } catch (error) {
+      console.error('Error getting report history:', error);
+      throw new Error('Failed to fetch report history');
     }
   }
 }
