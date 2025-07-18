@@ -9,8 +9,10 @@ import {
   Nav,
   Button,
   Toast,
-  ToastContainer
+  ToastContainer,
+  Card
 } from 'react-bootstrap';
+import { CalendarMonth as CalendarIcon } from '@mui/icons-material';
 import patrollerService from '../services/patrollerService';
 
 // Memoized formatDate function
@@ -278,6 +280,22 @@ const PeriodSelector = memo(({
   </Row>
 ));
 
+const DateRangeDisplay = memo(({ dateRange }) => (
+  <Card className="mb-4 border-0 shadow-sm date-range-card">
+    <Card.Body className="d-flex align-items-center py-3">
+      <div className="calendar-icon-wrapper">
+        <CalendarIcon className="text-primary" style={{ fontSize: '2rem' }} />
+      </div>
+      <div>
+        <h6 className="mb-1 text-muted fw-normal">Current Date Range</h6>
+        <h5 className="mb-0 text-primary fw-bold">
+          {dateRange.start} - {dateRange.end}
+        </h5>
+      </div>
+    </Card.Body>
+  </Card>
+));
+
 const IPatroller = () => {
   const [activeTab, setActiveTab] = useState('status'); // Changed default to 'status'
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -302,13 +320,21 @@ const IPatroller = () => {
     }));
   }, []);
 
-  // Get the date range for the selected month
+  // Get the date range for the selected month with more detailed formatting
   const dateRange = useMemo(() => {
     const startDate = new Date(selectedYear, selectedMonth - 1, 1);
     const endDate = new Date(selectedYear, selectedMonth, 0);
+    
+    const formatOptions = { 
+      month: 'long', 
+      day: 'numeric', 
+      year: 'numeric'
+    };
+
     return {
-      start: startDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-      end: endDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+      start: startDate.toLocaleDateString('en-US', formatOptions),
+      end: endDate.toLocaleDateString('en-US', formatOptions),
+      monthYear: startDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
     };
   }, [selectedYear, selectedMonth]);
 
@@ -484,8 +510,8 @@ const IPatroller = () => {
           <h4 className="text-primary border-bottom border-primary pb-2 d-inline-block">
             IPatroller Reports
           </h4>
-          <p className="text-muted mt-2">
-            Showing data for: {dateRange.start} - {dateRange.end}
+          <p className="text-muted mt-2 mb-0">
+            Monthly report for {dateRange.monthYear}
           </p>
         </div>
         {activeTab === 'daily' && (
@@ -511,7 +537,9 @@ const IPatroller = () => {
           </div>
         )}
       </div>
-      
+
+      <DateRangeDisplay dateRange={dateRange} />
+
       <PeriodSelector
         selectedYear={selectedYear}
         selectedMonth={selectedMonth}
@@ -717,6 +745,38 @@ const IPatroller = () => {
 
           .gap-2 {
             gap: 0.5rem;
+          }
+
+          /* Date Range Card Styles */
+          .date-range-card {
+            background: linear-gradient(to right, #f8f9fa, #ffffff);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+          }
+
+          .date-range-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+          }
+
+          .calendar-icon-wrapper {
+            background-color: rgba(13, 110, 253, 0.1);
+            padding: 12px;
+            border-radius: 50%;
+            margin-right: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+
+          .date-range-card h5 {
+            font-size: 1.25rem;
+            letter-spacing: -0.5px;
+          }
+
+          .date-range-card h6 {
+            font-size: 0.875rem;
+            opacity: 0.8;
           }
         `}
       </style>

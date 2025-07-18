@@ -37,12 +37,12 @@ button {
   border: none;
   padding: 0;
   cursor: pointer;
-}
+  }
 
 /* Basic transitions */
 .fade-enter {
   opacity: 0;
-}
+  }
 
 .fade-enter-active {
   opacity: 1;

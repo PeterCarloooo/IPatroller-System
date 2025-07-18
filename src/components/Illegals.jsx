@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
+import { 
   Container,
   Grid,
   Paper,
@@ -41,8 +41,8 @@ const violationTypes = [
 
 const initialFormState = {
   type: '',
-  location: '',
-  description: '',
+    location: '',
+    description: '',
   evidence: null,
   status: 'pending',
 };
@@ -264,30 +264,30 @@ const Illegals = () => {
         fullWidth
       >
         <form onSubmit={handleSubmit}>
-          <DialogTitle>
+        <DialogTitle>
             {editingId ? 'Edit Report' : 'New Illegal Activity Report'}
-          </DialogTitle>
-          <DialogContent>
+        </DialogTitle>
+        <DialogContent>
             <FormControl fullWidth sx={{ mt: 2 }} error={!!formErrors.type}>
-              <InputLabel>Type of Violation</InputLabel>
-              <Select
-                value={formData.type}
+                <InputLabel>Type of Violation</InputLabel>
+                <Select
+                  value={formData.type}
                 onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                label="Type of Violation"
-              >
+                  label="Type of Violation"
+                >
                 {violationTypes.map((type) => (
                   <MenuItem key={type} value={type}>{type}</MenuItem>
                 ))}
-              </Select>
+                </Select>
               {formErrors.type && (
                 <Typography color="error" variant="caption">
                   {formErrors.type}
                 </Typography>
               )}
-            </FormControl>
+              </FormControl>
 
-            <TextField
-              fullWidth
+              <TextField
+                fullWidth
               label="Location"
               value={formData.location}
               onChange={(e) => setFormData({ ...formData, location: e.target.value })}
@@ -296,12 +296,12 @@ const Illegals = () => {
               sx={{ mt: 2 }}
             />
 
-            <TextField
-              fullWidth
+              <TextField
+                fullWidth
               label="Description"
-              multiline
-              rows={4}
-              value={formData.description}
+                multiline
+                rows={4}
+                value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               error={!!formErrors.description}
               helperText={formErrors.description}
@@ -341,17 +341,17 @@ const Illegals = () => {
                 />
               </Box>
             )}
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseDialog}>Cancel</Button>
-            <Button 
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog}>Cancel</Button>
+          <Button 
               type="submit"
-              variant="contained"
+            variant="contained"
               disabled={createMutation.isPending || updateMutation.isPending}
-            >
+          >
               {editingId ? 'Update' : 'Submit'}
-            </Button>
-          </DialogActions>
+          </Button>
+        </DialogActions>
         </form>
       </Dialog>
 
