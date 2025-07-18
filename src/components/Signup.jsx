@@ -1,12 +1,18 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Container, Form, Button, Image, Card, InputGroup } from 'react-bootstrap';
+import {
+  Person as PersonIcon,
+  Lock as LockIcon,
+  Visibility as VisibilityIcon,
+  VisibilityOff as VisibilityOffIcon
+} from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
-import { FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const Signup = () => {
   const { signup } = useAuth();
-  const [formData, setFormData] = useState({
+  const navigate = useNavigate();
+  const [credentials, setCredentials] = useState({
     username: '',
     password: '',
     confirmPassword: ''
@@ -20,29 +26,18 @@ const Signup = () => {
     e.preventDefault();
     setError('');
 
-    // Validate input
-    if (formData.password !== formData.confirmPassword) {
+    if (credentials.password !== credentials.confirmPassword) {
       setError('Passwords do not match');
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
-      return;
-    }
-
-    if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
-      setError('Username can only contain letters, numbers, and underscores');
-      return;
-    }
-
     setIsLoading(true);
-    
     try {
-      await signup(formData.username, formData.password);
+      await signup(credentials.username, credentials.password);
+      navigate('/dashboard');
     } catch (error) {
       console.error('Signup error:', error);
-      setError(error.message || 'Failed to create account. Please try again.');
+      setError(error.message || 'Failed to create account');
     } finally {
       setIsLoading(false);
     }
@@ -50,18 +45,10 @@ const Signup = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setCredentials(prev => ({
       ...prev,
       [name]: value
     }));
-  };
-
-  const togglePasswordVisibility = (field) => {
-    if (field === 'password') {
-      setShowPassword(!showPassword);
-    } else {
-      setShowConfirmPassword(!showConfirmPassword);
-    }
   };
 
   return (
@@ -83,8 +70,8 @@ const Signup = () => {
               color: '#003875', 
               marginBottom: '0.5rem',
               fontWeight: 'bold'
-            }}>IPatroller System</h4>
-            <p style={{ color: '#666666' }}>Create your account</p>
+            }}>Create Account</h4>
+            <p style={{ color: '#666666' }}>Sign up to join IPatroller System</p>
           </div>
 
           {error && (
@@ -97,32 +84,29 @@ const Signup = () => {
             <Form.Group className="mb-3">
               <InputGroup>
                 <InputGroup.Text className="bg-light">
-                  <FaUser className="text-primary" />
+                  <PersonIcon className="text-primary" />
                 </InputGroup.Text>
                 <Form.Control
                   type="text"
                   name="username"
-                  value={formData.username}
+                  value={credentials.username}
                   onChange={handleChange}
                   placeholder="Username"
                   required
                   style={{ padding: '0.75rem' }}
                 />
               </InputGroup>
-              <Form.Text className="text-muted">
-                Username can only contain letters, numbers, and underscores
-              </Form.Text>
             </Form.Group>
 
             <Form.Group className="mb-3">
               <InputGroup>
                 <InputGroup.Text className="bg-light">
-                  <FaLock className="text-primary" />
+                  <LockIcon className="text-primary" />
                 </InputGroup.Text>
                 <Form.Control
                   type={showPassword ? "text" : "password"}
                   name="password"
-                  value={formData.password}
+                  value={credentials.password}
                   onChange={handleChange}
                   placeholder="Password"
                   required
@@ -130,26 +114,23 @@ const Signup = () => {
                 />
                 <Button 
                   variant="light" 
-                  onClick={() => togglePasswordVisibility('password')}
+                  onClick={() => setShowPassword(!showPassword)}
                   style={{ borderLeft: 'none' }}
                 >
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
                 </Button>
               </InputGroup>
-              <Form.Text className="text-muted">
-                Password must be at least 6 characters long
-              </Form.Text>
             </Form.Group>
 
             <Form.Group className="mb-3">
               <InputGroup>
                 <InputGroup.Text className="bg-light">
-                  <FaLock className="text-primary" />
+                  <LockIcon className="text-primary" />
                 </InputGroup.Text>
                 <Form.Control
                   type={showConfirmPassword ? "text" : "password"}
                   name="confirmPassword"
-                  value={formData.confirmPassword}
+                  value={credentials.confirmPassword}
                   onChange={handleChange}
                   placeholder="Confirm Password"
                   required
@@ -157,10 +138,10 @@ const Signup = () => {
                 />
                 <Button 
                   variant="light" 
-                  onClick={() => togglePasswordVisibility('confirm')}
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   style={{ borderLeft: 'none' }}
                 >
-                  {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                  {showConfirmPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
                 </Button>
               </InputGroup>
             </Form.Group>
