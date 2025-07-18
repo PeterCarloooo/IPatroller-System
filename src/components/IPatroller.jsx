@@ -18,34 +18,49 @@ import patrollerService from '../services/patrollerService';
 // Define fixed municipality order
 const MUNICIPALITIES = {
   '1ST DISTRICT': [
-    'BINMALEY',
-    'LINGAYEN',
-    'AGUILAR',
-    'BUGALLON',
-    'LABRADOR',
-    'SUAL'
+    'ABUCAY',
+    'HERMOSA',
+    'ORANI',
+    'SAMAL'
   ],
   '2ND DISTRICT': [
-    'DAGUPAN',
-    'CALASIAO',
-    'BINALONAN',
-    'MANAOAG',
-    'MANGALDAN',
-    'SAN FABIAN',
-    'SAN JACINTO'
+    'BALANGA',
+    'ORION',
+    'LIMAY',
+    'PILAR'
   ],
   '3RD DISTRICT': [
-    'ROSALES',
-    'VILLASIS',
-    'ASINGAN',
-    'STA. BARBARA',
-    'MALASIQUI',
-    'BAYAMBANG'
+    'BAGAC',
+    'DINALUPIHAN',
+    'MARIVELES',
+    'MORONG'
   ]
 };
 
 // Define fixed district order
 const DISTRICTS = ['1ST DISTRICT', '2ND DISTRICT', '3RD DISTRICT'];
+
+// Initialize empty data structure
+const INITIAL_DATA = {
+  '1ST DISTRICT': {
+    'ABUCAY': null,
+    'HERMOSA': null,
+    'ORANI': null,
+    'SAMAL': null
+  },
+  '2ND DISTRICT': {
+    'BALANGA': null,
+    'ORION': null,
+    'LIMAY': null,
+    'PILAR': null
+  },
+  '3RD DISTRICT': {
+    'BAGAC': null,
+    'DINALUPIHAN': null,
+    'MARIVELES': null,
+    'MORONG': null
+  }
+};
 
 // Memoized formatDate function
 const formatDate = (dateStr) => {
@@ -246,7 +261,7 @@ const DistrictSection = memo(({
   </>
 ));
 
-// Memoized table component
+// Update ReportTable to use fixed district order
 const ReportTable = memo(({ 
   dates, 
   reportsData, 
@@ -453,7 +468,7 @@ const IPatroller = () => {
       .sort((a, b) => new Date(a) - new Date(b));
   }, [reportsData, selectedYear, selectedMonth]);
 
-  // Combine reportsData with localData for display
+  // Update displayData to use fixed structure
   const displayData = useMemo(() => {
     if (!reportsData) return {};
     
@@ -461,19 +476,29 @@ const IPatroller = () => {
     const cleanData = {};
     Object.entries(reportsData).forEach(([date, data]) => {
       if (isDateInMonth(date, selectedYear, selectedMonth)) {
-        const { lastUpdated, ...rest } = data;
-        cleanData[date] = rest;
+        cleanData[date] = JSON.parse(JSON.stringify(INITIAL_DATA));
+        // Only copy data for existing municipalities
+        DISTRICTS.forEach(district => {
+          MUNICIPALITIES[district].forEach(municipality => {
+            if (data[district]?.[municipality] !== undefined) {
+              cleanData[date][district][municipality] = data[district][municipality];
+            }
+          });
+        });
       }
     });
     
     // Overlay local changes
     Object.entries(localData).forEach(([date, districts]) => {
       if (isDateInMonth(date, selectedYear, selectedMonth)) {
-        if (!cleanData[date]) cleanData[date] = {};
-        Object.entries(districts).forEach(([district, municipalities]) => {
-          if (!cleanData[date][district]) cleanData[date][district] = {};
-          Object.entries(municipalities).forEach(([municipality, value]) => {
-            cleanData[date][district][municipality] = value;
+        if (!cleanData[date]) {
+          cleanData[date] = JSON.parse(JSON.stringify(INITIAL_DATA));
+        }
+        DISTRICTS.forEach(district => {
+          MUNICIPALITIES[district].forEach(municipality => {
+            if (districts[district]?.[municipality] !== undefined) {
+              cleanData[date][district][municipality] = districts[district][municipality];
+            }
           });
         });
       }

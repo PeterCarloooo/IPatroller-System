@@ -4,29 +4,22 @@ import { collection, doc, getDoc, setDoc, updateDoc, query, where, getDocs } fro
 // Define fixed data structure
 const INITIAL_DATA = {
   '1ST DISTRICT': {
-    'BINMALEY': null,
-    'LINGAYEN': null,
-    'AGUILAR': null,
-    'BUGALLON': null,
-    'LABRADOR': null,
-    'SUAL': null
+    'ABUCAY': null,
+    'HERMOSA': null,
+    'ORANI': null,
+    'SAMAL': null
   },
   '2ND DISTRICT': {
-    'DAGUPAN': null,
-    'CALASIAO': null,
-    'BINALONAN': null,
-    'MANAOAG': null,
-    'MANGALDAN': null,
-    'SAN FABIAN': null,
-    'SAN JACINTO': null
+    'BALANGA': null,
+    'ORION': null,
+    'LIMAY': null,
+    'PILAR': null
   },
   '3RD DISTRICT': {
-    'ROSALES': null,
-    'VILLASIS': null,
-    'ASINGAN': null,
-    'STA. BARBARA': null,
-    'MALASIQUI': null,
-    'BAYAMBANG': null
+    'BAGAC': null,
+    'DINALUPIHAN': null,
+    'MARIVELES': null,
+    'MORONG': null
   }
 };
 
