@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Container, Form, Button, Image } from 'react-bootstrap';
+import authService from '../services/authService';
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -21,17 +22,33 @@ const Signup = () => {
       return;
     }
 
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+
     setIsLoading(true);
     
     try {
-      // Add your signup logic here
-      console.log('Signup attempt:', formData);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Check if username is available
+      const isAvailable = await authService.checkUsernameAvailable(formData.username);
+      if (!isAvailable) {
+        setError('Username is already taken');
+        setIsLoading(false);
+        return;
+      }
+
+      // Create the account
+      await authService.signup(formData.username, formData.password);
+      
+      // Show success message
+      alert('Account created successfully! Please check your email for verification.');
+      
+      // Redirect to login page
       navigate('/login');
     } catch (error) {
       console.error('Signup error:', error);
-      setError('Signup failed. Please try again.');
+      setError(error.message || 'Failed to create account. Please try again.');
     } finally {
       setIsLoading(false);
     }
