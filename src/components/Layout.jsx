@@ -10,7 +10,8 @@ import {
   FaChartBar,
   FaCog,
   FaSignOutAlt,
-  FaBars
+  FaBars,
+  FaTimes
 } from 'react-icons/fa';
 import './Layout.css';
 
@@ -18,11 +19,13 @@ const Layout = () => {
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const handleNavigation = useCallback((path) => {
     navigate(path);
-    setIsMobileOpen(false);
+    if (window.innerWidth < 992) {
+      setIsSidebarOpen(false);
+    }
   }, [navigate]);
 
   const handleLogout = async () => {
@@ -47,38 +50,42 @@ const Layout = () => {
   }
 
   return (
-    <div className="layout-wrapper">
-      {/* Mobile Menu Toggle */}
-      <Button
-        variant="primary"
-        className="mobile-menu-toggle d-lg-none"
-        onClick={() => setIsMobileOpen(!isMobileOpen)}
+    <div className="layout-container">
+      {/* Sidebar Toggle Button */}
+      <button 
+        className="sidebar-toggle"
+        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
       >
-        <FaBars />
-      </Button>
+        {isSidebarOpen ? <FaTimes /> : <FaBars />}
+      </button>
 
-      {/* Side Navigation */}
-      <div className={`side-nav ${isMobileOpen ? 'open' : ''}`}>
-        <div className="side-nav-header">
-          <h1 className="app-title">IPatroller System</h1>
+      {/* Sidebar */}
+      <div className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
+        <div className="sidebar-header">
+          <img 
+            src="/src/assets/bataan-logo.png" 
+            alt="Bataan Logo" 
+            className="sidebar-logo"
+          />
+          <h1 className="sidebar-title">IPatroller System</h1>
         </div>
-        
-        <div className="nav-items">
+
+        <nav className="sidebar-nav">
           {menuItems.map((item) => (
-            <div
+            <button
               key={item.path}
               className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
               onClick={() => handleNavigation(item.path)}
             >
               <span className="nav-icon">{item.icon}</span>
               <span className="nav-label">{item.label}</span>
-            </div>
+            </button>
           ))}
-        </div>
+        </nav>
 
-        <div className="side-nav-footer">
+        <div className="sidebar-footer">
           <Button 
-            variant="outline-primary" 
+            variant="outline-light" 
             className="logout-button"
             onClick={handleLogout}
           >
@@ -89,17 +96,17 @@ const Layout = () => {
       </div>
 
       {/* Main Content */}
-      <div className="main-content">
+      <main className={`main-content ${isSidebarOpen ? 'shifted' : ''}`}>
         <Container fluid className="p-4">
           <Outlet />
         </Container>
-      </div>
+      </main>
 
       {/* Mobile Backdrop */}
-      {isMobileOpen && (
+      {isSidebarOpen && window.innerWidth < 992 && (
         <div
           className="mobile-backdrop"
-          onClick={() => setIsMobileOpen(false)}
+          onClick={() => setIsSidebarOpen(false)}
         />
       )}
     </div>
