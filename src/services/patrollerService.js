@@ -9,7 +9,8 @@ import {
   where,
   getDocs,
   serverTimestamp,
-  writeBatch
+  writeBatch,
+  orderBy
 } from 'firebase/firestore';
 import { auth } from '../api/firebase';
 
@@ -115,31 +116,46 @@ class PatrollerService {
       const reportsRef = collection(db, this.reportsCollection);
       const { startDate, endDate } = this.getMonthDateRange(year, month);
 
+      // Create query with proper ordering to match the index
       const q = query(
         reportsRef,
+        where('status', '==', 'active'),
         where('date', '>=', startDate),
         where('date', '<=', endDate),
-        where('status', '==', 'active')
+        orderBy('date', 'asc')
       );
 
-      const querySnapshot = await getDocs(q);
-      querySnapshot.forEach(doc => {
-        const data = doc.data();
-        if (
-          data.date && 
-          data.district && 
-          data.municipality && 
-          data.count !== undefined &&
-          DISTRICTS[data.district]?.includes(data.municipality)
-        ) {
-          if (!reports[data.date]) {
-            reports[data.date] = createInitialData();
+      try {
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach(doc => {
+          const data = doc.data();
+          if (
+            data.date && 
+            data.district && 
+            data.municipality && 
+            data.count !== undefined &&
+            DISTRICTS[data.district]?.includes(data.municipality)
+          ) {
+            if (!reports[data.date]) {
+              reports[data.date] = createInitialData();
+            }
+            reports[data.date][data.district][data.municipality] = data.count;
           }
-          reports[data.date][data.district][data.municipality] = data.count;
-        }
-      });
+        });
 
-      return reports;
+        return reports;
+      } catch (queryError) {
+        if (queryError.code === 'failed-precondition') {
+          // Index doesn't exist
+          console.error('Required index is missing:', queryError);
+          throw new Error('Database configuration error. Please contact support.');
+        } else if (queryError.code === 'resource-exhausted') {
+          // Query exceeded resource limits
+          console.error('Query resource limits exceeded:', queryError);
+          throw new Error('Too many records to process. Please try a smaller date range.');
+        }
+        throw queryError;
+      }
     } catch (error) {
       console.error('Error getting monthly reports:', error);
       throw new Error('Failed to fetch reports');
