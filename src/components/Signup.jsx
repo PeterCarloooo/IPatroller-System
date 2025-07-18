@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Form, Button, Container } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
+import { Container, Form, Button, Image } from 'react-bootstrap';
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -10,15 +10,19 @@ const Signup = () => {
     confirmPassword: ''
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+
     if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match');
+      setError('Passwords do not match');
       return;
     }
-    
+
     setIsLoading(true);
+    
     try {
       // Add your signup logic here
       console.log('Signup attempt:', formData);
@@ -27,6 +31,7 @@ const Signup = () => {
       navigate('/login');
     } catch (error) {
       console.error('Signup error:', error);
+      setError('Signup failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -41,50 +46,76 @@ const Signup = () => {
   };
 
   return (
-    <Container>
-      <h2>Sign Up</h2>
-      <Form onSubmit={handleSubmit}>
-        <Form.Group className="mb-3">
-          <Form.Label>Username</Form.Label>
-          <Form.Control
-            type="text"
-            name="username"
-            value={formData.username}
-            onChange={handleChange}
-            required
+    <Container className="d-flex flex-column align-items-center justify-content-center min-vh-100">
+      <div className="bg-white p-4 rounded shadow" style={{ maxWidth: '400px', width: '100%' }}>
+        <div className="text-center mb-4">
+          <Image 
+            src="/favicon.svg"
+            alt="IPatroller Logo"
+            style={{ width: '120px', height: 'auto', marginBottom: '1rem' }}
           />
-        </Form.Group>
-
-        <Form.Group className="mb-3">
-          <Form.Label>Password</Form.Label>
-          <Form.Control
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-        </Form.Group>
-
-        <Form.Group className="mb-3">
-          <Form.Label>Confirm Password</Form.Label>
-          <Form.Control
-            type="password"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            required
-          />
-        </Form.Group>
-
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? 'Loading...' : 'Sign Up'}
-        </Button>
-
-        <div className="mt-3">
-          <Link to="/login">Login</Link>
+          <h4 style={{ color: '#0066ff', marginBottom: '0.5rem' }}>IPatroller System</h4>
+          <p style={{ color: '#666666' }}>Create your account</p>
         </div>
-      </Form>
+
+        {error && (
+          <div className="alert alert-danger" role="alert">
+            {error}
+          </div>
+        )}
+
+        <Form onSubmit={handleSubmit}>
+          <Form.Group className="mb-3">
+            <Form.Control
+              type="text"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              placeholder="Username"
+              required
+              style={{ padding: '0.75rem' }}
+            />
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Control
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Password"
+              required
+              style={{ padding: '0.75rem' }}
+            />
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Control
+              type="password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              placeholder="Confirm Password"
+              required
+              style={{ padding: '0.75rem' }}
+            />
+          </Form.Group>
+
+          <Button 
+            type="submit" 
+            className="w-100"
+            style={{ 
+              padding: '0.75rem',
+              backgroundColor: '#0066ff',
+              border: 'none',
+              borderRadius: '4px'
+            }}
+            disabled={isLoading}
+          >
+            {isLoading ? 'Creating Account...' : 'Sign Up'}
+          </Button>
+        </Form>
+      </div>
     </Container>
   );
 };
