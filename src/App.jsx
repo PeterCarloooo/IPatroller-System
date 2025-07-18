@@ -108,21 +108,23 @@ const App = () => {
           <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <AuthProvider>
               <Routes>
+                {/* Root redirect to login */}
+                <Route path="/" element={<Navigate to="/login" replace />} />
+
                 {/* Public routes */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
 
                 {/* Protected routes */}
                 <Route
-                  path="/"
+                  path="/dashboard"
                   element={
                     <PrivateRoute>
                       <Layout />
                     </PrivateRoute>
                   }
                 >
-                  <Route index element={<Navigate to="/dashboard" replace />} />
-                  <Route path="dashboard" element={<Dashboard />} />
+                  <Route index element={<Dashboard />} />
                   <Route path="illegals" element={<Illegals />} />
                   <Route path="ipatroller" element={<IPatroller />} />
                   <Route path="command-center" element={<CommandCenter />} />

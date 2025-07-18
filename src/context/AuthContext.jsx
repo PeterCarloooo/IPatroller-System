@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
 
       // If user is logged in and on login/signup page, redirect to dashboard
-      if (user && ['/login', '/signup'].includes(location.pathname)) {
+      if (user && ['/login', '/signup', '/'].includes(location.pathname)) {
         debouncedNavigate('/dashboard');
       }
     });
@@ -53,7 +53,6 @@ export const AuthProvider = ({ children }) => {
     try {
       const user = await authService.login(username, password);
       setCurrentUser(user);
-      debouncedNavigate('/dashboard');
       return user;
     } catch (error) {
       throw error;
@@ -73,7 +72,6 @@ export const AuthProvider = ({ children }) => {
       // After successful signup, automatically log in
       if (user) {
         setCurrentUser(user);
-        debouncedNavigate('/dashboard');
       }
       return user;
     } catch (error) {
