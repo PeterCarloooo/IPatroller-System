@@ -1,24 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-  <!-- Background Circle -->
-  <circle cx="256" cy="256" r="248" fill="#1a73e8" />
-  <circle cx="256" cy="256" r="240" fill="#ffffff" />
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <!-- Main Background -->
+  <rect width="32" height="32" rx="6" fill="#2563eb"/>
   
-  <!-- Shield Shape -->
-  <path d="M256 80c-70 0-128 32-128 32v112c0 64 40 112 128 144 88-32 128-80 128-144V112s-58-32-128-32z" 
-        fill="#1a73e8" stroke="#1a73e8" stroke-width="8"/>
+  <!-- Letter I -->
+  <path d="M8 8h4v16H8z" fill="white"/>
   
-  <!-- Eye Symbol -->
-  <circle cx="256" cy="220" r="48" fill="#ffffff"/>
-  <circle cx="256" cy="220" r="24" fill="#1a73e8"/>
+  <!-- Letter P stylized as a shield -->
+  <path d="M14 8h6c3 0 4 2 4 4s-1 4-4 4h-2v8h-4V8z" fill="white"/>
   
-  <!-- Radar Lines -->
-  <path d="M256 220 L360 180" stroke="#ffffff" stroke-width="8" fill="none" opacity="0.6"/>
-  <path d="M256 220 L360 220" stroke="#ffffff" stroke-width="8" fill="none" opacity="0.8"/>
-  <path d="M256 220 L360 260" stroke="#ffffff" stroke-width="8" fill="none" opacity="0.6"/>
+  <!-- Radar dot -->
+  <circle cx="24" cy="20" r="2" fill="#4ade80"/>
   
-  <!-- Star Badge Points -->
-  <circle cx="256" cy="320" r="8" fill="#ffffff"/>
-  <circle cx="226" cy="300" r="8" fill="#ffffff"/>
-  <circle cx="286" cy="300" r="8" fill="#ffffff"/>
+  <!-- Radar rings -->
+  <circle cx="24" cy="20" r="4" fill="none" stroke="#4ade80" stroke-width="1" opacity="0.6"/>
+  <circle cx="24" cy="20" r="6" fill="none" stroke="#4ade80" stroke-width="1" opacity="0.3"/>
 </svg> 
