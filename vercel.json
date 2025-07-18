@@ -5,7 +5,8 @@
       "src": "package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "dist"
+        "distDir": "dist",
+        "buildCommand": "npm run build"
       }
     }
   ],
@@ -28,5 +29,9 @@
       "headers": { "cache-control": "public, max-age=0, must-revalidate" },
       "dest": "/index.html"
     }
-  ]
+  ],
+  "github": {
+    "enabled": true,
+    "silent": false
+  }
 } 
