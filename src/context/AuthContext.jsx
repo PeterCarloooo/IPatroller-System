@@ -20,27 +20,9 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      try {
-        if (user) {
-          // Get additional user data from Firestore
-          const userData = await authService.getCurrentUser();
-          if (userData) {
-            setCurrentUser(userData);
-          } else {
-            // If no Firestore data, sign out
-            await authService.logout();
-            setCurrentUser(null);
-          }
-        } else {
-          setCurrentUser(null);
-        }
-      } catch (error) {
-        console.error('Auth state change error:', error);
-        setCurrentUser(null);
-      } finally {
-        setLoading(false);
-      }
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -61,9 +43,8 @@ export const AuthProvider = ({ children }) => {
   // Signup function
   const signup = async (username, password) => {
     try {
-      const result = await authService.signup(username, password);
-      // Don't set current user yet - require email verification
-      return result;
+      const user = await authService.signup(username, password);
+      return user;
     } catch (error) {
       throw error;
     }
