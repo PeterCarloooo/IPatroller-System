@@ -206,3 +206,17 @@ export const formatFileSize = (bytes) => {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }; 
+
+/**
+ * Generates a random CAPTCHA string of specified length
+ * @param {number} length - Length of CAPTCHA string
+ * @returns {string} Random CAPTCHA string
+ */
+export const generateCaptcha = (length = 6) => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Excluding similar looking characters I, 1, O, 0
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}; 
