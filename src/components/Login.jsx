@@ -153,15 +153,6 @@ const Login = () => {
                       Create Account
                     </Link>
                   </p>
-
-                  <div className="text-center">
-                    <p className="text-muted small mb-0">
-                      By signing in, you agree to our{' '}
-                      <a href="#" className="text-decoration-none">Terms</a>
-                      {' '}and{' '}
-                      <a href="#" className="text-decoration-none">Privacy Policy</a>
-                    </p>
-                  </div>
                 </Form>
               </Card.Body>
             </Card>

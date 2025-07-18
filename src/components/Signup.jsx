@@ -241,22 +241,6 @@ const Signup = () => {
                     </InputGroup>
                   </Form.Group>
 
-                  <Form.Group className="mb-4">
-                    <Form.Check
-                      type="checkbox"
-                      id="terms"
-                      required
-                      label={
-                        <span className="small">
-                          I agree to the{' '}
-                          <a href="#" className="text-decoration-none">Terms of Service</a>
-                          {' '}and{' '}
-                          <a href="#" className="text-decoration-none">Privacy Policy</a>
-                        </span>
-                      }
-                    />
-                  </Form.Group>
-
                   <Button
                     type="submit"
                     variant="primary"
