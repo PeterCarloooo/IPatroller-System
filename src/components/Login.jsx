@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Container, Form, Button, Image } from 'react-bootstrap';
 
 const Login = () => {
@@ -84,7 +84,7 @@ const Login = () => {
 
           <Button 
             type="submit" 
-            className="w-100"
+            className="w-100 mb-3"
             style={{ 
               padding: '0.75rem',
               backgroundColor: '#0066ff',
@@ -96,6 +96,24 @@ const Login = () => {
             {isLoading ? 'Signing in...' : 'Sign In'}
           </Button>
         </Form>
+
+        <div className="text-center">
+          <p style={{ color: '#666666', marginBottom: '0.5rem' }}>Don't have an account?</p>
+          <Button
+            as={Link}
+            to="/signup"
+            className="w-100"
+            style={{ 
+              padding: '0.75rem',
+              backgroundColor: 'transparent',
+              border: '1px solid #0066ff',
+              color: '#0066ff',
+              borderRadius: '4px'
+            }}
+          >
+            Sign Up
+          </Button>
+        </div>
       </div>
     </Container>
   );
