@@ -1,5 +1,5 @@
 import { createContext, useState, useContext, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { auth } from '../api/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import authService from '../services/authService';
@@ -18,15 +18,21 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       setLoading(false);
+
+      // If user is logged in and on login/signup page, redirect to dashboard
+      if (user && ['/login', '/signup'].includes(location.pathname)) {
+        navigate('/dashboard');
+      }
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [navigate, location]);
 
   // Login function
   const login = async (username, password) => {
@@ -44,6 +50,10 @@ export const AuthProvider = ({ children }) => {
   const signup = async (username, password) => {
     try {
       const user = await authService.signup(username, password);
+      // After successful signup, automatically log in
+      if (user) {
+        await login(username, password);
+      }
       return user;
     } catch (error) {
       throw error;
