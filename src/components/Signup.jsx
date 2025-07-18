@@ -4,7 +4,7 @@ import {
   Container,
   Row,
   Col,
-  Card,
+  Modal,
   Form,
   Button,
   Alert,
@@ -70,25 +70,65 @@ const Signup = () => {
   }
 
   return (
-    <div className="min-vh-100 bg-light py-5">
-      <Container>
-        {/* Header */}
-        <Row className="justify-content-center text-center mb-5">
-          <Col md={6}>
-            <div className="d-inline-block p-3 bg-primary bg-opacity-10 rounded-circle mb-3">
-              <i className="bi bi-shield-check text-primary" style={{ fontSize: '3rem' }}></i>
-            </div>
-            <h1 className="display-6 fw-bold text-primary mb-2">Join IPatroller</h1>
-            <p className="text-muted lead">Create your account and start patrolling today</p>
-          </Col>
-        </Row>
+    <div className="min-vh-100 d-flex align-items-center justify-content-center" 
+      style={{
+        background: 'linear-gradient(135deg, #0061f2 0%, #6900f2 100%)',
+        padding: '1rem'
+      }}>
+      <div className="position-absolute top-0 start-0 w-100 h-100"
+        style={{
+          background: 'url("https://source.unsplash.com/featured/?patrol,security") center/cover',
+          opacity: '0.1'
+        }}
+      />
+      
+      <Modal show={true} centered size="lg" dialogClassName="border-0 shadow-lg" style={{ background: 'transparent' }}>
+        <Modal.Body className="p-0">
+          <Row className="g-0">
+            {/* Left Side - Image */}
+            <Col md={5} className="d-none d-md-block">
+              <div className="h-100 position-relative" style={{ minHeight: '600px' }}>
+                <div className="position-absolute w-100 h-100"
+                  style={{
+                    background: 'url("https://source.unsplash.com/featured/?patrol,security") center/cover',
+                    clipPath: 'polygon(0 0, 100% 0, 85% 100%, 0% 100%)'
+                  }}
+                />
+                <div className="position-absolute w-100 h-100 d-flex flex-column justify-content-center text-white p-4"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(0,97,242,0.9) 0%, rgba(105,0,242,0.9) 100%)',
+                    clipPath: 'polygon(0 0, 100% 0, 85% 100%, 0% 100%)'
+                  }}>
+                  <h3 className="display-6 fw-bold mb-3">Join IPatroller</h3>
+                  <p className="lead mb-4">Be part of our mission to create safer communities</p>
+                  <div className="d-flex gap-3 mb-4">
+                    <div>
+                      <div className="bg-white bg-opacity-25 rounded-circle p-3 mb-2">
+                        <i className="bi bi-shield-check text-white fs-4"></i>
+                      </div>
+                      <p className="small">Professional Profile</p>
+                    </div>
+                    <div>
+                      <div className="bg-white bg-opacity-25 rounded-circle p-3 mb-2">
+                        <i className="bi bi-clock-history text-white fs-4"></i>
+                      </div>
+                      <p className="small">Flexible Scheduling</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Col>
 
-        {/* Signup Card */}
-        <Row className="justify-content-center">
-          <Col xs={11} sm={9} md={7} lg={5} xl={4}>
-            <Card className="border-0 shadow-sm">
-              <Card.Body className="p-4">
-                <h2 className="h4 text-center mb-4">Create Your Account</h2>
+            {/* Right Side - Signup Form */}
+            <Col md={7}>
+              <div className="p-4 p-md-5">
+                <div className="text-center mb-4">
+                  <div className="d-inline-block bg-primary bg-opacity-10 rounded-circle p-3 mb-3">
+                    <i className="bi bi-shield-check text-primary fs-3"></i>
+                  </div>
+                  <h4 className="fw-bold">Create Your Account</h4>
+                  <p className="text-muted small">Fill in your details to get started</p>
+                </div>
 
                 {error && (
                   <Alert variant="danger" className="mb-4">
@@ -257,18 +297,18 @@ const Signup = () => {
                     )}
                   </Button>
 
-                  <p className="text-center text-muted small mb-4">
+                  <p className="text-center text-muted small mb-0">
                     Already have an account?{' '}
                     <Link to="/login" className="text-primary text-decoration-none">
                       Sign In
                     </Link>
                   </p>
                 </Form>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      </Container>
+              </div>
+            </Col>
+          </Row>
+        </Modal.Body>
+      </Modal>
     </div>
   );
 };
