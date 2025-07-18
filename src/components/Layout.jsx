@@ -3,16 +3,16 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Container, Button } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 import {
-  FaTachometerAlt,
-  FaUserShield,
-  FaExclamationTriangle,
-  FaVideo,
-  FaChartBar,
-  FaCog,
-  FaSignOutAlt,
-  FaBars,
-  FaTimes
-} from 'react-icons/fa';
+  Dashboard as DashboardIcon,
+  Security as SecurityIcon,
+  Warning as WarningIcon,
+  Videocam as VideocamIcon,
+  BarChart as BarChartIcon,
+  Settings as SettingsIcon,
+  ExitToApp as ExitToAppIcon,
+  Menu as MenuIcon,
+  Close as CloseIcon
+} from '@mui/icons-material';
 import './Layout.css';
 
 const Layout = () => {
@@ -51,12 +51,12 @@ const Layout = () => {
   };
 
   const menuItems = [
-    { path: '/dashboard', icon: <FaTachometerAlt />, label: 'Dashboard' },
-    { path: '/ipatroller', icon: <FaUserShield />, label: 'IPatroller' },
-    { path: '/illegals', icon: <FaExclamationTriangle />, label: 'Illegals' },
-    { path: '/command-center', icon: <FaVideo />, label: 'Command Center' },
-    { path: '/report', icon: <FaChartBar />, label: 'Report' },
-    { path: '/setup', icon: <FaCog />, label: 'Setup' }
+    { path: '/dashboard', icon: <DashboardIcon />, label: 'Dashboard' },
+    { path: '/ipatroller', icon: <SecurityIcon />, label: 'IPatroller' },
+    { path: '/illegals', icon: <WarningIcon />, label: 'Illegals' },
+    { path: '/command-center', icon: <VideocamIcon />, label: 'Command Center' },
+    { path: '/report', icon: <BarChartIcon />, label: 'Report' },
+    { path: '/setup', icon: <SettingsIcon />, label: 'Setup' }
   ];
 
   if (!currentUser) {
@@ -71,7 +71,7 @@ const Layout = () => {
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
         aria-label={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
       >
-        {isSidebarOpen ? <FaTimes /> : <FaBars />}
+        {isSidebarOpen ? <CloseIcon /> : <MenuIcon />}
       </button>
 
       {/* Sidebar */}
@@ -106,7 +106,7 @@ const Layout = () => {
             className="logout-button"
             onClick={handleLogout}
           >
-            <FaSignOutAlt className="me-2" />
+            <ExitToAppIcon className="me-2" />
             Logout
           </Button>
         </div>
