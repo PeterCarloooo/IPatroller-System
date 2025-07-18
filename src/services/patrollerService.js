@@ -1,11 +1,33 @@
 import { db } from '../api/firebase';
 import { collection, doc, getDoc, setDoc, updateDoc, query, where, getDocs } from 'firebase/firestore';
 
-// District data
-const districts = {
-  '1ST DISTRICT': ['ABUCAY', 'ORANI', 'SAMAL', 'HERMOSA'],
-  '2ND DISTRICT': ['BALANGA', 'PILAR', 'ORION', 'LIMAY'],
-  '3RD DISTRICT': ['BAGAC', 'DINALUPIHAN', 'MARIVELES', 'MORONG']
+// Define fixed data structure
+const INITIAL_DATA = {
+  '1ST DISTRICT': {
+    'BINMALEY': null,
+    'LINGAYEN': null,
+    'AGUILAR': null,
+    'BUGALLON': null,
+    'LABRADOR': null,
+    'SUAL': null
+  },
+  '2ND DISTRICT': {
+    'DAGUPAN': null,
+    'CALASIAO': null,
+    'BINALONAN': null,
+    'MANAOAG': null,
+    'MANGALDAN': null,
+    'SAN FABIAN': null,
+    'SAN JACINTO': null
+  },
+  '3RD DISTRICT': {
+    'ROSALES': null,
+    'VILLASIS': null,
+    'ASINGAN': null,
+    'STA. BARBARA': null,
+    'MALASIQUI': null,
+    'BAYAMBANG': null
+  }
 };
 
 class PatrollerService {
@@ -53,81 +75,14 @@ class PatrollerService {
     return dates;
   }
 
-  // Initialize empty report data with default structure
-  initializeEmptyReport() {
-    const report = {};
-    Object.entries(districts).forEach(([district, municipalities]) => {
-      report[district] = {};
-      municipalities.forEach(municipality => {
-        report[district][municipality] = null;
-      });
-    });
-    return report;
-  }
-
-  // Create or update daily count for a municipality
-  async updateDailyCount(date, district, municipality, count) {
-    try {
-      const formattedDate = this.formatDate(new Date(date));
-      const reportRef = doc(db, this.reportsCollection, `${formattedDate}_${district}_${municipality}`.replace(/\s+/g, '_'));
-      
-      // Get existing data for the date
-      const reportDoc = await getDoc(reportRef);
-      let reportData = reportDoc.exists() ? reportDoc.data() : this.initializeEmptyReport();
-
-      // Update the count for the specific district and municipality
-      reportData[district] = reportData[district] || {};
-      reportData[district][municipality] = parseInt(count) || null;
-
-      // Save to Firestore
-      await setDoc(reportRef, reportData, { merge: true });
-
-      return {
-        date: formattedDate,
-        district,
-        municipality,
-        count: parseInt(count) || null
-      };
-    } catch (error) {
-      console.error('Error updating daily count:', error);
-      throw new Error('Failed to update daily count');
-    }
-  }
-
   async getMonthlyReports(year, month) {
     try {
       const dates = this.generateMonthDates(year, month);
       const reports = {};
 
-      // Initialize data structure for all days in the month
+      // Initialize data structure for all days in the month with fixed order
       dates.forEach(date => {
-        reports[date] = {
-          '1ST DISTRICT': {
-            'BINMALEY': null,
-            'LINGAYEN': null,
-            'AGUILAR': null,
-            'BUGALLON': null,
-            'LABRADOR': null,
-            'SUAL': null
-          },
-          '2ND DISTRICT': {
-            'DAGUPAN': null,
-            'CALASIAO': null,
-            'BINALONAN': null,
-            'MANAOAG': null,
-            'MANGALDAN': null,
-            'SAN FABIAN': null,
-            'SAN JACINTO': null
-          },
-          '3RD DISTRICT': {
-            'ROSALES': null,
-            'VILLASIS': null,
-            'ASINGAN': null,
-            'STA. BARBARA': null,
-            'MALASIQUI': null,
-            'BAYAMBANG': null
-          }
-        };
+        reports[date] = JSON.parse(JSON.stringify(INITIAL_DATA));
       });
 
       // Get existing data from Firestore
@@ -148,7 +103,8 @@ class PatrollerService {
           data.district && 
           data.municipality && 
           data.count !== undefined &&
-          this.isDateInMonth(data.date, year, month)
+          this.isDateInMonth(data.date, year, month) &&
+          INITIAL_DATA[data.district]?.[data.municipality] !== undefined
         ) {
           reports[data.date][data.district][data.municipality] = data.count;
         }
@@ -173,7 +129,7 @@ class PatrollerService {
       let districtStats = {};
 
       // Initialize district stats
-      Object.keys(districts).forEach(district => {
+      Object.keys(INITIAL_DATA).forEach(district => {
         districtStats[district] = {
           incidents: 0,
           activePatrollers: 0,
@@ -184,7 +140,7 @@ class PatrollerService {
       // Calculate statistics from all dates
       dates.forEach(date => {
         const reportData = reports[date];
-        Object.entries(districts).forEach(([district, municipalities]) => {
+        Object.entries(INITIAL_DATA).forEach(([district, municipalities]) => {
           municipalities.forEach(municipality => {
             const value = reportData?.[district]?.[municipality];
             if (value !== null && value !== undefined) {
@@ -252,9 +208,13 @@ class PatrollerService {
       for (const update of updates) {
         const { date, district, municipality, count } = update;
         
-        // Validate that the date is properly formatted and in the correct month
+        // Validate that the date is properly formatted and municipality exists
         if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
           throw new Error('Invalid date format. Expected YYYY-MM-DD');
+        }
+
+        if (!INITIAL_DATA[district]?.[municipality]) {
+          throw new Error(`Invalid district or municipality: ${district} - ${municipality}`);
         }
 
         const docId = `${date}_${district}_${municipality}`.replace(/\s+/g, '_');

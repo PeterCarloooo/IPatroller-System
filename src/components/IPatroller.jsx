@@ -15,6 +15,38 @@ import {
 import { CalendarMonth as CalendarIcon } from '@mui/icons-material';
 import patrollerService from '../services/patrollerService';
 
+// Define fixed municipality order
+const MUNICIPALITIES = {
+  '1ST DISTRICT': [
+    'BINMALEY',
+    'LINGAYEN',
+    'AGUILAR',
+    'BUGALLON',
+    'LABRADOR',
+    'SUAL'
+  ],
+  '2ND DISTRICT': [
+    'DAGUPAN',
+    'CALASIAO',
+    'BINALONAN',
+    'MANAOAG',
+    'MANGALDAN',
+    'SAN FABIAN',
+    'SAN JACINTO'
+  ],
+  '3RD DISTRICT': [
+    'ROSALES',
+    'VILLASIS',
+    'ASINGAN',
+    'STA. BARBARA',
+    'MALASIQUI',
+    'BAYAMBANG'
+  ]
+};
+
+// Define fixed district order
+const DISTRICTS = ['1ST DISTRICT', '2ND DISTRICT', '3RD DISTRICT'];
+
 // Memoized formatDate function
 const formatDate = (dateStr) => {
   const date = new Date(dateStr + 'T12:00:00Z'); // Use UTC time
@@ -188,10 +220,9 @@ const MunicipalityRow = memo(({
                   </tr>
 ));
 
-// Memoized district section component
+// Update DistrictSection to use fixed order
 const DistrictSection = memo(({ 
   district, 
-  municipalities, 
   dates, 
   reportsData, 
   isStatus, 
@@ -200,7 +231,7 @@ const DistrictSection = memo(({
 }) => (
   <>
     <DistrictHeader district={district} colSpan={dates.length + 1} />
-    {Object.keys(municipalities).map(municipality => (
+    {MUNICIPALITIES[district].map(municipality => (
       <MunicipalityRow
         key={municipality}
         municipality={municipality}
@@ -238,21 +269,20 @@ const ReportTable = memo(({
         selectedMonth={selectedMonth}
       />
       <tbody>
-        {Object.entries(reportsData?.[dates[0]] || {}).map(([district, municipalities]) => (
+        {DISTRICTS.map(district => (
           <DistrictSection
             key={district}
             district={district}
-            municipalities={municipalities}
             dates={dates}
             reportsData={reportsData}
             isStatus={isStatus}
             onInputChange={onInputChange}
             isEditMode={isEditMode}
           />
-            ))}
-          </tbody>
-        </Table>
-      </div>
+        ))}
+      </tbody>
+    </Table>
+  </div>
 ));
 
 // Memoized year/month selector component
