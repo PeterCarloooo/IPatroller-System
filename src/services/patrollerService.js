@@ -22,6 +22,12 @@ class PatrollerService {
     return utcDate.toISOString().split('T')[0];
   }
 
+  // Helper function to check if a date is within a specific month
+  isDateInMonth(dateStr, year, month) {
+    const date = new Date(dateStr + 'T12:00:00');
+    return date.getFullYear() === year && date.getMonth() === month - 1;
+  }
+
   // Helper function to get start and end dates for a month
   getMonthDateRange(year, month) {
     // Set time to noon to avoid timezone issues
@@ -37,11 +43,14 @@ class PatrollerService {
   generateMonthDates(year, month) {
     const { startDate, endDate } = this.getMonthDateRange(year, month);
     const dates = [];
-    const currentDate = new Date(startDate + 'T12:00:00'); // Add time to ensure consistent date handling
+    const currentDate = new Date(startDate + 'T12:00:00');
     const lastDate = new Date(endDate + 'T12:00:00');
 
     while (currentDate <= lastDate) {
-      dates.push(this.formatDate(currentDate));
+      // Only add dates that are within the specified month
+      if (this.isDateInMonth(this.formatDate(currentDate), year, month)) {
+        dates.push(this.formatDate(currentDate));
+      }
       currentDate.setDate(currentDate.getDate() + 1);
     }
 
@@ -138,11 +147,14 @@ class PatrollerService {
       const querySnapshot = await getDocs(q);
       querySnapshot.forEach(doc => {
         const data = doc.data();
-        if (data.date && data.district && data.municipality && data.count !== undefined) {
-          // Only include data if the date is within our generated dates
-          if (dates.includes(data.date)) {
-            reports[data.date][data.district][data.municipality] = data.count;
-          }
+        if (
+          data.date && 
+          data.district && 
+          data.municipality && 
+          data.count !== undefined &&
+          this.isDateInMonth(data.date, year, month)
+        ) {
+          reports[data.date][data.district][data.municipality] = data.count;
         }
       });
 

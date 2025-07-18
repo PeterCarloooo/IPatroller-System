@@ -17,13 +17,13 @@ import patrollerService from '../services/patrollerService';
 
 // Memoized formatDate function
 const formatDate = (dateStr) => {
-  const date = new Date(dateStr);
-  return new Date(date.getTime() - date.getTimezoneOffset() * 60000)
-    .toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric'
-    });
+  const date = new Date(dateStr + 'T12:00:00'); // Add time to ensure consistent date handling
+  return date.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+  });
 };
 
 // Memoized header cell component
@@ -51,13 +51,21 @@ const HeaderCell = memo(({ children, isFirst = false }) => (
 ));
 
 // Memoized table header component
-const TableHeader = memo(({ dates }) => (
-  <thead>
-    <tr>
-      <HeaderCell isFirst>MUNICIPALITY</HeaderCell>
-      {dates.map(date => (
-        <HeaderCell key={date}>{formatDate(date)}</HeaderCell>
-      ))}
+const TableHeader = memo(({ dates, selectedYear, selectedMonth }) => {
+  const isDateInSelectedMonth = (dateStr) => {
+    const date = new Date(dateStr + 'T12:00:00');
+    return date.getFullYear() === selectedYear && date.getMonth() === selectedMonth - 1;
+  };
+
+  const filteredDates = dates.filter(isDateInSelectedMonth);
+
+  return (
+    <thead>
+      <tr>
+        <HeaderCell isFirst>MUNICIPALITY</HeaderCell>
+        {filteredDates.map(date => (
+          <HeaderCell key={date}>{formatDate(date)}</HeaderCell>
+        ))}
             </tr>
           </thead>
 ));
@@ -209,7 +217,9 @@ const ReportTable = memo(({
   reportsData, 
   isStatus, 
   onInputChange,
-  isEditMode 
+  isEditMode,
+  selectedYear,
+  selectedMonth
 }) => (
   <div className="table-responsive mt-3" style={{ 
     maxHeight: 'calc(100vh - 250px)',
@@ -218,7 +228,11 @@ const ReportTable = memo(({
     boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
   }}>
     <Table bordered hover size="sm" className="table-sticky mb-0">
-      <TableHeader dates={dates} />
+      <TableHeader 
+        dates={dates} 
+        selectedYear={selectedYear} 
+        selectedMonth={selectedMonth}
+      />
       <tbody>
         {Object.entries(reportsData?.[dates[0]] || {}).map(([district, municipalities]) => (
           <DistrictSection
@@ -398,14 +412,18 @@ const IPatroller = () => {
   const dates = useMemo(() => {
     if (!reportsData) return [];
     
-    // Set time to noon to avoid timezone issues
     const startDate = new Date(selectedYear, selectedMonth - 1, 1, 12, 0, 0);
     const endDate = new Date(selectedYear, selectedMonth, 0, 12, 0, 0);
     
     return Object.keys(reportsData)
       .filter(dateStr => {
-        const date = new Date(dateStr + 'T12:00:00'); // Add time to ensure consistent date handling
-        return date >= startDate && date <= endDate;
+        const date = new Date(dateStr + 'T12:00:00');
+        return (
+          date.getFullYear() === selectedYear &&
+          date.getMonth() === selectedMonth - 1 &&
+          date >= startDate &&
+          date <= endDate
+        );
       })
       .sort();
   }, [reportsData, selectedYear, selectedMonth]);
@@ -598,6 +616,8 @@ const IPatroller = () => {
           isStatus={true}
           onInputChange={handleInputChange}
           isEditMode={false}
+          selectedYear={selectedYear}
+          selectedMonth={selectedMonth}
         />
       ) : (
         <div>
@@ -607,6 +627,8 @@ const IPatroller = () => {
             isStatus={false}
             onInputChange={handleInputChange}
             isEditMode={isEditMode}
+            selectedYear={selectedYear}
+            selectedMonth={selectedMonth}
           />
             </div>
       )}
