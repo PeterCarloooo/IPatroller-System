@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Container, Form, Button, Image } from 'react-bootstrap';
-import authService from '../services/authService';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
-  const navigate = useNavigate();
+  const { login, resetPassword } = useAuth();
   const [credentials, setCredentials] = useState({
     username: '',
     password: ''
@@ -18,18 +18,7 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      // Attempt to login
-      const user = await authService.login(credentials.username, credentials.password);
-      
-      // Check if email is verified
-      if (!user.emailVerified) {
-        setError('Please verify your email before logging in.');
-        return;
-      }
-
-      // Successful login
-      console.log('Login successful:', user);
-      navigate('/dashboard');
+      await login(credentials.username, credentials.password);
     } catch (error) {
       console.error('Login error:', error);
       setError(error.message || 'Invalid username or password');
@@ -53,7 +42,7 @@ const Login = () => {
     }
 
     try {
-      await authService.sendPasswordReset(credentials.username);
+      await resetPassword(credentials.username);
       alert('Password reset email sent. Please check your inbox.');
     } catch (error) {
       console.error('Password reset error:', error);

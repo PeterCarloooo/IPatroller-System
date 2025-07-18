@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Container, Form, Button, Image } from 'react-bootstrap';
-import authService from '../services/authService';
+import { useAuth } from '../context/AuthContext';
 
 const Signup = () => {
   const navigate = useNavigate();
+  const { signup } = useAuth();
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -17,6 +18,7 @@ const Signup = () => {
     e.preventDefault();
     setError('');
 
+    // Validate input
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -27,19 +29,15 @@ const Signup = () => {
       return;
     }
 
+    if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
+      setError('Username can only contain letters, numbers, and underscores');
+      return;
+    }
+
     setIsLoading(true);
     
     try {
-      // Check if username is available
-      const isAvailable = await authService.checkUsernameAvailable(formData.username);
-      if (!isAvailable) {
-        setError('Username is already taken');
-        setIsLoading(false);
-        return;
-      }
-
-      // Create the account
-      await authService.signup(formData.username, formData.password);
+      await signup(formData.username, formData.password);
       
       // Show success message
       alert('Account created successfully! Please check your email for verification.');
