@@ -345,7 +345,8 @@ const DateRangeDisplay = memo(({ dateRange }) => (
 ));
 
 const IPatroller = () => {
-  const [activeTab, setActiveTab] = useState('status'); // Changed default to 'status'
+  // Change default tab to 'daily'
+  const [activeTab, setActiveTab] = useState('daily');
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [editedData, setEditedData] = useState({});
@@ -609,43 +610,33 @@ const IPatroller = () => {
       />
 
       <Nav variant="tabs" className="mb-3 border-bottom border-primary">
-              <Nav.Item>
-                <Nav.Link 
-            active={activeTab === 'status'} 
-            onClick={() => {
-              setActiveTab('status');
-              setIsEditMode(false);
-            }}
-                  className="px-4 py-2"
-                >
-                  IPatroller Status
-                </Nav.Link>
-              </Nav.Item>
-              <Nav.Item>
-                <Nav.Link 
+        <Nav.Item>
+          <Nav.Link 
             active={activeTab === 'daily'} 
             onClick={() => {
               setActiveTab('daily');
               setIsEditMode(false);
             }}
-                  className="px-4 py-2"
-                >
+            className="px-4 py-2"
+          >
             Daily Reports
-                </Nav.Link>
-              </Nav.Item>
-            </Nav>
+          </Nav.Link>
+        </Nav.Item>
+        <Nav.Item>
+          <Nav.Link 
+            active={activeTab === 'status'} 
+            onClick={() => {
+              setActiveTab('status');
+              setIsEditMode(false);
+            }}
+            className="px-4 py-2"
+          >
+            IPatroller Status
+          </Nav.Link>
+        </Nav.Item>
+      </Nav>
 
-      {activeTab === 'status' ? (
-        <ReportTable
-          dates={dates}
-          reportsData={displayData}
-          isStatus={true}
-          onInputChange={handleInputChange}
-          isEditMode={false}
-          selectedYear={selectedYear}
-          selectedMonth={selectedMonth}
-        />
-      ) : (
+      {activeTab === 'daily' ? (
         <div>
           <ReportTable
             dates={dates}
@@ -656,7 +647,17 @@ const IPatroller = () => {
             selectedYear={selectedYear}
             selectedMonth={selectedMonth}
           />
-            </div>
+        </div>
+      ) : (
+        <ReportTable
+          dates={dates}
+          reportsData={displayData}
+          isStatus={true}
+          onInputChange={handleInputChange}
+          isEditMode={false}
+          selectedYear={selectedYear}
+          selectedMonth={selectedMonth}
+        />
       )}
 
       <style>
