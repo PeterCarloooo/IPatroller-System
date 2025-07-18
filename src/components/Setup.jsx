@@ -243,8 +243,8 @@ const Setup = () => {
             <Grid item xs={12} md={8}>
               <form onSubmit={profileForm.handleSubmit}>
                 <Stack spacing={3}>
-                  <TextField
-                    fullWidth
+              <TextField
+                fullWidth
                     label="Display Name"
                     name="displayName"
                     value={profileForm.values.displayName}
@@ -270,14 +270,14 @@ const Setup = () => {
                     error={!!profileForm.errors.phoneNumber && profileForm.touched.phoneNumber}
                     helperText={profileForm.touched.phoneNumber && profileForm.errors.phoneNumber}
                   />
-                  <Button
+              <Button
                     type="submit"
-                    variant="contained"
-                    startIcon={<SaveIcon />}
+                variant="contained"
+                startIcon={<SaveIcon />}
                     disabled={loading}
-                  >
+              >
                     {loading ? <CircularProgress size={24} /> : 'Save Changes'}
-                  </Button>
+              </Button>
                 </Stack>
               </form>
             </Grid>
@@ -378,7 +378,7 @@ const Setup = () => {
                         secondary="Add an extra layer of security to your account"
                       />
                       <ListItemSecondaryAction>
-                        <Switch
+                  <Switch
                           edge="end"
                           checked={securitySettings.twoFactorAuth}
                           onChange={(e) => setSecuritySettings(prev => ({
@@ -394,7 +394,7 @@ const Setup = () => {
                         secondary="Get notified of new sign-ins to your account"
                       />
                       <ListItemSecondaryAction>
-                        <Switch
+                  <Switch
                           edge="end"
                           checked={securitySettings.loginAlerts}
                           onChange={(e) => setSecuritySettings(prev => ({
@@ -422,14 +422,14 @@ const Setup = () => {
                     </ListItem>
                   </List>
                   <Divider sx={{ my: 2 }} />
-                  <Button
+              <Button
                     variant="outlined"
                     color="error"
                     startIcon={<DeleteIcon />}
                     onClick={() => setDeleteDialogOpen(true)}
                   >
                     Delete Account
-                  </Button>
+              </Button>
                 </CardContent>
               </Card>
             </Grid>
@@ -461,7 +461,7 @@ const Setup = () => {
                   </ListItemSecondaryAction>
                 </ListItem>
                 <ListItem>
-                  <ListItemText
+                    <ListItemText
                     primary="SMS Notifications"
                     secondary="Receive updates via SMS"
                   />
@@ -480,8 +480,8 @@ const Setup = () => {
                   <ListItemText
                     primary="Push Notifications"
                     secondary="Receive push notifications"
-                  />
-                  <ListItemSecondaryAction>
+                    />
+                    <ListItemSecondaryAction>
                     <Switch
                       edge="end"
                       checked={notificationSettings.pushNotifications}
@@ -490,8 +490,8 @@ const Setup = () => {
                         pushNotifications: e.target.checked
                       }))}
                     />
-                  </ListItemSecondaryAction>
-                </ListItem>
+                    </ListItemSecondaryAction>
+                  </ListItem>
                 <Divider sx={{ my: 2 }} />
                 <ListItem>
                   <ListItemText
@@ -510,7 +510,7 @@ const Setup = () => {
                   </ListItemSecondaryAction>
                 </ListItem>
                 <ListItem>
-                  <ListItemText
+                    <ListItemText
                     primary="Weekly Report"
                     secondary="Receive weekly activity summary"
                   />
@@ -529,8 +529,8 @@ const Setup = () => {
                   <ListItemText
                     primary="Critical Alerts"
                     secondary="Receive alerts for critical events"
-                  />
-                  <ListItemSecondaryAction>
+                    />
+                    <ListItemSecondaryAction>
                     <Switch
                       edge="end"
                       checked={notificationSettings.criticalAlerts}
@@ -539,8 +539,8 @@ const Setup = () => {
                         criticalAlerts: e.target.checked
                       }))}
                     />
-                  </ListItemSecondaryAction>
-                </ListItem>
+                    </ListItemSecondaryAction>
+                  </ListItem>
               </List>
             </CardContent>
           </Card>
