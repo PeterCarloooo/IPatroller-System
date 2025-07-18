@@ -279,28 +279,6 @@ const Signup = () => {
                       Sign In
                     </Link>
                   </p>
-
-                  <div className="position-relative mb-4">
-                    <hr />
-                    <span className="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted small">
-                      or sign up with
-                    </span>
-                  </div>
-
-                  <Row className="g-3">
-                    <Col xs={6}>
-                      <Button variant="outline-secondary" className="w-100">
-                        <i className="bi bi-google me-2"></i>
-                        Google
-                      </Button>
-                    </Col>
-                    <Col xs={6}>
-                      <Button variant="outline-secondary" className="w-100">
-                        <i className="bi bi-facebook me-2"></i>
-                        Facebook
-                      </Button>
-                    </Col>
-                  </Row>
                 </Form>
               </Card.Body>
             </Card>

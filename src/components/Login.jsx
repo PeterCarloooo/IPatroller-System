@@ -154,28 +154,6 @@ const Login = () => {
                     </Link>
                   </p>
 
-                  <div className="position-relative mb-4">
-                    <hr />
-                    <span className="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted small">
-                      or continue with
-                    </span>
-                  </div>
-
-                  <Row className="g-3 mb-4">
-                    <Col xs={6}>
-                      <Button variant="outline-secondary" className="w-100">
-                        <i className="bi bi-google me-2"></i>
-                        Google
-                      </Button>
-                    </Col>
-                    <Col xs={6}>
-                      <Button variant="outline-secondary" className="w-100">
-                        <i className="bi bi-facebook me-2"></i>
-                        Facebook
-                      </Button>
-                    </Col>
-                  </Row>
-
                   <div className="text-center">
                     <p className="text-muted small mb-0">
                       By signing in, you agree to our{' '}
