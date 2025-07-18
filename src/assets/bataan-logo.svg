@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <circle cx="100" cy="100" r="95" fill="#fff" stroke="#003875" stroke-width="2"/>
+  <path d="M100 20c44.183 0 80 35.817 80 80s-35.817 80-80 80-80-35.817-80-80 35.817-80 80-80m0-4c-46.392 0-84 37.608-84 84s37.608 84 84 84 84-37.608 84-84-37.608-84-84-84z" fill="#003875"/>
+  <text x="100" y="75" text-anchor="middle" font-family="Arial Black" font-size="24" fill="#003875">BATAAN</text>
+  <text x="100" y="125" text-anchor="middle" font-family="Arial" font-size="12" fill="#003875">SIYUDAD NG LALAWIGAN</text>
+  <path d="M60 90l40-20 40 20v40l-40 20-40-20z" fill="#C8102E"/>
+  <path d="M100 70l20 10v20l-20 10-20-10v-20z" fill="#FCD116"/>
+</svg> 

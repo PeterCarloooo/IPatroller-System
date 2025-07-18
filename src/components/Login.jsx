@@ -43,11 +43,20 @@ const Login = () => {
       <div className="bg-white p-4 rounded shadow" style={{ maxWidth: '400px', width: '100%' }}>
         <div className="text-center mb-4">
           <Image 
-            src="/favicon.svg"
-            alt="IPatroller Logo"
-            style={{ width: '120px', height: 'auto', marginBottom: '1rem' }}
+            src="/src/assets/bataan-logo.svg"
+            alt="Bataan Logo"
+            style={{ 
+              width: '150px', 
+              height: 'auto', 
+              marginBottom: '1.5rem',
+              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+            }}
           />
-          <h4 style={{ color: '#0066ff', marginBottom: '0.5rem' }}>IPatroller System</h4>
+          <h4 style={{ 
+            color: '#003875', 
+            marginBottom: '0.5rem',
+            fontWeight: 'bold'
+          }}>IPatroller System</h4>
           <p style={{ color: '#666666' }}>Sign in to start your session</p>
         </div>
 
