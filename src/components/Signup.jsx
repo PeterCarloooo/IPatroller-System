@@ -1,76 +1,53 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Container,
-  Box,
-  Typography,
-  TextField,
+  Row,
+  Col,
+  Card,
+  Form,
   Button,
-  Paper,
   Alert,
-  InputAdornment,
-  IconButton,
-  CircularProgress
-} from '@mui/material';
-import {
-  Visibility,
-  VisibilityOff,
-  Person as PersonIcon,
-  Lock as LockIcon
-} from '@mui/icons-material';
-import authService from '../services/authService';
+  InputGroup
+} from 'react-bootstrap';
+import { useAuth } from '../context/AuthContext';
+import useForm from '../hooks/useForm';
+import LoadingSpinner from './common/LoadingSpinner';
 
 const Signup = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    username: '',
-    password: '',
-    confirmPassword: ''
-  });
-  const [errors, setErrors] = useState({});
+  const { signup } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [apiError, setApiError] = useState('');
+  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  const { values, handleChange } = useForm({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    phoneNumber: '',
+    role: 'patroller' // default role
+  });
+
   const validateForm = () => {
-    const newErrors = {};
-    
-    // Username validation
-    if (!formData.username) {
-      newErrors.username = 'Username is required';
-    } else if (formData.username.length < 3) {
-      newErrors.username = 'Username must be at least 3 characters';
-    } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
-      newErrors.username = 'Username can only contain letters, numbers, and underscores';
+    if (values.password !== values.confirmPassword) {
+      setError('Passwords do not match');
+      return false;
     }
-
-    // Password validation
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    } else if (!/[A-Z]/.test(formData.password)) {
-      newErrors.password = 'Password must contain at least one uppercase letter';
-    } else if (!/[0-9]/.test(formData.password)) {
-      newErrors.password = 'Password must contain at least one number';
+    if (values.password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return false;
     }
-
-    // Confirm password validation
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return true;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setApiError('');
-    
+    setError('');
+
     if (!validateForm()) {
       return;
     }
@@ -78,219 +55,223 @@ const Signup = () => {
     setIsLoading(true);
 
     try {
-      await authService.signup(formData.username, formData.password);
+      await signup(values);
       navigate('/login', { 
-        state: { 
-          message: 'Account created successfully! Please sign in.' 
-        }
+        state: { message: 'Account created successfully! Please log in.' }
       });
-    } catch (error) {
-      setApiError(error.message);
+    } catch (err) {
+      setError(err.message || 'Failed to create account');
       setIsLoading(false);
     }
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
-    }
-    if (apiError) {
-      setApiError('');
-    }
-  };
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
-        padding: 2,
-      }}
-    >
-      <Container component="main" maxWidth="xs">
-        <Paper
-          elevation={0}
-          sx={{
-            p: 4,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            borderRadius: 3,
-            backdropFilter: 'blur(10px)',
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-          }}
-        >
-          <Typography
-            component="h1"
-            variant="h4"
-            sx={{
-              mb: 1,
-              fontWeight: 700,
-              background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
-            Create Account
-          </Typography>
-          
-          <Typography variant="body2" color="text.secondary" gutterBottom>
-            Join IPatroller System
-          </Typography>
+    <Container fluid className="vh-100 bg-light">
+      <Row className="h-100 align-items-center justify-content-center">
+        <Col xs={11} sm={9} md={7} lg={5} xl={4}>
+          <Card className="border-0 shadow-lg">
+            <Card.Body className="p-4 p-sm-5">
+              {/* Logo and Title */}
+              <div className="text-center mb-4">
+                <i className="bi bi-shield-check text-primary" style={{ fontSize: '3rem' }}></i>
+                <h4 className="mt-2 mb-0 text-primary">Create Account</h4>
+                <p className="text-muted">Join IPatroller System</p>
+              </div>
 
-          {apiError && (
-            <Alert severity="error" sx={{ mt: 2, width: '100%' }}>
-              {apiError}
-            </Alert>
-          )}
-
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2, width: '100%' }}>
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="username"
-              label="Username"
-              name="username"
-              autoComplete="username"
-              autoFocus
-              value={formData.username}
-              onChange={handleChange}
-              error={!!errors.username}
-              helperText={errors.username}
-              disabled={isLoading}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <PersonIcon color="action" />
-                  </InputAdornment>
-                ),
-              }}
-            />
-            
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              name="password"
-              label="Password"
-              type={showPassword ? 'text' : 'password'}
-              id="password"
-              autoComplete="new-password"
-              value={formData.password}
-              onChange={handleChange}
-              error={!!errors.password}
-              helperText={errors.password}
-              disabled={isLoading}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <LockIcon color="action" />
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => setShowPassword(!showPassword)}
-                      edge="end"
-                      disabled={isLoading}
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              name="confirmPassword"
-              label="Confirm Password"
-              type={showConfirmPassword ? 'text' : 'password'}
-              id="confirmPassword"
-              autoComplete="new-password"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              error={!!errors.confirmPassword}
-              helperText={errors.confirmPassword}
-              disabled={isLoading}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <LockIcon color="action" />
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      edge="end"
-                      disabled={isLoading}
-                    >
-                      {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              disabled={isLoading}
-              sx={{
-                mt: 3,
-                mb: 2,
-                py: 1.5,
-                fontSize: '1rem',
-                fontWeight: 600,
-                background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, #1e40af 0%, #5b21b6 100%)',
-                },
-              }}
-            >
-              {isLoading ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                'Sign Up'
+              {error && (
+                <Alert variant="danger" className="mb-4">
+                  {error}
+                </Alert>
               )}
-            </Button>
 
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="body2" color="text.secondary">
-                Already have an account?{' '}
-                <Link
-                  to="/login"
-                  style={{
-                    textDecoration: 'none',
-                    color: '#2563eb',
-                    fontWeight: 500,
-                  }}
+              <Form onSubmit={handleSubmit}>
+                <Row className="mb-4">
+                  <Col md={6}>
+                    <Form.Group>
+                      <Form.Label>First Name</Form.Label>
+                      <InputGroup>
+                        <InputGroup.Text className="bg-light">
+                          <i className="bi bi-person text-muted"></i>
+                        </InputGroup.Text>
+                        <Form.Control
+                          type="text"
+                          name="firstName"
+                          value={values.firstName}
+                          onChange={handleChange}
+                          placeholder="First name"
+                          required
+                        />
+                      </InputGroup>
+                    </Form.Group>
+                  </Col>
+                  <Col md={6}>
+                    <Form.Group>
+                      <Form.Label>Last Name</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="lastName"
+                        value={values.lastName}
+                        onChange={handleChange}
+                        placeholder="Last name"
+                        required
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                <Form.Group className="mb-4">
+                  <Form.Label>Email Address</Form.Label>
+                  <InputGroup>
+                    <InputGroup.Text className="bg-light">
+                      <i className="bi bi-envelope text-muted"></i>
+                    </InputGroup.Text>
+                    <Form.Control
+                      type="email"
+                      name="email"
+                      value={values.email}
+                      onChange={handleChange}
+                      placeholder="Enter your email"
+                      required
+                    />
+                  </InputGroup>
+                </Form.Group>
+
+                <Form.Group className="mb-4">
+                  <Form.Label>Phone Number</Form.Label>
+                  <InputGroup>
+                    <InputGroup.Text className="bg-light">
+                      <i className="bi bi-phone text-muted"></i>
+                    </InputGroup.Text>
+                    <Form.Control
+                      type="tel"
+                      name="phoneNumber"
+                      value={values.phoneNumber}
+                      onChange={handleChange}
+                      placeholder="Enter phone number"
+                      required
+                    />
+                  </InputGroup>
+                </Form.Group>
+
+                <Form.Group className="mb-4">
+                  <Form.Label>Password</Form.Label>
+                  <InputGroup>
+                    <InputGroup.Text className="bg-light">
+                      <i className="bi bi-lock text-muted"></i>
+                    </InputGroup.Text>
+                    <Form.Control
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      value={values.password}
+                      onChange={handleChange}
+                      placeholder="Create password"
+                      required
+                    />
+                    <Button
+                      variant="light"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="border"
+                    >
+                      <i className={`bi bi-eye${showPassword ? '-slash' : ''}`}></i>
+                    </Button>
+                  </InputGroup>
+                  <Form.Text className="text-muted">
+                    Must be at least 6 characters long
+                  </Form.Text>
+                </Form.Group>
+
+                <Form.Group className="mb-4">
+                  <Form.Label>Confirm Password</Form.Label>
+                  <InputGroup>
+                    <InputGroup.Text className="bg-light">
+                      <i className="bi bi-lock-fill text-muted"></i>
+                    </InputGroup.Text>
+                    <Form.Control
+                      type={showConfirmPassword ? "text" : "password"}
+                      name="confirmPassword"
+                      value={values.confirmPassword}
+                      onChange={handleChange}
+                      placeholder="Confirm password"
+                      required
+                    />
+                    <Button
+                      variant="light"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="border"
+                    >
+                      <i className={`bi bi-eye${showConfirmPassword ? '-slash' : ''}`}></i>
+                    </Button>
+                  </InputGroup>
+                </Form.Group>
+
+                <Form.Group className="mb-4">
+                  <Form.Label>Role</Form.Label>
+                  <InputGroup>
+                    <InputGroup.Text className="bg-light">
+                      <i className="bi bi-person-badge text-muted"></i>
+                    </InputGroup.Text>
+                    <Form.Select
+                      name="role"
+                      value={values.role}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="patroller">Patroller</option>
+                      <option value="supervisor">Supervisor</option>
+                      <option value="admin">Administrator</option>
+                    </Form.Select>
+                  </InputGroup>
+                </Form.Group>
+
+                <Form.Group className="mb-4">
+                  <Form.Check
+                    type="checkbox"
+                    label={
+                      <span className="text-muted">
+                        I agree to the{' '}
+                        <a href="#" className="text-primary text-decoration-none">Terms of Service</a>
+                        {' '}and{' '}
+                        <a href="#" className="text-primary text-decoration-none">Privacy Policy</a>
+                      </span>
+                    }
+                    required
+                  />
+                </Form.Group>
+
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="w-100 mb-4 py-2"
+                  disabled={isLoading}
                 >
-                  Sign in
-                </Link>
-              </Typography>
-            </Box>
-          </Box>
-        </Paper>
-      </Container>
-    </Box>
+                  {isLoading ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" />
+                      Creating Account...
+                    </>
+                  ) : (
+                    'Create Account'
+                  )}
+                </Button>
+
+                <div className="text-center">
+                  <p className="text-muted mb-0">
+                    Already have an account?{' '}
+                    <Link to="/login" className="text-primary text-decoration-none">
+                      Sign In
+                    </Link>
+                  </p>
+                </div>
+              </Form>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+    </Container>
   );
 };
 

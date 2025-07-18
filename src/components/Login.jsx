@@ -1,285 +1,168 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import {
-  Box,
-  Button,
-  TextField,
-  Typography,
   Container,
-  Paper,
-  InputAdornment,
-  IconButton,
-  FormControlLabel,
-  Checkbox,
+  Row,
+  Col,
+  Card,
+  Form,
+  Button,
   Alert,
-  CircularProgress,
-} from '@mui/material';
-import {
-  Person as PersonIcon,
-  Lock as LockIcon,
-  Visibility as VisibilityIcon,
-  VisibilityOff as VisibilityOffIcon,
-} from '@mui/icons-material';
-import authService from '../services/authService';
+  InputGroup
+} from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
+import useForm from '../hooks/useForm';
+import LoadingSpinner from './common/LoadingSpinner';
 
 const Login = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { user } = useAuth();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
-  const [credentials, setCredentials] = useState({
-    username: '',
-    password: '',
+  const [isLoading, setIsLoading] = useState(false);
+
+  const { values, handleChange } = useForm({
+    email: '',
+    password: ''
   });
-
-  useEffect(() => {
-    // Redirect to dashboard if already logged in
-    if (user) {
-      navigate('/dashboard');
-    }
-
-    // Check for remembered username
-    const rememberedUser = localStorage.getItem('rememberedUser');
-    if (rememberedUser) {
-      setCredentials(prev => ({ ...prev, username: rememberedUser }));
-      setRememberMe(true);
-    }
-
-    // Show success message if redirected from signup
-    if (location.state?.message) {
-      setSuccess(location.state.message);
-      // Clear the message from location state
-      window.history.replaceState({}, document.title);
-    }
-  }, [user, location, navigate]);
-
-  const validateForm = () => {
-    if (!credentials.username.trim()) {
-      setError('Username is required');
-      return false;
-    }
-    if (!credentials.password) {
-      setError('Password is required');
-      return false;
-    }
-    return true;
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setSuccess('');
-    
-    if (!validateForm()) {
-      return;
-    }
-
     setIsLoading(true);
 
     try {
-      await authService.login(credentials.username, credentials.password);
-      if (rememberMe) {
-        localStorage.setItem('rememberedUser', credentials.username);
-      } else {
-        localStorage.removeItem('rememberedUser');
-      }
+      await login(values.email, values.password);
+      navigate('/dashboard');
     } catch (err) {
-      setError(err.message || 'Invalid username or password');
+      setError(err.message || 'Failed to log in');
+    } finally {
       setIsLoading(false);
     }
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setCredentials(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    // Clear error when user starts typing
-    if (error) setError('');
-    if (success) setSuccess('');
-  };
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
-        padding: 2,
-      }}
-    >
-      <Container component="main" maxWidth="xs">
-        <Paper
-          elevation={0}
-          sx={{
-            p: 4,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            borderRadius: 3,
-            backdropFilter: 'blur(10px)',
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-          }}
-        >
-          <Box
-            sx={{
-              mb: 3,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-            }}
-          >
-            <Typography
-              component="h1"
-              variant="h4"
-              sx={{
-                mb: 1,
-                fontWeight: 700,
-                background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}
-            >
-              Welcome Back
-            </Typography>
-            <Typography variant="body2" color="text.secondary" align="center">
-              Sign in to IPatroller System
-            </Typography>
-          </Box>
+    <Container fluid className="vh-100 bg-light">
+      <Row className="h-100 align-items-center justify-content-center">
+        <Col xs={11} sm={9} md={7} lg={5} xl={4}>
+          <Card className="border-0 shadow-lg">
+            <Card.Body className="p-4 p-sm-5">
+              {/* Logo and Title */}
+              <div className="text-center mb-4">
+                <i className="bi bi-shield-check text-primary" style={{ fontSize: '3rem' }}></i>
+                <h4 className="mt-2 mb-0 text-primary">IPatroller System</h4>
+                <p className="text-muted">Sign in to your account</p>
+              </div>
 
-          <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
-            {error && (
-              <Alert severity="error" sx={{ mb: 2 }}>
-                {error}
-              </Alert>
-            )}
-            
-            {success && (
-              <Alert severity="success" sx={{ mb: 2 }}>
-                {success}
-              </Alert>
-            )}
-
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="username"
-              label="Username"
-              name="username"
-              autoComplete="username"
-              autoFocus={!credentials.username}
-              value={credentials.username}
-              onChange={handleChange}
-              disabled={isLoading}
-              error={!!error && error.includes('username')}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <PersonIcon color="action" />
-                  </InputAdornment>
-                ),
-              }}
-            />
-
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              name="password"
-              label="Password"
-              type={showPassword ? 'text' : 'password'}
-              id="password"
-              autoComplete="current-password"
-              value={credentials.password}
-              onChange={handleChange}
-              disabled={isLoading}
-              error={!!error && error.includes('password')}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <LockIcon color="action" />
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={() => setShowPassword(!showPassword)}
-                      edge="end"
-                      disabled={isLoading}
-                    >
-                      {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  color="primary"
-                  disabled={isLoading}
-                />
-              }
-              label="Remember me"
-              sx={{ mt: 2 }}
-            />
-
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              disabled={isLoading}
-              sx={{
-                mt: 3,
-                mb: 2,
-                py: 1.5,
-                fontSize: '1rem',
-                fontWeight: 600,
-                background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, #1e40af 0%, #5b21b6 100%)',
-                },
-              }}
-            >
-              {isLoading ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                'Sign In'
+              {error && (
+                <Alert variant="danger" className="mb-4">
+                  {error}
+                </Alert>
               )}
-            </Button>
 
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="body2" color="text.secondary">
-                Don't have an account?{' '}
-                <Link
-                  to="/signup"
-                  style={{
-                    textDecoration: 'none',
-                    color: '#2563eb',
-                    fontWeight: 500,
-                  }}
+              <Form onSubmit={handleSubmit}>
+                <Form.Group className="mb-4">
+                  <Form.Label>Email Address</Form.Label>
+                  <InputGroup>
+                    <InputGroup.Text className="bg-light">
+                      <i className="bi bi-envelope text-muted"></i>
+                    </InputGroup.Text>
+                    <Form.Control
+                      type="email"
+                      name="email"
+                      value={values.email}
+                      onChange={handleChange}
+                      placeholder="Enter your email"
+                      required
+                    />
+                  </InputGroup>
+                </Form.Group>
+
+                <Form.Group className="mb-4">
+                  <Form.Label>Password</Form.Label>
+                  <InputGroup>
+                    <InputGroup.Text className="bg-light">
+                      <i className="bi bi-lock text-muted"></i>
+                    </InputGroup.Text>
+                    <Form.Control
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      value={values.password}
+                      onChange={handleChange}
+                      placeholder="Enter your password"
+                      required
+                    />
+                    <Button
+                      variant="light"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="border"
+                    >
+                      <i className={`bi bi-eye${showPassword ? '-slash' : ''}`}></i>
+                    </Button>
+                  </InputGroup>
+                </Form.Group>
+
+                <Form.Group className="mb-4">
+                  <Row className="align-items-center">
+                    <Col>
+                      <Form.Check
+                        type="checkbox"
+                        label="Remember me"
+                        className="text-muted"
+                      />
+                    </Col>
+                    <Col xs="auto">
+                      <Link to="/forgot-password" className="text-primary text-decoration-none">
+                        Forgot Password?
+                      </Link>
+                    </Col>
+                  </Row>
+                </Form.Group>
+
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="w-100 mb-4 py-2"
+                  disabled={isLoading}
                 >
-                  Sign up
-                </Link>
-              </Typography>
-            </Box>
-          </Box>
-        </Paper>
-      </Container>
-    </Box>
+                  {isLoading ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" />
+                      Signing in...
+                    </>
+                  ) : (
+                    'Sign In'
+                  )}
+                </Button>
+
+                <div className="text-center">
+                  <p className="text-muted mb-0">
+                    Don't have an account?{' '}
+                    <Link to="/signup" className="text-primary text-decoration-none">
+                      Create Account
+                    </Link>
+                  </p>
+                </div>
+              </Form>
+            </Card.Body>
+          </Card>
+
+          {/* Additional Info */}
+          <div className="text-center mt-4">
+            <p className="text-muted small mb-0">
+              By signing in, you agree to our{' '}
+              <a href="#" className="text-primary text-decoration-none">Terms</a>
+              {' '}and{' '}
+              <a href="#" className="text-primary text-decoration-none">Privacy Policy</a>
+            </p>
+          </div>
+        </Col>
+      </Row>
+    </Container>
   );
 };
 
