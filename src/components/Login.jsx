@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Form, Button, Image } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -84,11 +85,20 @@ const Login = () => {
 
           <Button 
             type="submit" 
-            className="w-100 py-2" 
+            className="w-100 py-2 mb-3" 
             variant="primary"
             disabled={isLoading}
           >
             {isLoading ? 'Signing in...' : 'Sign In'}
+          </Button>
+
+          <Button 
+            as={Link}
+            to="/signup"
+            className="w-100 py-2"
+            variant="outline-primary"
+          >
+            Sign Up
           </Button>
         </Form>
       </div>
