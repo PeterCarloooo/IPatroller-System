@@ -23,12 +23,9 @@ const Signup = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const { values, handleChange } = useForm({
-    firstName: '',
-    lastName: '',
     username: '',
     password: '',
-    confirmPassword: '',
-    role: 'patroller'
+    confirmPassword: ''
   });
 
   const validateForm = () => {
@@ -81,12 +78,12 @@ const Signup = () => {
         }}
       />
       
-      <Modal show={true} centered size="lg" dialogClassName="border-0 shadow-lg" style={{ background: 'transparent' }}>
+      <Modal show={true} centered dialogClassName="border-0 shadow-lg" style={{ background: 'transparent' }}>
         <Modal.Body className="p-0">
           <Row className="g-0">
             {/* Left Side - Image */}
             <Col md={5} className="d-none d-md-block">
-              <div className="h-100 position-relative" style={{ minHeight: '600px' }}>
+              <div className="h-100 position-relative" style={{ minHeight: '500px' }}>
                 <div className="position-absolute w-100 h-100"
                   style={{
                     background: 'url("https://source.unsplash.com/featured/?patrol,security") center/cover',
@@ -136,48 +133,7 @@ const Signup = () => {
                 )}
 
                 <Form onSubmit={handleSubmit}>
-                  <Row className="mb-3">
-                    <Col sm={6}>
-                      <Form.Group>
-                        <Form.Label className="small fw-medium">First Name</Form.Label>
-                        <InputGroup>
-                          <InputGroup.Text className="bg-light border-end-0">
-                            <i className="bi bi-person text-muted"></i>
-                          </InputGroup.Text>
-                          <Form.Control
-                            type="text"
-                            name="firstName"
-                            value={values.firstName}
-                            onChange={handleChange}
-                            placeholder="First name"
-                            className="border-start-0 ps-0"
-                            required
-                          />
-                        </InputGroup>
-                      </Form.Group>
-                    </Col>
-                    <Col sm={6}>
-                      <Form.Group>
-                        <Form.Label className="small fw-medium">Last Name</Form.Label>
-                        <InputGroup>
-                          <InputGroup.Text className="bg-light border-end-0">
-                            <i className="bi bi-person-fill text-muted"></i>
-                          </InputGroup.Text>
-                          <Form.Control
-                            type="text"
-                            name="lastName"
-                            value={values.lastName}
-                            onChange={handleChange}
-                            placeholder="Last name"
-                            className="border-start-0 ps-0"
-                            required
-                          />
-                        </InputGroup>
-                      </Form.Group>
-                    </Col>
-                  </Row>
-
-                  <Form.Group className="mb-3">
+                  <Form.Group className="mb-4">
                     <Form.Label className="small fw-medium">Username</Form.Label>
                     <InputGroup>
                       <InputGroup.Text className="bg-light border-end-0">
@@ -195,7 +151,7 @@ const Signup = () => {
                     </InputGroup>
                   </Form.Group>
 
-                  <Form.Group className="mb-3">
+                  <Form.Group className="mb-4">
                     <Form.Label className="small fw-medium">Password</Form.Label>
                     <InputGroup>
                       <InputGroup.Text className="bg-light border-end-0">
@@ -223,7 +179,7 @@ const Signup = () => {
                     </Form.Text>
                   </Form.Group>
 
-                  <Form.Group className="mb-3">
+                  <Form.Group className="mb-4">
                     <Form.Label className="small fw-medium">Confirm Password</Form.Label>
                     <InputGroup>
                       <InputGroup.Text className="bg-light border-end-0">
@@ -245,26 +201,6 @@ const Signup = () => {
                       >
                         <i className={`bi bi-eye${showConfirmPassword ? '-slash' : ''} text-muted`}></i>
                       </Button>
-                    </InputGroup>
-                  </Form.Group>
-
-                  <Form.Group className="mb-4">
-                    <Form.Label className="small fw-medium">Role</Form.Label>
-                    <InputGroup>
-                      <InputGroup.Text className="bg-light border-end-0">
-                        <i className="bi bi-person-badge text-muted"></i>
-                      </InputGroup.Text>
-                      <Form.Select
-                        name="role"
-                        value={values.role}
-                        onChange={handleChange}
-                        className="border-start-0 ps-0"
-                        required
-                      >
-                        <option value="patroller">Patroller</option>
-                        <option value="supervisor">Supervisor</option>
-                        <option value="admin">Administrator</option>
-                      </Form.Select>
                     </InputGroup>
                   </Form.Group>
 
