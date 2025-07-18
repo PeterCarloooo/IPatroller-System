@@ -1,15 +1,5 @@
 import { db } from '../api/firebase';
-import {
-  collection,
-  doc,
-  setDoc,
-  getDoc,
-  query,
-  where,
-  getDocs,
-  serverTimestamp,
-  Timestamp
-} from 'firebase/firestore';
+import { collection, doc, getDoc, setDoc, updateDoc, query, where, getDocs } from 'firebase/firestore';
 
 // District data
 const districts = {
@@ -20,7 +10,28 @@ const districts = {
 
 class PatrollerService {
   constructor() {
-    this.collectionName = 'patroller_reports';
+    this.reportsCollection = 'reports';
+  }
+
+  // Helper function to get start and end dates for a month
+  getMonthDateRange(year, month) {
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0); // Last day of the month
+    return { startDate, endDate };
+  }
+
+  // Helper function to generate dates array for a month
+  generateMonthDates(year, month) {
+    const { startDate, endDate } = this.getMonthDateRange(year, month);
+    const dates = [];
+    const currentDate = new Date(startDate);
+
+    while (currentDate <= endDate) {
+      dates.push(new Date(currentDate));
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return dates;
   }
 
   // Format date to YYYY-MM-DD for consistent storage
@@ -44,7 +55,7 @@ class PatrollerService {
   async updateDailyCount(date, district, municipality, count) {
     try {
       const formattedDate = this.formatDate(new Date(date));
-      const reportRef = doc(db, this.collectionName, formattedDate);
+      const reportRef = doc(db, this.reportsCollection, `${formattedDate}_${district}_${municipality}`.replace(/\s+/g, '_'));
       
       // Get existing data for the date
       const reportDoc = await getDoc(reportRef);
@@ -69,47 +80,66 @@ class PatrollerService {
     }
   }
 
-  // Get reports for a specific month
   async getMonthlyReports(year, month) {
     try {
-      // Calculate start and end dates for the month
-      const startDate = new Date(year, month - 1, 1);
-      const endDate = new Date(year, month, 0); // Last day of the month
-      
-      const formattedStartDate = this.formatDate(startDate);
-      const formattedEndDate = this.formatDate(endDate);
+      const dates = this.generateMonthDates(year, month);
+      const reports = {};
 
-      // Query Firestore for the date range
-      const reportsRef = collection(db, this.collectionName);
+      // Initialize data structure for all days in the month
+      dates.forEach(date => {
+        const dateStr = date.toISOString().split('T')[0];
+        reports[dateStr] = {
+          '1ST DISTRICT': {
+            'BINMALEY': null,
+            'LINGAYEN': null,
+            'AGUILAR': null,
+            'BUGALLON': null,
+            'LABRADOR': null,
+            'SUAL': null
+          },
+          '2ND DISTRICT': {
+            'DAGUPAN': null,
+            'CALASIAO': null,
+            'BINALONAN': null,
+            'MANAOAG': null,
+            'MANGALDAN': null,
+            'SAN FABIAN': null,
+            'SAN JACINTO': null
+          },
+          '3RD DISTRICT': {
+            'ROSALES': null,
+            'VILLASIS': null,
+            'ASINGAN': null,
+            'STA. BARBARA': null,
+            'MALASIQUI': null,
+            'BAYAMBANG': null
+          }
+        };
+      });
+
+      // Get existing data from Firestore
+      const reportsRef = collection(db, this.reportsCollection);
+      const startDateStr = dates[0].toISOString().split('T')[0];
+      const endDateStr = dates[dates.length - 1].toISOString().split('T')[0];
+
       const q = query(
         reportsRef,
-        where('__name__', '>=', formattedStartDate),
-        where('__name__', '<=', formattedEndDate)
+        where('date', '>=', startDateStr),
+        where('date', '<=', endDateStr)
       );
 
       const querySnapshot = await getDocs(q);
-      const reports = {};
-
-      // Generate all dates in the month with initialized data
-      let currentDate = new Date(startDate);
-      while (currentDate <= endDate) {
-        const dateKey = this.formatDate(currentDate);
-        reports[dateKey] = this.initializeEmptyReport();
-        currentDate.setDate(currentDate.getDate() + 1);
-      }
-
-      // Overlay actual data from Firestore
-      querySnapshot.forEach((doc) => {
-        reports[doc.id] = {
-          ...reports[doc.id],
-          ...doc.data()
-        };
+      querySnapshot.forEach(doc => {
+        const data = doc.data();
+        if (data.date && data.district && data.municipality && data.count !== undefined) {
+          reports[data.date][data.district][data.municipality] = data.count;
+        }
       });
 
       return reports;
     } catch (error) {
       console.error('Error getting monthly reports:', error);
-      throw new Error('Failed to fetch monthly reports');
+      throw new Error('Failed to fetch reports');
     }
   }
 
@@ -183,7 +213,7 @@ class PatrollerService {
   async getDailyReport(date) {
     try {
       const formattedDate = this.formatDate(new Date(date));
-      const reportRef = doc(db, this.collectionName, formattedDate);
+      const reportRef = doc(db, this.reportsCollection, `${formattedDate}_${district}_${municipality}`.replace(/\s+/g, '_'));
       const reportDoc = await getDoc(reportRef);
 
       if (reportDoc.exists()) {
@@ -197,39 +227,37 @@ class PatrollerService {
     }
   }
 
-  // Batch update multiple counts
   async batchUpdateCounts(updates) {
     try {
-      const groupedByDate = {};
-
-      // Group updates by date
-      updates.forEach(({ date, district, municipality, count }) => {
-        const formattedDate = this.formatDate(new Date(date));
-        groupedByDate[formattedDate] = groupedByDate[formattedDate] || {};
-        groupedByDate[formattedDate][district] = groupedByDate[formattedDate][district] || {};
-        groupedByDate[formattedDate][district][municipality] = parseInt(count) || null;
-      });
-
-      // Update each date's document
-      for (const [date, data] of Object.entries(groupedByDate)) {
-        const reportRef = doc(db, this.collectionName, date);
-        const reportDoc = await getDoc(reportRef);
+      const batch = [];
+      
+      for (const update of updates) {
+        const { date, district, municipality, count } = update;
+        const docId = `${date}_${district}_${municipality}`.replace(/\s+/g, '_');
+        const docRef = doc(db, this.reportsCollection, docId);
         
-        let reportData = reportDoc.exists() ? reportDoc.data() : this.initializeEmptyReport();
-        
-        // Merge new data with existing data
-        Object.entries(data).forEach(([district, municipalities]) => {
-          reportData[district] = reportData[district] || {};
-          Object.assign(reportData[district], municipalities);
-        });
-        
-        await setDoc(reportRef, reportData, { merge: true });
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          batch.push(updateDoc(docRef, {
+            count,
+            lastUpdated: new Date().toISOString()
+          }));
+        } else {
+          batch.push(setDoc(docRef, {
+            date,
+            district,
+            municipality,
+            count,
+            lastUpdated: new Date().toISOString()
+          }));
+        }
       }
-
+      
+      await Promise.all(batch);
       return true;
     } catch (error) {
-      console.error('Error in batch update:', error);
-      throw new Error('Failed to update multiple counts');
+      console.error('Error updating counts:', error);
+      throw new Error('Failed to update reports');
     }
   }
 }

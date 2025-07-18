@@ -28,8 +28,8 @@ const formatDate = (dateStr) => {
 const HeaderCell = memo(({ children, isFirst = false }) => (
   <th 
     className={`text-center align-middle ${isFirst ? 'position-sticky start-0' : ''}`}
-    style={{ 
-      top: 0,
+                style={{ 
+                  top: 0,
       minWidth: isFirst ? 200 : 180,
       padding: '1rem',
       fontSize: '1rem',
@@ -45,7 +45,7 @@ const HeaderCell = memo(({ children, isFirst = false }) => (
     }}
   >
     {children}
-  </th>
+              </th>
 ));
 
 // Memoized table header component
@@ -56,17 +56,17 @@ const TableHeader = memo(({ dates }) => (
       {dates.map(date => (
         <HeaderCell key={date}>{formatDate(date)}</HeaderCell>
       ))}
-    </tr>
-  </thead>
+            </tr>
+          </thead>
 ));
 
 // Memoized district header component
 const DistrictHeader = memo(({ district, colSpan }) => (
-  <tr>
-    <td
+                <tr>
+                  <td
       colSpan={colSpan}
       className="fw-bold position-sticky start-0"
-      style={{
+                    style={{ 
         padding: '0.75rem 1rem',
         fontSize: '1.1rem',
         zIndex: 1,
@@ -76,8 +76,8 @@ const DistrictHeader = memo(({ district, colSpan }) => (
       }}
     >
       {district}
-    </td>
-  </tr>
+                  </td>
+                </tr>
 ));
 
 // Memoized data input cell component
@@ -99,9 +99,9 @@ const DataInputCell = memo(({ value, onChange, isEditMode }) => {
           min={0}
           max={150}
           className="form-control text-center fw-medium mx-auto"
-          style={{ 
+                style={{ 
             width: '100px',
-            backgroundColor: '#ffffff',
+                  backgroundColor: '#ffffff',
             border: '1px solid #ced4da',
             color: '#000000',
             fontSize: '1rem',
@@ -115,7 +115,7 @@ const DataInputCell = memo(({ value, onChange, isEditMode }) => {
       ) : (
         <span className="fw-medium">{value === null ? '-' : value}</span>
       )}
-    </td>
+                  </td>
   );
 });
 
@@ -132,7 +132,7 @@ const StatusCell = memo(({ value }) => {
       style={{ height: '45px', minWidth: '180px' }}
     >
       {isActive ? 'ACTIVE' : 'INACTIVE'}
-    </td>
+                  </td>
   );
 });
 
@@ -149,7 +149,7 @@ const MunicipalityRow = memo(({
   <tr>
     <td 
       className="position-sticky start-0 bg-white fw-medium border-end"
-      style={{ 
+                      style={{ 
         zIndex: 1,
         padding: '0.75rem 1rem',
         height: '45px',
@@ -157,7 +157,7 @@ const MunicipalityRow = memo(({
       }}
     >
       {municipality}
-    </td>
+                    </td>
     {dates.map(date => {
       const value = reportsData[date]?.[district]?.[municipality];
       return isStatus ? (
@@ -171,7 +171,7 @@ const MunicipalityRow = memo(({
         />
       );
     })}
-  </tr>
+                  </tr>
 ));
 
 // Memoized district section component
@@ -229,10 +229,10 @@ const ReportTable = memo(({
             onInputChange={onInputChange}
             isEditMode={isEditMode}
           />
-        ))}
-      </tbody>
-    </Table>
-  </div>
+            ))}
+          </tbody>
+        </Table>
+      </div>
 ));
 
 // Memoized year/month selector component
@@ -289,10 +289,9 @@ const IPatroller = () => {
 
   const queryClient = useQueryClient();
 
-  // Generate year options
+  // Generate year options (2025-2027)
   const years = useMemo(() => {
-    const currentYear = new Date().getFullYear();
-    return [currentYear, currentYear + 1, currentYear + 2];
+    return [2025, 2026, 2027];
   }, []);
 
   // Generate month options
@@ -302,6 +301,16 @@ const IPatroller = () => {
       label: new Date(2000, i, 1).toLocaleString('default', { month: 'long' })
     }));
   }, []);
+
+  // Get the date range for the selected month
+  const dateRange = useMemo(() => {
+    const startDate = new Date(selectedYear, selectedMonth - 1, 1);
+    const endDate = new Date(selectedYear, selectedMonth, 0);
+    return {
+      start: startDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+      end: endDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+    };
+  }, [selectedYear, selectedMonth]);
 
   // Fetch data with optimized caching
   const { data: reportsData, error, refetch } = useQuery({
@@ -471,9 +480,14 @@ const IPatroller = () => {
       </ToastContainer>
 
       <div className="d-flex justify-content-between align-items-start mb-4">
-        <h4 className="text-primary border-bottom border-primary pb-2 d-inline-block">
-          IPatroller Reports
-        </h4>
+        <div>
+          <h4 className="text-primary border-bottom border-primary pb-2 d-inline-block">
+            IPatroller Reports
+          </h4>
+          <p className="text-muted mt-2">
+            Showing data for: {dateRange.start} - {dateRange.end}
+          </p>
+        </div>
         {activeTab === 'daily' && (
           <div className="d-flex gap-2">
             {isEditMode ? (
@@ -508,31 +522,31 @@ const IPatroller = () => {
       />
 
       <Nav variant="tabs" className="mb-3 border-bottom border-primary">
-        <Nav.Item>
-          <Nav.Link 
+              <Nav.Item>
+                <Nav.Link 
             active={activeTab === 'status'} 
             onClick={() => {
               setActiveTab('status');
               setIsEditMode(false);
             }}
-            className="px-4 py-2"
-          >
-            IPatroller Status
-          </Nav.Link>
-        </Nav.Item>
-        <Nav.Item>
-          <Nav.Link 
+                  className="px-4 py-2"
+                >
+                  IPatroller Status
+                </Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link 
             active={activeTab === 'daily'} 
             onClick={() => {
               setActiveTab('daily');
               setIsEditMode(false);
             }}
-            className="px-4 py-2"
-          >
+                  className="px-4 py-2"
+                >
             Daily Reports
-          </Nav.Link>
-        </Nav.Item>
-      </Nav>
+                </Nav.Link>
+              </Nav.Item>
+            </Nav>
 
       {activeTab === 'status' ? (
         <ReportTable
@@ -551,7 +565,7 @@ const IPatroller = () => {
             onInputChange={handleInputChange}
             isEditMode={isEditMode}
           />
-        </div>
+            </div>
       )}
 
       <style>
