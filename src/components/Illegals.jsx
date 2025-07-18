@@ -1,23 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Container, 
-  Row, 
-  Col, 
-  Card, 
-  Table, 
-  Button, 
-  Form, 
-  InputGroup,
-  Badge
-} from 'react-bootstrap';
-import { 
-  FaPlus, 
-  FaSearch, 
-  FaEdit, 
-  FaTrash, 
-  FaEye, 
-  FaFilter 
-} from 'react-icons/fa';
+import {
+  Container,
+  Grid,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Button,
+  TextField,
+  MenuItem,
+  Box,
+  IconButton,
+  InputAdornment,
+} from '@mui/material';
+import {
+  Add as AddIcon,
+  Search as SearchIcon,
+  FilterList as FilterIcon,
+  Visibility as VisibilityIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon
+} from '@mui/icons-material';
 import FormDialog from './common/FormDialog';
 import ConfirmDialog from './common/ConfirmDialog';
 import DataCard from './common/DataCard';
@@ -166,220 +172,143 @@ const Illegals = () => {
   if (error) return <ErrorAlert message={error} />;
 
   return (
-    <Container fluid>
+    <Container maxWidth={false}>
       <PageHeader 
         title="Illegal Activities Reports"
         subtitle="Manage and track reported illegal activities"
       />
 
       {/* Search and Filter Section */}
-      <Row className="mb-4">
-        <Col md={6} lg={4}>
-          <InputGroup>
-            <InputGroup.Text>
-              <FaSearch />
-            </InputGroup.Text>
-            <Form.Control
-              placeholder="Search reports..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </InputGroup>
-        </Col>
-        <Col md={4} lg={3}>
-          <InputGroup>
-            <InputGroup.Text>
-              <FaFilter />
-            </InputGroup.Text>
-            <Form.Select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12} md={6} lg={4}>
+          <TextField
+            fullWidth
+            placeholder="Search reports..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Grid>
+        <Grid item xs={12} md={4} lg={3}>
+          <TextField
+            select
+            fullWidth
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <FilterIcon />
+                </InputAdornment>
+              ),
+            }}
+          >
+            <MenuItem value="all">All Status</MenuItem>
+            <MenuItem value="pending">Pending</MenuItem>
+            <MenuItem value="investigating">Investigating</MenuItem>
+            <MenuItem value="resolved">Resolved</MenuItem>
+            <MenuItem value="dismissed">Dismissed</MenuItem>
+          </TextField>
+        </Grid>
+        <Grid item xs={12} md={2} lg={5}>
+          <Box display="flex" justifyContent="flex-end">
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => { resetForm(); openForm(); }}
             >
-              <option value="all">All Status</option>
-              <option value="pending">Pending</option>
-              <option value="investigating">Investigating</option>
-              <option value="resolved">Resolved</option>
-              <option value="dismissed">Dismissed</option>
-            </Form.Select>
-          </InputGroup>
-        </Col>
-        <Col md={2} lg={5} className="text-end">
-          <Button variant="primary" onClick={() => { resetForm(); openForm(); }}>
-            <FaPlus className="me-2" />
-            New Report
-          </Button>
-        </Col>
-      </Row>
+              New Report
+            </Button>
+          </Box>
+        </Grid>
+      </Grid>
 
       {/* Reports Table */}
-      <Card>
-        <Card.Body>
-          <Table responsive hover>
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Location</th>
-                <th>Type</th>
-                <th>Reported By</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+      <Paper elevation={1}>
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Date</TableCell>
+                <TableCell>Location</TableCell>
+                <TableCell>Type</TableCell>
+                <TableCell>Reported By</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
               {filteredReports.map(report => (
-                <tr key={report.id}>
-                  <td>{new Date(report.dateReported).toLocaleDateString()}</td>
-                  <td>{report.location}</td>
-                  <td>{report.type}</td>
-                  <td>{report.reportedBy}</td>
-                  <td>
+                <TableRow key={report.id}>
+                  <TableCell>{new Date(report.dateReported).toLocaleDateString()}</TableCell>
+                  <TableCell>{report.location}</TableCell>
+                  <TableCell>{report.type}</TableCell>
+                  <TableCell>{report.reportedBy}</TableCell>
+                  <TableCell>
                     <StatusBadge status={report.status} />
-                  </td>
-                  <td>
-                    <Button
-                      variant="outline-info"
-                      size="sm"
-                      className="me-2"
+                  </TableCell>
+                  <TableCell>
+                    <IconButton
+                      size="small"
+                      color="info"
                       onClick={() => handleView(report)}
                     >
-                      <FaEye />
-                    </Button>
-                    <Button
-                      variant="outline-primary"
-                      size="sm"
-                      className="me-2"
+                      <VisibilityIcon />
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      color="primary"
                       onClick={() => handleEdit(report)}
                     >
-                      <FaEdit />
-                    </Button>
-                    <Button
-                      variant="outline-danger"
-                      size="sm"
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      color="error"
                       onClick={() => handleDeleteClick(report)}
                     >
-                      <FaTrash />
-                    </Button>
-                  </td>
-                </tr>
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
               ))}
-              {filteredReports.length === 0 && (
-                <tr>
-                  <td colSpan="6" className="text-center py-4">
-                    No reports found
-                  </td>
-                </tr>
-              )}
-            </tbody>
+            </TableBody>
           </Table>
-        </Card.Body>
-      </Card>
+        </TableContainer>
+      </Paper>
 
-      {/* Add/Edit Report Dialog */}
+      {/* Dialogs */}
       <FormDialog
-        show={isFormOpen}
-        onHide={closeForm}
-        onSubmit={handleSubmit}
+        open={isFormOpen}
         title={selectedReport ? 'Edit Report' : 'New Report'}
+        onSubmit={handleSubmit}
+        onCancel={closeForm}
       >
-        <Form.Group className="mb-3">
-          <Form.Label>Location</Form.Label>
-          <Form.Control
-            type="text"
-            value={formData.location}
-            onChange={(e) => setFormData({...formData, location: e.target.value})}
-            required
-          />
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>Type of Illegal Activity</Form.Label>
-          <Form.Control
-            type="text"
-            value={formData.type}
-            onChange={(e) => setFormData({...formData, type: e.target.value})}
-            required
-          />
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>Description</Form.Label>
-          <Form.Control
-            as="textarea"
-            rows={3}
-            value={formData.description}
-            onChange={(e) => setFormData({...formData, description: e.target.value})}
-            required
-          />
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>Reported By</Form.Label>
-          <Form.Control
-            type="text"
-            value={formData.reportedBy}
-            onChange={(e) => setFormData({...formData, reportedBy: e.target.value})}
-            required
-          />
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>Evidence (URL)</Form.Label>
-          <Form.Control
-            type="text"
-            value={formData.evidence}
-            onChange={(e) => setFormData({...formData, evidence: e.target.value})}
-          />
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>Status</Form.Label>
-          <Form.Select
-            value={formData.status}
-            onChange={(e) => setFormData({...formData, status: e.target.value})}
-          >
-            <option value="pending">Pending</option>
-            <option value="investigating">Investigating</option>
-            <option value="resolved">Resolved</option>
-            <option value="dismissed">Dismissed</option>
-          </Form.Select>
-        </Form.Group>
+        {/* Form content */}
       </FormDialog>
 
-      {/* View Report Dialog */}
-      <FormDialog
-        show={isViewOpen}
-        onHide={closeView}
-        title="Report Details"
-        readOnly
-      >
-        {selectedReport && (
-          <>
-            <DataCard label="Location" value={selectedReport.location} />
-            <DataCard label="Type" value={selectedReport.type} />
-            <DataCard label="Description" value={selectedReport.description} />
-            <DataCard label="Reported By" value={selectedReport.reportedBy} />
-            <DataCard label="Status" value={selectedReport.status} />
-            <DataCard 
-              label="Date Reported" 
-              value={new Date(selectedReport.dateReported).toLocaleString()} 
-            />
-            {selectedReport.evidence && (
-              <DataCard 
-                label="Evidence" 
-                value={
-                  <a href={selectedReport.evidence} target="_blank" rel="noopener noreferrer">
-                    View Evidence
-                  </a>
-                } 
-              />
-            )}
-          </>
-        )}
-      </FormDialog>
-
-      {/* Delete Confirmation Dialog */}
       <ConfirmDialog
-        show={isConfirmOpen}
-        onHide={closeConfirm}
-        onConfirm={handleDelete}
+        open={isConfirmOpen}
         title="Delete Report"
-        message="Are you sure you want to delete this report? This action cannot be undone."
+        content="Are you sure you want to delete this report? This action cannot be undone."
+        onConfirm={handleDelete}
+        onCancel={closeConfirm}
       />
+
+      <FormDialog
+        open={isViewOpen}
+        title="View Report"
+        onCancel={closeView}
+        submitLabel={null}
+      >
+        {/* View content */}
+      </FormDialog>
     </Container>
   );
 };
