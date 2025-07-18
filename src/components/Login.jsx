@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Container, Form, Button, Image } from 'react-bootstrap';
+import authService from '../services/authService';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -17,14 +18,21 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      // Add your login logic here
-      console.log('Login attempt:', credentials);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Attempt to login
+      const user = await authService.login(credentials.username, credentials.password);
+      
+      // Check if email is verified
+      if (!user.emailVerified) {
+        setError('Please verify your email before logging in.');
+        return;
+      }
+
+      // Successful login
+      console.log('Login successful:', user);
       navigate('/dashboard');
     } catch (error) {
       console.error('Login error:', error);
-      setError('Login failed. Please check your credentials.');
+      setError(error.message || 'Invalid username or password');
     } finally {
       setIsLoading(false);
     }
@@ -36,6 +44,21 @@ const Login = () => {
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleForgotPassword = async () => {
+    if (!credentials.username) {
+      setError('Please enter your username to reset password');
+      return;
+    }
+
+    try {
+      await authService.sendPasswordReset(credentials.username);
+      alert('Password reset email sent. Please check your inbox.');
+    } catch (error) {
+      console.error('Password reset error:', error);
+      setError('Failed to send password reset email');
+    }
   };
 
   return (
@@ -90,6 +113,17 @@ const Login = () => {
               style={{ padding: '0.75rem' }}
             />
           </Form.Group>
+
+          <div className="mb-3 text-end">
+            <Button
+              variant="link"
+              onClick={handleForgotPassword}
+              className="p-0"
+              style={{ color: '#0066ff', textDecoration: 'none', fontSize: '0.9rem' }}
+            >
+              Forgot Password?
+            </Button>
+          </div>
 
           <Button 
             type="submit" 
