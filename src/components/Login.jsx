@@ -103,7 +103,6 @@ const Login = () => {
           </Form.Group>
 
           <div className="mb-3">
-            <label className="d-block mb-2">Security Check</label>
             <div className="border p-2 mb-2 bg-light text-center">
               <span style={{ 
                 fontFamily: 'monospace',
@@ -134,7 +133,7 @@ const Login = () => {
             </div>
             <div className="mt-1">
               <small>
-                <a href="#" onClick={(e) => { e.preventDefault(); refreshCaptcha(); }}>
+                <a href="#" onClick={(e) => { e.preventDefault(); refreshCaptcha(); }} style={{ color: '#0066cc', textDecoration: 'none' }}>
                   Can't read this? Try Another
                 </a>
               </small>
@@ -144,6 +143,7 @@ const Login = () => {
           <Button 
             type="submit" 
             className="w-100 py-2" 
+            variant="primary"
             disabled={isLoading}
           >
             {isLoading ? 'Signing in...' : 'Sign In'}
