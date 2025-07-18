@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Container,
   Grid,
@@ -33,9 +34,20 @@ import ErrorAlert from './common/ErrorAlert';
 import PageHeader from './common/PageHeader';
 import { useToast } from '../hooks/useToast';
 import { useDialog } from '../hooks/useDialog';
+import { useAuth } from '../context/AuthContext';
 import { getIllegalReports, addIllegalReport, updateIllegalReport, deleteIllegalReport } from '../services/illegalService';
 
 const Illegals = () => {
+  const navigate = useNavigate();
+  const { currentUser } = useAuth();
+  
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!currentUser) {
+      navigate('/login');
+    }
+  }, [currentUser, navigate]);
+
   // State management
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -75,18 +87,26 @@ const Illegals = () => {
 
   // Fetch reports on component mount
   useEffect(() => {
-    fetchReports();
-  }, []);
+    if (currentUser) {
+      fetchReports();
+    }
+  }, [currentUser]);
 
   const fetchReports = async () => {
     try {
       setLoading(true);
       const data = await getIllegalReports();
-      setReports(data);
-      setError(null);
+      if (data) {
+        setReports(data);
+        setError(null);
+      }
     } catch (err) {
-      setError('Failed to fetch illegal reports');
-      showToast('error', 'Failed to fetch reports');
+      if (err.message === 'UNAUTHENTICATED') {
+        navigate('/login');
+      } else {
+        setError('Failed to fetch illegal reports');
+        showToast('error', 'Failed to fetch reports');
+      }
     } finally {
       setLoading(false);
     }
@@ -168,6 +188,7 @@ const Illegals = () => {
     openConfirm();
   };
 
+  if (!currentUser) return null;
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorAlert message={error} />;
 
