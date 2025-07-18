@@ -4,6 +4,7 @@ import {
   Container,
   Row,
   Col,
+  Card,
   Form,
   Button,
   Alert,
@@ -69,241 +70,243 @@ const Signup = () => {
   }
 
   return (
-    <div className="min-vh-100 d-flex">
-      {/* Left Side - Image */}
-      <div className="d-none d-lg-flex col-lg-6 bg-primary position-relative">
-        <div className="position-absolute top-50 start-50 translate-middle text-white text-center w-75">
-          <i className="bi bi-shield-check display-1 mb-4"></i>
-          <h1 className="display-4 fw-bold mb-4">Join IPatroller</h1>
-          <p className="lead mb-4">
-            Be part of our mission to create safer communities through effective patrolling
-          </p>
-          <div className="d-flex justify-content-center gap-3">
-            <div className="text-center">
-              <i className="bi bi-person-badge display-6 mb-2"></i>
-              <p>Professional Profile</p>
+    <div className="min-vh-100 bg-light py-5">
+      <Container>
+        {/* Header */}
+        <Row className="justify-content-center text-center mb-5">
+          <Col md={6}>
+            <div className="d-inline-block p-3 bg-primary bg-opacity-10 rounded-circle mb-3">
+              <i className="bi bi-shield-check text-primary" style={{ fontSize: '3rem' }}></i>
             </div>
-            <div className="text-center">
-              <i className="bi bi-clock-history display-6 mb-2"></i>
-              <p>Flexible Scheduling</p>
-            </div>
-            <div className="text-center">
-              <i className="bi bi-graph-up display-6 mb-2"></i>
-              <p>Performance Tracking</p>
-            </div>
-          </div>
-        </div>
-      </div>
+            <h1 className="display-6 fw-bold text-primary mb-2">Join IPatroller</h1>
+            <p className="text-muted lead">Create your account and start patrolling today</p>
+          </Col>
+        </Row>
 
-      {/* Right Side - Signup Form */}
-      <div className="col-12 col-lg-6 d-flex align-items-center py-5">
-        <Container>
-          <Row className="justify-content-center">
-            <Col xs={11} sm={8} md={6} lg={8} xl={6}>
-              {/* Mobile Logo */}
-              <div className="text-center d-lg-none mb-5">
-                <i className="bi bi-shield-check text-primary display-1"></i>
-                <h1 className="h3 text-primary mb-4">Join IPatroller</h1>
-              </div>
+        {/* Signup Card */}
+        <Row className="justify-content-center">
+          <Col xs={11} sm={9} md={7} lg={5} xl={4}>
+            <Card className="border-0 shadow-sm">
+              <Card.Body className="p-4">
+                <h2 className="h4 text-center mb-4">Create Your Account</h2>
 
-              <h2 className="fw-bold mb-4">Create Your Account</h2>
-              <p className="text-muted mb-4">Fill in your details to get started</p>
+                {error && (
+                  <Alert variant="danger" className="mb-4">
+                    {error}
+                  </Alert>
+                )}
 
-              {error && (
-                <Alert variant="danger" className="mb-4">
-                  {error}
-                </Alert>
-              )}
-
-              <Form onSubmit={handleSubmit}>
-                <Row className="mb-4">
-                  <Col md={6}>
-                    <Form.Group>
-                      <Form.Label>First Name</Form.Label>
-                      <InputGroup>
-                        <InputGroup.Text className="bg-light">
-                          <i className="bi bi-person text-primary"></i>
-                        </InputGroup.Text>
+                <Form onSubmit={handleSubmit}>
+                  <Row className="mb-3">
+                    <Col sm={6}>
+                      <Form.Group>
+                        <Form.Label className="small fw-medium">First Name</Form.Label>
+                        <InputGroup>
+                          <InputGroup.Text className="bg-light border-end-0">
+                            <i className="bi bi-person text-muted"></i>
+                          </InputGroup.Text>
+                          <Form.Control
+                            type="text"
+                            name="firstName"
+                            value={values.firstName}
+                            onChange={handleChange}
+                            placeholder="First name"
+                            className="border-start-0 ps-0"
+                            required
+                          />
+                        </InputGroup>
+                      </Form.Group>
+                    </Col>
+                    <Col sm={6}>
+                      <Form.Group>
+                        <Form.Label className="small fw-medium">Last Name</Form.Label>
                         <Form.Control
                           type="text"
-                          name="firstName"
-                          value={values.firstName}
+                          name="lastName"
+                          value={values.lastName}
                           onChange={handleChange}
-                          placeholder="First name"
-                          className="py-2"
+                          placeholder="Last name"
                           required
                         />
-                      </InputGroup>
-                    </Form.Group>
-                  </Col>
-                  <Col md={6}>
-                    <Form.Group>
-                      <Form.Label>Last Name</Form.Label>
+                      </Form.Group>
+                    </Col>
+                  </Row>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label className="small fw-medium">Email Address</Form.Label>
+                    <InputGroup>
+                      <InputGroup.Text className="bg-light border-end-0">
+                        <i className="bi bi-envelope text-muted"></i>
+                      </InputGroup.Text>
                       <Form.Control
-                        type="text"
-                        name="lastName"
-                        value={values.lastName}
+                        type="email"
+                        name="email"
+                        value={values.email}
                         onChange={handleChange}
-                        placeholder="Last name"
-                        className="py-2"
+                        placeholder="Enter your email"
+                        className="border-start-0 ps-0"
                         required
                       />
-                    </Form.Group>
-                  </Col>
-                </Row>
+                    </InputGroup>
+                  </Form.Group>
 
-                <Form.Group className="mb-4">
-                  <Form.Label>Email Address</Form.Label>
-                  <InputGroup>
-                    <InputGroup.Text className="bg-light">
-                      <i className="bi bi-envelope text-primary"></i>
-                    </InputGroup.Text>
-                    <Form.Control
-                      type="email"
-                      name="email"
-                      value={values.email}
-                      onChange={handleChange}
-                      placeholder="Enter your email"
-                      className="py-2"
+                  <Form.Group className="mb-3">
+                    <Form.Label className="small fw-medium">Phone Number</Form.Label>
+                    <InputGroup>
+                      <InputGroup.Text className="bg-light border-end-0">
+                        <i className="bi bi-phone text-muted"></i>
+                      </InputGroup.Text>
+                      <Form.Control
+                        type="tel"
+                        name="phoneNumber"
+                        value={values.phoneNumber}
+                        onChange={handleChange}
+                        placeholder="Enter phone number"
+                        className="border-start-0 ps-0"
+                        required
+                      />
+                    </InputGroup>
+                  </Form.Group>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label className="small fw-medium">Password</Form.Label>
+                    <InputGroup>
+                      <InputGroup.Text className="bg-light border-end-0">
+                        <i className="bi bi-lock text-muted"></i>
+                      </InputGroup.Text>
+                      <Form.Control
+                        type={showPassword ? "text" : "password"}
+                        name="password"
+                        value={values.password}
+                        onChange={handleChange}
+                        placeholder="Create password"
+                        className="border-start-0 border-end-0 ps-0"
+                        required
+                      />
+                      <Button
+                        variant="light"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="border border-start-0"
+                      >
+                        <i className={`bi bi-eye${showPassword ? '-slash' : ''} text-muted`}></i>
+                      </Button>
+                    </InputGroup>
+                    <Form.Text className="text-muted small">
+                      Must be at least 6 characters long
+                    </Form.Text>
+                  </Form.Group>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label className="small fw-medium">Confirm Password</Form.Label>
+                    <InputGroup>
+                      <InputGroup.Text className="bg-light border-end-0">
+                        <i className="bi bi-lock-fill text-muted"></i>
+                      </InputGroup.Text>
+                      <Form.Control
+                        type={showConfirmPassword ? "text" : "password"}
+                        name="confirmPassword"
+                        value={values.confirmPassword}
+                        onChange={handleChange}
+                        placeholder="Confirm password"
+                        className="border-start-0 border-end-0 ps-0"
+                        required
+                      />
+                      <Button
+                        variant="light"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="border border-start-0"
+                      >
+                        <i className={`bi bi-eye${showConfirmPassword ? '-slash' : ''} text-muted`}></i>
+                      </Button>
+                    </InputGroup>
+                  </Form.Group>
+
+                  <Form.Group className="mb-4">
+                    <Form.Label className="small fw-medium">Role</Form.Label>
+                    <InputGroup>
+                      <InputGroup.Text className="bg-light border-end-0">
+                        <i className="bi bi-person-badge text-muted"></i>
+                      </InputGroup.Text>
+                      <Form.Select
+                        name="role"
+                        value={values.role}
+                        onChange={handleChange}
+                        className="border-start-0 ps-0"
+                        required
+                      >
+                        <option value="patroller">Patroller</option>
+                        <option value="supervisor">Supervisor</option>
+                        <option value="admin">Administrator</option>
+                      </Form.Select>
+                    </InputGroup>
+                  </Form.Group>
+
+                  <Form.Group className="mb-4">
+                    <Form.Check
+                      type="checkbox"
+                      id="terms"
                       required
+                      label={
+                        <span className="small">
+                          I agree to the{' '}
+                          <a href="#" className="text-decoration-none">Terms of Service</a>
+                          {' '}and{' '}
+                          <a href="#" className="text-decoration-none">Privacy Policy</a>
+                        </span>
+                      }
                     />
-                  </InputGroup>
-                </Form.Group>
+                  </Form.Group>
 
-                <Form.Group className="mb-4">
-                  <Form.Label>Phone Number</Form.Label>
-                  <InputGroup>
-                    <InputGroup.Text className="bg-light">
-                      <i className="bi bi-phone text-primary"></i>
-                    </InputGroup.Text>
-                    <Form.Control
-                      type="tel"
-                      name="phoneNumber"
-                      value={values.phoneNumber}
-                      onChange={handleChange}
-                      placeholder="Enter phone number"
-                      className="py-2"
-                      required
-                    />
-                  </InputGroup>
-                </Form.Group>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    className="w-100 mb-3 py-2"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2" />
+                        Creating Account...
+                      </>
+                    ) : (
+                      'Create Account'
+                    )}
+                  </Button>
 
-                <Form.Group className="mb-4">
-                  <Form.Label>Password</Form.Label>
-                  <InputGroup>
-                    <InputGroup.Text className="bg-light">
-                      <i className="bi bi-lock text-primary"></i>
-                    </InputGroup.Text>
-                    <Form.Control
-                      type={showPassword ? "text" : "password"}
-                      name="password"
-                      value={values.password}
-                      onChange={handleChange}
-                      placeholder="Create password"
-                      className="py-2"
-                      required
-                    />
-                    <Button
-                      variant="light"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="border"
-                    >
-                      <i className={`bi bi-eye${showPassword ? '-slash' : ''}`}></i>
-                    </Button>
-                  </InputGroup>
-                  <Form.Text className="text-muted">
-                    Must be at least 6 characters long
-                  </Form.Text>
-                </Form.Group>
+                  <p className="text-center text-muted small mb-4">
+                    Already have an account?{' '}
+                    <Link to="/login" className="text-primary text-decoration-none">
+                      Sign In
+                    </Link>
+                  </p>
 
-                <Form.Group className="mb-4">
-                  <Form.Label>Confirm Password</Form.Label>
-                  <InputGroup>
-                    <InputGroup.Text className="bg-light">
-                      <i className="bi bi-lock-fill text-primary"></i>
-                    </InputGroup.Text>
-                    <Form.Control
-                      type={showConfirmPassword ? "text" : "password"}
-                      name="confirmPassword"
-                      value={values.confirmPassword}
-                      onChange={handleChange}
-                      placeholder="Confirm password"
-                      className="py-2"
-                      required
-                    />
-                    <Button
-                      variant="light"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="border"
-                    >
-                      <i className={`bi bi-eye${showConfirmPassword ? '-slash' : ''}`}></i>
-                    </Button>
-                  </InputGroup>
-                </Form.Group>
+                  <div className="position-relative mb-4">
+                    <hr />
+                    <span className="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted small">
+                      or sign up with
+                    </span>
+                  </div>
 
-                <Form.Group className="mb-4">
-                  <Form.Label>Role</Form.Label>
-                  <InputGroup>
-                    <InputGroup.Text className="bg-light">
-                      <i className="bi bi-person-badge text-primary"></i>
-                    </InputGroup.Text>
-                    <Form.Select
-                      name="role"
-                      value={values.role}
-                      onChange={handleChange}
-                      className="py-2"
-                      required
-                    >
-                      <option value="patroller">Patroller</option>
-                      <option value="supervisor">Supervisor</option>
-                      <option value="admin">Administrator</option>
-                    </Form.Select>
-                  </InputGroup>
-                </Form.Group>
-
-                <Form.Group className="mb-4">
-                  <Form.Check
-                    type="checkbox"
-                    id="terms"
-                    required
-                    label={
-                      <span className="text-muted">
-                        I agree to the{' '}
-                        <a href="#" className="text-decoration-none">Terms of Service</a>
-                        {' '}and{' '}
-                        <a href="#" className="text-decoration-none">Privacy Policy</a>
-                      </span>
-                    }
-                  />
-                </Form.Group>
-
-                <Button
-                  type="submit"
-                  variant="primary"
-                  className="w-100 py-2 mb-4"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <>
-                      <span className="spinner-border spinner-border-sm me-2" />
-                      Creating Account...
-                    </>
-                  ) : (
-                    'Create Account'
-                  )}
-                </Button>
-
-                <p className="text-center text-muted">
-                  Already have an account?{' '}
-                  <Link to="/login" className="text-primary text-decoration-none fw-semibold">
-                    Sign In
-                  </Link>
-                </p>
-              </Form>
-            </Col>
-          </Row>
-        </Container>
-      </div>
+                  <Row className="g-3">
+                    <Col xs={6}>
+                      <Button variant="outline-secondary" className="w-100">
+                        <i className="bi bi-google me-2"></i>
+                        Google
+                      </Button>
+                    </Col>
+                    <Col xs={6}>
+                      <Button variant="outline-secondary" className="w-100">
+                        <i className="bi bi-facebook me-2"></i>
+                        Facebook
+                      </Button>
+                    </Col>
+                  </Row>
+                </Form>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
     </div>
   );
 };
