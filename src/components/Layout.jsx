@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Container, Button } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
@@ -20,17 +20,45 @@ const Layout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isNavigating, setIsNavigating] = useState(false);
 
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 992) {
+        setIsSidebarOpen(true);
+      } else {
+        setIsSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Initial check
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Debounced navigation handler
   const handleNavigation = useCallback((path) => {
+    if (isNavigating || path === location.pathname) return;
+
+    setIsNavigating(true);
     navigate(path);
+
     if (window.innerWidth < 992) {
       setIsSidebarOpen(false);
     }
-  }, [navigate]);
+
+    // Reset navigation throttle after 300ms
+    setTimeout(() => {
+      setIsNavigating(false);
+    }, 300);
+  }, [navigate, location.pathname, isNavigating]);
 
   const handleLogout = async () => {
     try {
       await logout();
+      navigate('/login');
     } catch (error) {
       console.error('Logout error:', error);
     }
@@ -55,17 +83,19 @@ const Layout = () => {
       <button 
         className="sidebar-toggle"
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+        aria-label={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
       >
         {isSidebarOpen ? <FaTimes /> : <FaBars />}
       </button>
 
       {/* Sidebar */}
-      <div className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
+      <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
           <img 
             src="/src/assets/bataan-logo.png" 
             alt="Bataan Logo" 
             className="sidebar-logo"
+            loading="lazy"
           />
           <h1 className="sidebar-title">IPatroller System</h1>
         </div>
@@ -76,6 +106,8 @@ const Layout = () => {
               key={item.path}
               className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
               onClick={() => handleNavigation(item.path)}
+              disabled={isNavigating}
+              aria-current={location.pathname === item.path ? 'page' : undefined}
             >
               <span className="nav-icon">{item.icon}</span>
               <span className="nav-label">{item.label}</span>
@@ -93,7 +125,7 @@ const Layout = () => {
             Logout
           </Button>
         </div>
-      </div>
+      </aside>
 
       {/* Main Content */}
       <main className={`main-content ${isSidebarOpen ? 'shifted' : ''}`}>
@@ -107,6 +139,7 @@ const Layout = () => {
         <div
           className="mobile-backdrop"
           onClick={() => setIsSidebarOpen(false)}
+          aria-hidden="true"
         />
       )}
     </div>
