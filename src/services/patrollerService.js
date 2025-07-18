@@ -1,7 +1,14 @@
 import { db } from '../api/firebase';
 import { collection, doc, getDoc, setDoc, updateDoc, query, where, getDocs } from 'firebase/firestore';
 
-// Define fixed data structure
+// Define fixed data structure with arrays for proper iteration
+const DISTRICTS = {
+  '1ST DISTRICT': ['ABUCAY', 'HERMOSA', 'ORANI', 'SAMAL'],
+  '2ND DISTRICT': ['BALANGA', 'ORION', 'LIMAY', 'PILAR'],
+  '3RD DISTRICT': ['BAGAC', 'DINALUPIHAN', 'MARIVELES', 'MORONG']
+};
+
+// Initialize data structure
 const INITIAL_DATA = {
   '1ST DISTRICT': {
     'ABUCAY': null,
@@ -133,7 +140,7 @@ class PatrollerService {
       // Calculate statistics from all dates
       dates.forEach(date => {
         const reportData = reports[date];
-        Object.entries(INITIAL_DATA).forEach(([district, municipalities]) => {
+        Object.entries(DISTRICTS).forEach(([district, municipalities]) => {
           municipalities.forEach(municipality => {
             const value = reportData?.[district]?.[municipality];
             if (value !== null && value !== undefined) {
@@ -177,7 +184,7 @@ class PatrollerService {
   }
 
   // Get report for a specific date
-  async getDailyReport(date) {
+  async getDailyReport(date, district, municipality) {
     try {
       const formattedDate = this.formatDate(new Date(date));
       const reportRef = doc(db, this.reportsCollection, `${formattedDate}_${district}_${municipality}`.replace(/\s+/g, '_'));
@@ -206,7 +213,7 @@ class PatrollerService {
           throw new Error('Invalid date format. Expected YYYY-MM-DD');
         }
 
-        if (!INITIAL_DATA[district]?.[municipality]) {
+        if (!DISTRICTS[district]?.includes(municipality)) {
           throw new Error(`Invalid district or municipality: ${district} - ${municipality}`);
         }
 
