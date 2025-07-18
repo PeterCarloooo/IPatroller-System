@@ -1,367 +1,290 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { 
-  Container,
-  Grid,
-  Paper,
-  Typography,
-  Button,
-  TextField,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Box,
-  IconButton,
-  Tooltip,
-  Snackbar,
-} from '@mui/material';
+import React, { useState, useMemo } from 'react';
 import {
-  Add as AddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  PhotoCamera as PhotoCameraIcon,
-} from '@mui/icons-material';
-import LoadingSpinner from './common/LoadingSpinner';
-import ErrorAlert from './common/ErrorAlert';
-import StatusBadge from './common/StatusBadge';
-import illegalService from '../services/illegalService';
+  Container,
+  Table,
+  Button,
+  Form,
+  Row,
+  Col,
+  Card
+} from 'react-bootstrap';
+import { useQuery } from '@tanstack/react-query';
 
-const violationTypes = [
-  'Unauthorized Construction',
-  'Illegal Parking',
-  'Waste Disposal',
-  'Noise Violation',
-  'Other',
-];
-
-const initialFormState = {
-  type: '',
-    location: '',
-    description: '',
-  evidence: null,
-  status: 'pending',
+// Define fixed district and municipality order
+const DISTRICTS = {
+  '1ST DISTRICT': [
+    'ABUCAY',
+    'HERMOSA',
+    'ORANI',
+    'SAMAL'
+  ],
+  '2ND DISTRICT': [
+    'BALANGA',
+    'ORION',
+    'LIMAY',
+    'PILAR'
+  ],
+  '3RD DISTRICT': [
+    'BAGAC',
+    'DINALUPIHAN',
+    'MARIVELES',
+    'MORONG'
+  ]
 };
 
 const Illegals = () => {
-  const queryClient = useQueryClient();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [formData, setFormData] = useState(initialFormState);
-  const [formErrors, setFormErrors] = useState({});
-  const [editingId, setEditingId] = useState(null);
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [selectedDistrict, setSelectedDistrict] = useState('1ST DISTRICT');
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
-  // Fetch illegal reports with proper error handling
-  const { data: reports, isLoading, error, refetch } = useQuery({
-    queryKey: ['illegalReports'],
-    queryFn: () => illegalService.getIllegalReports(),
-    onError: (error) => {
-      console.error('Error fetching reports:', error);
-      return error;
-    }
-  });
+  // Generate year options (2025-2027)
+  const years = useMemo(() => {
+    return [2025, 2026, 2027];
+  }, []);
 
-  // Create mutation with proper binding
-  const createMutation = useMutation({
-    mutationFn: (data) => illegalService.createIllegalReport(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['illegalReports']);
-      handleCloseDialog();
-      setSnackbar({
-        open: true,
-        message: 'Report created successfully',
-        severity: 'success',
+  // Generate month options
+  const months = useMemo(() => {
+    return Array.from({ length: 12 }, (_, i) => ({
+      value: i + 1,
+      label: new Date(2000, i, 1).toLocaleString('default', { month: 'long' })
+    }));
+  }, []);
+
+  // Mock data for demonstration
+  const mockData = useMemo(() => {
+    const data = {};
+    Object.entries(DISTRICTS).forEach(([district, municipalities]) => {
+      data[district] = {};
+      municipalities.forEach(municipality => {
+        data[district][municipality] = {
+          totalViolations: Math.floor(Math.random() * 50),
+          resolved: Math.floor(Math.random() * 30),
+          pending: Math.floor(Math.random() * 20),
+          types: {
+            'No Permit': Math.floor(Math.random() * 10),
+            'Expired Permit': Math.floor(Math.random() * 10),
+            'Code Violation': Math.floor(Math.random() * 10),
+            'Safety Hazard': Math.floor(Math.random() * 10),
+            'Other': Math.floor(Math.random() * 10)
+          }
+        };
       });
-    },
-    onError: (error) => {
-      setSnackbar({
-        open: true,
-        message: error.message || 'Failed to create report',
-        severity: 'error',
+    });
+    return data;
+  }, []);
+
+  // Calculate totals for selected district
+  const districtTotals = useMemo(() => {
+    if (!mockData[selectedDistrict]) return null;
+
+    const totals = {
+      totalViolations: 0,
+      resolved: 0,
+      pending: 0,
+      types: {
+        'No Permit': 0,
+        'Expired Permit': 0,
+        'Code Violation': 0,
+        'Safety Hazard': 0,
+        'Other': 0
+      }
+    };
+
+    DISTRICTS[selectedDistrict].forEach(municipality => {
+      const data = mockData[selectedDistrict][municipality];
+      totals.totalViolations += data.totalViolations;
+      totals.resolved += data.resolved;
+      totals.pending += data.pending;
+      Object.entries(data.types).forEach(([type, count]) => {
+        totals.types[type] += count;
       });
-    },
-  });
+    });
 
-  // Update mutation with proper binding
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => illegalService.updateIllegalReport(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['illegalReports']);
-      handleCloseDialog();
-      setSnackbar({
-        open: true,
-        message: 'Report updated successfully',
-        severity: 'success',
-      });
-    },
-    onError: (error) => {
-      setSnackbar({
-        open: true,
-        message: error.message || 'Failed to update report',
-        severity: 'error',
-      });
-    },
-  });
-
-  // Delete mutation with proper binding
-  const deleteMutation = useMutation({
-    mutationFn: (id) => illegalService.deleteIllegalReport(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['illegalReports']);
-      setSnackbar({
-        open: true,
-        message: 'Report deleted successfully',
-        severity: 'success',
-      });
-    },
-    onError: (error) => {
-      setSnackbar({
-        open: true,
-        message: error.message || 'Failed to delete report',
-        severity: 'error',
-      });
-    },
-  });
-
-  const validateForm = () => {
-    const errors = {};
-    if (!formData.type) errors.type = 'Type is required';
-    if (!formData.location) errors.location = 'Location is required';
-    if (!formData.description) errors.description = 'Description is required';
-    if (formData.description && formData.description.length < 10) {
-      errors.description = 'Description must be at least 10 characters';
-    }
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-
-    if (editingId) {
-      await updateMutation.mutateAsync({ id: editingId, data: formData });
-    } else {
-      await createMutation.mutateAsync(formData);
-    }
-  };
-
-  const handleEdit = (report) => {
-    setEditingId(report.id);
-    setFormData(report);
-    setIsDialogOpen(true);
-  };
-
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this report?')) {
-      await deleteMutation.mutateAsync(id);
-    }
-  };
-
-  const handleCloseDialog = () => {
-    setIsDialogOpen(false);
-    setFormData(initialFormState);
-    setEditingId(null);
-    setFormErrors({});
-  };
-
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
+    return totals;
+  }, [selectedDistrict, mockData]);
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          Illegal Activities Reports
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Track and manage reported illegal activities in your area
-        </Typography>
-      </Box>
+    <Container fluid className="py-4">
+      <h4 className="text-primary border-bottom border-primary pb-2 mb-4">
+        Illegals Report
+      </h4>
 
-      <Box sx={{ mb: 3 }}>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => setIsDialogOpen(true)}
-        >
-          New Report
-        </Button>
-      </Box>
+      <Row className="mb-4 g-3">
+        <Col xs={12} sm={6} md={4}>
+          <Form.Group>
+            <Form.Label className="fw-medium">District</Form.Label>
+            <Form.Select
+              value={selectedDistrict}
+              onChange={(e) => setSelectedDistrict(e.target.value)}
+              className="fw-medium"
+            >
+              {Object.keys(DISTRICTS).map(district => (
+                <option key={district} value={district}>
+                  {district}
+                </option>
+              ))}
+            </Form.Select>
+          </Form.Group>
+        </Col>
+        <Col xs={12} sm={6} md={4}>
+          <Form.Group>
+            <Form.Label className="fw-medium">Month</Form.Label>
+            <Form.Select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(Number(e.target.value))}
+              className="fw-medium"
+            >
+              {months.map(month => (
+                <option key={month.value} value={month.value}>
+                  {month.label}
+                </option>
+              ))}
+            </Form.Select>
+          </Form.Group>
+        </Col>
+        <Col xs={12} sm={6} md={4}>
+          <Form.Group>
+            <Form.Label className="fw-medium">Year</Form.Label>
+            <Form.Select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(Number(e.target.value))}
+              className="fw-medium"
+            >
+              {years.map(year => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </Form.Select>
+          </Form.Group>
+        </Col>
+      </Row>
 
-      {error ? (
-        <ErrorAlert 
-          error={error}
-          title="Failed to load reports"
-          onRetry={refetch}
-        />
-      ) : isLoading ? (
-        <LoadingSpinner message="Loading reports..." />
-      ) : (
-        <Grid container spacing={3}>
-          {reports?.map((report) => (
-            <Grid item xs={12} sm={6} md={4} key={report.id}>
-              <Paper sx={{ p: 2 }}>
-                <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography variant="h6">{report.type}</Typography>
-                  <StatusBadge status={report.status} />
-                </Box>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  {report.location}
-                </Typography>
-                <Typography variant="body1" sx={{ mb: 2 }}>
-                  {report.description}
-                </Typography>
-                {report.evidence && (
-                  <Box sx={{ mb: 2 }}>
-                    <img 
-                      src={report.evidence} 
-                      alt="Evidence"
-                      style={{ width: '100%', borderRadius: 4 }}
-                    />
-                  </Box>
-                )}
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                  <IconButton
-                    size="small"
-                    onClick={() => handleEdit(report)}
-                    color="primary"
-                  >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    onClick={() => handleDelete(report.id)}
-                    color="error"
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Box>
-              </Paper>
-            </Grid>
-          ))}
-          {(!reports || reports.length === 0) && (
-            <Grid item xs={12}>
-              <Paper sx={{ p: 3, textAlign: 'center' }}>
-                <Typography variant="body1" color="text.secondary">
-                  No illegal activity reports found
-                </Typography>
-              </Paper>
-            </Grid>
-          )}
-        </Grid>
+      {/* District Summary Cards */}
+      {districtTotals && (
+        <Row className="mb-4 g-3">
+          <Col xs={12} sm={6} md={3}>
+            <Card className="h-100 border-0 shadow-sm">
+              <Card.Body>
+                <h6 className="text-muted mb-2">Total Violations</h6>
+                <h3 className="mb-0 text-primary">{districtTotals.totalViolations}</h3>
+              </Card.Body>
+            </Card>
+          </Col>
+          <Col xs={12} sm={6} md={3}>
+            <Card className="h-100 border-0 shadow-sm">
+              <Card.Body>
+                <h6 className="text-muted mb-2">Resolved</h6>
+                <h3 className="mb-0 text-success">{districtTotals.resolved}</h3>
+              </Card.Body>
+            </Card>
+          </Col>
+          <Col xs={12} sm={6} md={3}>
+            <Card className="h-100 border-0 shadow-sm">
+              <Card.Body>
+                <h6 className="text-muted mb-2">Pending</h6>
+                <h3 className="mb-0 text-warning">{districtTotals.pending}</h3>
+              </Card.Body>
+            </Card>
+          </Col>
+          <Col xs={12} sm={6} md={3}>
+            <Card className="h-100 border-0 shadow-sm">
+              <Card.Body>
+                <h6 className="text-muted mb-2">Resolution Rate</h6>
+                <h3 className="mb-0 text-info">
+                  {Math.round((districtTotals.resolved / districtTotals.totalViolations) * 100)}%
+                </h3>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
       )}
 
-      <Dialog 
-        open={isDialogOpen} 
-        onClose={handleCloseDialog}
-        maxWidth="sm"
-        fullWidth
-      >
-        <form onSubmit={handleSubmit}>
-        <DialogTitle>
-            {editingId ? 'Edit Report' : 'New Illegal Activity Report'}
-        </DialogTitle>
-        <DialogContent>
-            <FormControl fullWidth sx={{ mt: 2 }} error={!!formErrors.type}>
-                <InputLabel>Type of Violation</InputLabel>
-                <Select
-                  value={formData.type}
-                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                  label="Type of Violation"
-                >
-                {violationTypes.map((type) => (
-                  <MenuItem key={type} value={type}>{type}</MenuItem>
-                ))}
-                </Select>
-              {formErrors.type && (
-                <Typography color="error" variant="caption">
-                  {formErrors.type}
-                </Typography>
-              )}
-              </FormControl>
+      {/* Violations Table */}
+      <div className="table-responsive">
+        <Table bordered hover className="align-middle">
+          <thead className="bg-light">
+            <tr>
+              <th className="fw-medium">Municipality</th>
+              <th className="text-center fw-medium">Total Violations</th>
+              <th className="text-center fw-medium">No Permit</th>
+              <th className="text-center fw-medium">Expired Permit</th>
+              <th className="text-center fw-medium">Code Violation</th>
+              <th className="text-center fw-medium">Safety Hazard</th>
+              <th className="text-center fw-medium">Other</th>
+              <th className="text-center fw-medium">Resolved</th>
+              <th className="text-center fw-medium">Pending</th>
+              <th className="text-center fw-medium">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {DISTRICTS[selectedDistrict].map(municipality => {
+              const data = mockData[selectedDistrict][municipality];
+              return (
+                <tr key={municipality}>
+                  <td className="fw-medium">{municipality}</td>
+                  <td className="text-center">{data.totalViolations}</td>
+                  <td className="text-center">{data.types['No Permit']}</td>
+                  <td className="text-center">{data.types['Expired Permit']}</td>
+                  <td className="text-center">{data.types['Code Violation']}</td>
+                  <td className="text-center">{data.types['Safety Hazard']}</td>
+                  <td className="text-center">{data.types['Other']}</td>
+                  <td className="text-center text-success fw-medium">{data.resolved}</td>
+                  <td className="text-center text-warning fw-medium">{data.pending}</td>
+                  <td className="text-center">
+                    <Button variant="outline-primary" size="sm">
+                      View Details
+                    </Button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+          {/* Table Footer with Totals */}
+          {districtTotals && (
+            <tfoot className="bg-light fw-medium">
+              <tr>
+                <td>TOTAL</td>
+                <td className="text-center">{districtTotals.totalViolations}</td>
+                <td className="text-center">{districtTotals.types['No Permit']}</td>
+                <td className="text-center">{districtTotals.types['Expired Permit']}</td>
+                <td className="text-center">{districtTotals.types['Code Violation']}</td>
+                <td className="text-center">{districtTotals.types['Safety Hazard']}</td>
+                <td className="text-center">{districtTotals.types['Other']}</td>
+                <td className="text-center text-success">{districtTotals.resolved}</td>
+                <td className="text-center text-warning">{districtTotals.pending}</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          )}
+        </Table>
+      </div>
 
-              <TextField
-                fullWidth
-              label="Location"
-              value={formData.location}
-              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              error={!!formErrors.location}
-              helperText={formErrors.location}
-              sx={{ mt: 2 }}
-            />
+      <style>
+        {`
+          .table th {
+            background-color: #f8f9fa;
+            white-space: nowrap;
+          }
 
-              <TextField
-                fullWidth
-              label="Description"
-                multiline
-                rows={4}
-                value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              error={!!formErrors.description}
-              helperText={formErrors.description}
-              sx={{ mt: 2 }}
-            />
+          .table td {
+            vertical-align: middle;
+          }
 
-            <Box sx={{ mt: 2 }}>
-              <input
-                accept="image/*"
-                style={{ display: 'none' }}
-                id="evidence-upload"
-                type="file"
-                onChange={(e) => {
-                  const file = e.target.files[0];
-                  if (file) {
-                    setFormData({ ...formData, evidence: URL.createObjectURL(file) });
-                  }
-                }}
-              />
-              <label htmlFor="evidence-upload">
-                <Button
-                  variant="outlined"
-                  component="span"
-                  startIcon={<PhotoCameraIcon />}
-                >
-                  Upload Evidence
-                </Button>
-              </label>
-            </Box>
+          .table-responsive {
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+          }
 
-            {formData.evidence && (
-              <Box sx={{ mt: 2 }}>
-                <img 
-                  src={formData.evidence} 
-                  alt="Evidence Preview" 
-                  style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 4 }}
-                />
-              </Box>
-            )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button 
-              type="submit"
-            variant="contained"
-              disabled={createMutation.isPending || updateMutation.isPending}
-          >
-              {editingId ? 'Update' : 'Submit'}
-          </Button>
-        </DialogActions>
-        </form>
-      </Dialog>
+          .card {
+            transition: transform 0.2s;
+          }
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-        message={snackbar.message}
-        severity={snackbar.severity}
-      />
+          .card:hover {
+            transform: translateY(-2px);
+          }
+        `}
+      </style>
     </Container>
   );
 };
