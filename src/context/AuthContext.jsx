@@ -49,10 +49,17 @@ export const AuthProvider = ({ children }) => {
   // Signup function
   const signup = async (username, password) => {
     try {
+      // Check if username exists first
+      const exists = await authService.checkUsernameExists(username);
+      if (exists) {
+        throw new Error('This username is already taken');
+      }
+
       const user = await authService.signup(username, password);
       // After successful signup, automatically log in
       if (user) {
-        await login(username, password);
+        setCurrentUser(user);
+        navigate('/dashboard');
       }
       return user;
     } catch (error) {
@@ -75,6 +82,11 @@ export const AuthProvider = ({ children }) => {
   // Password reset function
   const resetPassword = async (username) => {
     try {
+      // Check if username exists first
+      const exists = await authService.checkUsernameExists(username);
+      if (!exists) {
+        throw new Error('Username not found');
+      }
       await authService.sendPasswordReset(username);
     } catch (error) {
       throw error;

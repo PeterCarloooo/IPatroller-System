@@ -19,7 +19,7 @@ class AuthService {
     try {
       const email = this.formatEmail(username);
       const methods = await fetchSignInMethodsForEmail(auth, email);
-      return methods.length > 0;
+      return methods && methods.length > 0;
     } catch (error) {
       console.error('Error checking username:', error);
       return false;
@@ -29,14 +29,9 @@ class AuthService {
   // Sign up new user
   async signup(username, password) {
     try {
-      // Check if username exists first
-      const exists = await this.checkUsernameExists(username);
-      if (exists) {
-        throw new Error('This username is already taken');
-      }
+      const email = this.formatEmail(username);
 
       // Create auth user with email format
-      const email = this.formatEmail(username);
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       
       // Update the user's display name
@@ -54,34 +49,34 @@ class AuthService {
       } else if (error.code === 'auth/invalid-email') {
         throw new Error('Invalid username format');
       }
-      throw error;
+      throw new Error('Failed to create account. Please try again.');
     }
   }
 
   // Login user
   async login(username, password) {
     try {
-      // Check if username exists first
-      const exists = await this.checkUsernameExists(username);
-      if (!exists) {
-        throw new Error('Username not found');
-      }
-
       const email = this.formatEmail(username);
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      
+      // Update display name if not set
+      if (!userCredential.user.displayName) {
+        await updateProfile(userCredential.user, {
+          displayName: username
+        });
+      }
+
       return userCredential.user;
     } catch (error) {
       console.error('Error in login:', error);
-      if (error.code === 'auth/invalid-credential') {
+      if (error.code === 'auth/invalid-credential' || 
+          error.code === 'auth/user-not-found' || 
+          error.code === 'auth/wrong-password') {
         throw new Error('Invalid username or password');
-      } else if (error.code === 'auth/user-not-found') {
-        throw new Error('Username not found');
-      } else if (error.code === 'auth/wrong-password') {
-        throw new Error('Invalid password');
       } else if (error.code === 'auth/too-many-requests') {
         throw new Error('Too many failed attempts. Please try again later.');
       }
-      throw error;
+      throw new Error('Failed to login. Please try again.');
     }
   }
 
@@ -98,12 +93,6 @@ class AuthService {
   // Send password reset email
   async sendPasswordReset(username) {
     try {
-      // Check if username exists first
-      const exists = await this.checkUsernameExists(username);
-      if (!exists) {
-        throw new Error('Username not found');
-      }
-
       const email = this.formatEmail(username);
       await sendPasswordResetEmail(auth, email);
     } catch (error) {
