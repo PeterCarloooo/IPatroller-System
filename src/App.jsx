@@ -115,21 +115,14 @@ const App = () => {
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
 
-                {/* Protected routes */}
-                <Route
-                  path="/dashboard"
-                  element={
-                    <PrivateRoute>
-                      <Layout />
-                    </PrivateRoute>
-                  }
-                >
-                  <Route index element={<Dashboard />} />
-                  <Route path="illegals" element={<Illegals />} />
-                  <Route path="ipatroller" element={<IPatroller />} />
-                  <Route path="command-center" element={<CommandCenter />} />
-                  <Route path="report" element={<Report />} />
-                  <Route path="setup" element={<Setup />} />
+                {/* Protected routes wrapped in Layout */}
+                <Route element={<PrivateRoute><Layout /></PrivateRoute>}>
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/illegals" element={<Illegals />} />
+                  <Route path="/ipatroller" element={<IPatroller />} />
+                  <Route path="/command-center" element={<CommandCenter />} />
+                  <Route path="/report" element={<Report />} />
+                  <Route path="/setup" element={<Setup />} />
                 </Route>
 
                 {/* Redirect all unknown routes to login */}

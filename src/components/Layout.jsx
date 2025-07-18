@@ -20,40 +20,26 @@ const Layout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [isNavigating, setIsNavigating] = useState(false);
 
-  // Handle window resize
+  // Check authentication on mount and location change
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 992) {
-        setIsSidebarOpen(true);
-      } else {
-        setIsSidebarOpen(false);
-      }
-    };
+    if (!currentUser) {
+      // Save the current location to redirect back after login
+      navigate('/login', { state: { from: location } });
+    }
+  }, [currentUser, location, navigate]);
 
-    window.addEventListener('resize', handleResize);
-    handleResize(); // Initial check
-
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // Debounced navigation handler
   const handleNavigation = useCallback((path) => {
-    if (isNavigating || path === location.pathname) return;
+    if (!currentUser) {
+      navigate('/login', { state: { from: { pathname: path } } });
+      return;
+    }
 
-    setIsNavigating(true);
     navigate(path);
-
     if (window.innerWidth < 992) {
       setIsSidebarOpen(false);
     }
-
-    // Reset navigation throttle after 300ms
-    setTimeout(() => {
-      setIsNavigating(false);
-    }, 300);
-  }, [navigate, location.pathname, isNavigating]);
+  }, [navigate, currentUser]);
 
   const handleLogout = async () => {
     try {
@@ -74,7 +60,7 @@ const Layout = () => {
   ];
 
   if (!currentUser) {
-    return <Outlet />;
+    return null;
   }
 
   return (
@@ -106,7 +92,6 @@ const Layout = () => {
               key={item.path}
               className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
               onClick={() => handleNavigation(item.path)}
-              disabled={isNavigating}
               aria-current={location.pathname === item.path ? 'page' : undefined}
             >
               <span className="nav-icon">{item.icon}</span>
