@@ -18,11 +18,12 @@ import patrollerService from '../services/patrollerService';
 // Memoized formatDate function
 const formatDate = (dateStr) => {
   const date = new Date(dateStr);
-  return date.toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric'
-  });
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+    .toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
 };
 
 // Memoized header cell component
@@ -319,10 +320,11 @@ const IPatroller = () => {
     }));
   }, []);
 
-  // Get the date range for the selected month with simplified formatting
+  // Get the date range for the selected month with precise date handling
   const dateRange = useMemo(() => {
-    const startDate = new Date(selectedYear, selectedMonth - 1, 1);
-    const endDate = new Date(selectedYear, selectedMonth, 0);
+    // Set time to noon to avoid timezone issues
+    const startDate = new Date(selectedYear, selectedMonth - 1, 1, 12, 0, 0);
+    const endDate = new Date(selectedYear, selectedMonth, 0, 12, 0, 0);
     
     const formatOptions = { 
       month: 'long', 
@@ -330,10 +332,14 @@ const IPatroller = () => {
       year: 'numeric'
     };
 
+    // Ensure we're working with UTC dates
+    const start = new Date(startDate.getTime() - startDate.getTimezoneOffset() * 60000);
+    const end = new Date(endDate.getTime() - endDate.getTimezoneOffset() * 60000);
+
     return {
-      start: startDate.toLocaleDateString('en-US', formatOptions),
-      end: endDate.toLocaleDateString('en-US', formatOptions),
-      monthYear: startDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+      start: start.toLocaleDateString('en-US', formatOptions),
+      end: end.toLocaleDateString('en-US', formatOptions),
+      monthYear: start.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
     };
   }, [selectedYear, selectedMonth]);
 
@@ -388,16 +394,17 @@ const IPatroller = () => {
     }
   });
 
-  // Get sorted dates for the current month only
+  // Get sorted dates for the current month only with precise date handling
   const dates = useMemo(() => {
     if (!reportsData) return [];
     
-    const startDate = new Date(selectedYear, selectedMonth - 1, 1);
-    const endDate = new Date(selectedYear, selectedMonth, 0);
+    // Set time to noon to avoid timezone issues
+    const startDate = new Date(selectedYear, selectedMonth - 1, 1, 12, 0, 0);
+    const endDate = new Date(selectedYear, selectedMonth, 0, 12, 0, 0);
     
     return Object.keys(reportsData)
       .filter(dateStr => {
-        const date = new Date(dateStr);
+        const date = new Date(dateStr + 'T12:00:00'); // Add time to ensure consistent date handling
         return date >= startDate && date <= endDate;
       })
       .sort();

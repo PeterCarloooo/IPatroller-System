@@ -13,15 +13,20 @@ class PatrollerService {
     this.reportsCollection = 'reports';
   }
 
-  // Helper function to format date to YYYY-MM-DD
+  // Helper function to format date to YYYY-MM-DD with timezone handling
   formatDate(date) {
-    return date.toISOString().split('T')[0];
+    // Set time to noon to avoid timezone issues
+    const d = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
+    // Adjust for timezone
+    const utcDate = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+    return utcDate.toISOString().split('T')[0];
   }
 
   // Helper function to get start and end dates for a month
   getMonthDateRange(year, month) {
-    const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 0); // Last day of the month
+    // Set time to noon to avoid timezone issues
+    const startDate = new Date(year, month - 1, 1, 12, 0, 0);
+    const endDate = new Date(year, month, 0, 12, 0, 0);
     return {
       startDate: this.formatDate(startDate),
       endDate: this.formatDate(endDate)
@@ -32,8 +37,8 @@ class PatrollerService {
   generateMonthDates(year, month) {
     const { startDate, endDate } = this.getMonthDateRange(year, month);
     const dates = [];
-    const currentDate = new Date(startDate);
-    const lastDate = new Date(endDate);
+    const currentDate = new Date(startDate + 'T12:00:00'); // Add time to ensure consistent date handling
+    const lastDate = new Date(endDate + 'T12:00:00');
 
     while (currentDate <= lastDate) {
       dates.push(this.formatDate(currentDate));
