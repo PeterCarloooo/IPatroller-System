@@ -1,98 +1,74 @@
-import { db } from '../api/firebase';
-import {
+import { 
   collection,
+  query,
   getDocs,
   addDoc,
   updateDoc,
   deleteDoc,
   doc,
-  serverTimestamp,
+  orderBy,
+  serverTimestamp
 } from 'firebase/firestore';
+import { db } from '../api/firebase';
 
-class IllegalService {
-  constructor() {
-    this.collectionName = 'illegal_reports';
-    // Bind methods to ensure proper 'this' context
-    this.getIllegalReports = this.getIllegalReports.bind(this);
-    this.createIllegalReport = this.createIllegalReport.bind(this);
-    this.updateIllegalReport = this.updateIllegalReport.bind(this);
-    this.deleteIllegalReport = this.deleteIllegalReport.bind(this);
-    this.handleError = this.handleError.bind(this);
+const COLLECTION_NAME = 'illegal_reports';
+
+// Get all illegal reports
+export const getIllegalReports = async () => {
+  try {
+    const q = query(
+      collection(db, COLLECTION_NAME),
+      orderBy('dateReported', 'desc')
+    );
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  } catch (error) {
+    console.error('Error fetching illegal reports:', error);
+    throw error;
   }
+};
 
-  async getIllegalReports() {
-    try {
-      const querySnapshot = await getDocs(collection(db, this.collectionName));
-      return querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-    } catch (error) {
-      console.error('Error in getIllegalReports:', error);
-      throw this.handleError(error);
-    }
+// Add a new illegal report
+export const addIllegalReport = async (reportData) => {
+  try {
+    const docRef = await addDoc(collection(db, COLLECTION_NAME), {
+      ...reportData,
+      dateReported: serverTimestamp(),
+      createdAt: serverTimestamp()
+    });
+    return docRef.id;
+  } catch (error) {
+    console.error('Error adding illegal report:', error);
+    throw error;
   }
+};
 
-  async createIllegalReport(data) {
-    try {
-      const docRef = await addDoc(collection(db, this.collectionName), {
-        ...data,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      });
-      
-      return {
-        id: docRef.id,
-        ...data
-      };
-    } catch (error) {
-      console.error('Error in createIllegalReport:', error);
-      throw this.handleError(error);
-    }
+// Update an existing illegal report
+export const updateIllegalReport = async (reportId, reportData) => {
+  try {
+    const reportRef = doc(db, COLLECTION_NAME, reportId);
+    await updateDoc(reportRef, {
+      ...reportData,
+      updatedAt: serverTimestamp()
+    });
+    return reportId;
+  } catch (error) {
+    console.error('Error updating illegal report:', error);
+    throw error;
   }
+};
 
-  async updateIllegalReport(id, data) {
-    try {
-      const docRef = doc(db, this.collectionName, id);
-      await updateDoc(docRef, {
-        ...data,
-        updatedAt: serverTimestamp()
-      });
-      
-      return {
-        id,
-        ...data
-      };
-    } catch (error) {
-      console.error('Error in updateIllegalReport:', error);
-      throw this.handleError(error);
-    }
+// Delete an illegal report
+export const deleteIllegalReport = async (reportId) => {
+  try {
+    const reportRef = doc(db, COLLECTION_NAME, reportId);
+    await deleteDoc(reportRef);
+    return reportId;
+  } catch (error) {
+    console.error('Error deleting illegal report:', error);
+    throw error;
   }
-
-  async deleteIllegalReport(id) {
-    try {
-      const docRef = doc(db, this.collectionName, id);
-      await deleteDoc(docRef);
-      return { success: true };
-    } catch (error) {
-      console.error('Error in deleteIllegalReport:', error);
-      throw this.handleError(error);
-    }
-  }
-
-  handleError(error) {
-    console.error('Service error:', error);
-    
-    if (error.code === 'permission-denied') {
-      return new Error('You do not have permission to perform this action');
-    }
-    
-    if (error.code === 'not-found') {
-      return new Error('The requested resource was not found');
-    }
-    
-    return new Error(error.message || 'An unexpected error occurred');
-  }
-}
-
-export default new IllegalService(); 
+}; 
