@@ -2,7 +2,12 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Container, Form, Button, Image, Card, InputGroup } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
-import { FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
+import {
+  Person as PersonIcon,
+  Lock as LockIcon,
+  Visibility as VisibilityIcon,
+  VisibilityOff as VisibilityOffIcon
+} from '@mui/icons-material';
 
 const Login = () => {
   const { login } = useAuth();
@@ -81,7 +86,7 @@ const Login = () => {
             <Form.Group className="mb-3">
               <InputGroup>
                 <InputGroup.Text className="bg-light">
-                  <FaUser className="text-primary" />
+                  <PersonIcon className="text-primary" />
                 </InputGroup.Text>
                 <Form.Control
                   type="text"
@@ -98,7 +103,7 @@ const Login = () => {
             <Form.Group className="mb-3">
               <InputGroup>
                 <InputGroup.Text className="bg-light">
-                  <FaLock className="text-primary" />
+                  <LockIcon className="text-primary" />
                 </InputGroup.Text>
                 <Form.Control
                   type={showPassword ? "text" : "password"}
@@ -114,7 +119,7 @@ const Login = () => {
                   onClick={togglePasswordVisibility}
                   style={{ borderLeft: 'none' }}
                 >
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
                 </Button>
               </InputGroup>
             </Form.Group>
