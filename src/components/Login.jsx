@@ -173,7 +173,8 @@ const Login = () => {
                   <Button
                     type="submit"
                     variant="primary"
-                    className="w-100 mb-3 py-2"
+                    size="lg"
+                    className="w-100 mb-3"
                     disabled={isLoading}
                   >
                     {isLoading ? (
@@ -188,7 +189,7 @@ const Login = () => {
 
                   <p className="text-center text-muted small mb-0">
                     Don't have an account?{' '}
-                    <Link to="/signup" className="text-primary text-decoration-none">
+                    <Link to="/signup" className="text-primary text-decoration-none fw-medium">
                       Create Account
                     </Link>
                   </p>

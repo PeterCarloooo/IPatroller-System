@@ -28,7 +28,6 @@ const Signup = () => {
     username: '',
     password: '',
     confirmPassword: '',
-    phoneNumber: '',
     role: 'patroller'
   });
 
@@ -160,14 +159,20 @@ const Signup = () => {
                     <Col sm={6}>
                       <Form.Group>
                         <Form.Label className="small fw-medium">Last Name</Form.Label>
-                        <Form.Control
-                          type="text"
-                          name="lastName"
-                          value={values.lastName}
-                          onChange={handleChange}
-                          placeholder="Last name"
-                          required
-                        />
+                        <InputGroup>
+                          <InputGroup.Text className="bg-light border-end-0">
+                            <i className="bi bi-person-fill text-muted"></i>
+                          </InputGroup.Text>
+                          <Form.Control
+                            type="text"
+                            name="lastName"
+                            value={values.lastName}
+                            onChange={handleChange}
+                            placeholder="Last name"
+                            className="border-start-0 ps-0"
+                            required
+                          />
+                        </InputGroup>
                       </Form.Group>
                     </Col>
                   </Row>
@@ -184,24 +189,6 @@ const Signup = () => {
                         value={values.username}
                         onChange={handleChange}
                         placeholder="Choose a username"
-                        className="border-start-0 ps-0"
-                        required
-                      />
-                    </InputGroup>
-                  </Form.Group>
-
-                  <Form.Group className="mb-3">
-                    <Form.Label className="small fw-medium">Phone Number</Form.Label>
-                    <InputGroup>
-                      <InputGroup.Text className="bg-light border-end-0">
-                        <i className="bi bi-phone text-muted"></i>
-                      </InputGroup.Text>
-                      <Form.Control
-                        type="tel"
-                        name="phoneNumber"
-                        value={values.phoneNumber}
-                        onChange={handleChange}
-                        placeholder="Enter phone number"
                         className="border-start-0 ps-0"
                         required
                       />
@@ -284,7 +271,8 @@ const Signup = () => {
                   <Button
                     type="submit"
                     variant="primary"
-                    className="w-100 mb-3 py-2"
+                    size="lg"
+                    className="w-100 mb-3"
                     disabled={isLoading}
                   >
                     {isLoading ? (
@@ -299,7 +287,7 @@ const Signup = () => {
 
                   <p className="text-center text-muted small mb-0">
                     Already have an account?{' '}
-                    <Link to="/login" className="text-primary text-decoration-none">
+                    <Link to="/login" className="text-primary text-decoration-none fw-medium">
                       Sign In
                     </Link>
                   </p>
