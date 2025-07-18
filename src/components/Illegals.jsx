@@ -6,9 +6,12 @@ import {
   Form,
   Row,
   Col,
-  Card
+  Card,
+  Alert
 } from 'react-bootstrap';
 import { useQuery } from '@tanstack/react-query';
+import illegalService from '../services/illegalService';
+import LoadingSpinner from './common/LoadingSpinner';
 
 // Define fixed district and municipality order
 const DISTRICTS = {
@@ -37,9 +40,10 @@ const Illegals = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
-  // Generate year options (2025-2027)
+  // Generate year options (current year and next 2 years)
   const years = useMemo(() => {
-    return [2025, 2026, 2027];
+    const currentYear = new Date().getFullYear();
+    return [currentYear, currentYear + 1, currentYear + 2];
   }, []);
 
   // Generate month options
@@ -50,32 +54,54 @@ const Illegals = () => {
     }));
   }, []);
 
-  // Mock data for demonstration
-  const mockData = useMemo(() => {
+  // Fetch illegal reports data
+  const { data: illegalReports, isLoading, error } = useQuery({
+    queryKey: ['illegalReports', selectedYear, selectedMonth],
+    queryFn: illegalService.getIllegalReports,
+    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+    cacheTime: 30 * 60 * 1000, // Keep data in cache for 30 minutes
+  });
+
+  // Process and filter data based on selection
+  const processedData = useMemo(() => {
+    if (!illegalReports) return null;
+
+    const filteredReports = illegalReports.filter(report => {
+      const reportDate = new Date(report.createdAt.seconds * 1000);
+      return (
+        reportDate.getMonth() + 1 === selectedMonth &&
+        reportDate.getFullYear() === selectedYear
+      );
+    });
+
     const data = {};
     Object.entries(DISTRICTS).forEach(([district, municipalities]) => {
       data[district] = {};
       municipalities.forEach(municipality => {
+        const municipalityReports = filteredReports.filter(
+          report => report.municipality === municipality
+        );
+
         data[district][municipality] = {
-          totalViolations: Math.floor(Math.random() * 50),
-          resolved: Math.floor(Math.random() * 30),
-          pending: Math.floor(Math.random() * 20),
+          totalViolations: municipalityReports.length,
+          resolved: municipalityReports.filter(report => report.status === 'resolved').length,
+          pending: municipalityReports.filter(report => report.status === 'pending').length,
           types: {
-            'No Permit': Math.floor(Math.random() * 10),
-            'Expired Permit': Math.floor(Math.random() * 10),
-            'Code Violation': Math.floor(Math.random() * 10),
-            'Safety Hazard': Math.floor(Math.random() * 10),
-            'Other': Math.floor(Math.random() * 10)
+            'No Permit': municipalityReports.filter(report => report.type === 'No Permit').length,
+            'Expired Permit': municipalityReports.filter(report => report.type === 'Expired Permit').length,
+            'Code Violation': municipalityReports.filter(report => report.type === 'Code Violation').length,
+            'Safety Hazard': municipalityReports.filter(report => report.type === 'Safety Hazard').length,
+            'Other': municipalityReports.filter(report => report.type === 'Other').length
           }
         };
       });
     });
     return data;
-  }, []);
+  }, [illegalReports, selectedMonth, selectedYear]);
 
   // Calculate totals for selected district
   const districtTotals = useMemo(() => {
-    if (!mockData[selectedDistrict]) return null;
+    if (!processedData || !processedData[selectedDistrict]) return null;
 
     const totals = {
       totalViolations: 0,
@@ -91,7 +117,7 @@ const Illegals = () => {
     };
 
     DISTRICTS[selectedDistrict].forEach(municipality => {
-      const data = mockData[selectedDistrict][municipality];
+      const data = processedData[selectedDistrict][municipality];
       totals.totalViolations += data.totalViolations;
       totals.resolved += data.resolved;
       totals.pending += data.pending;
@@ -101,7 +127,21 @@ const Illegals = () => {
     });
 
     return totals;
-  }, [selectedDistrict, mockData]);
+  }, [selectedDistrict, processedData]);
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (error) {
+    return (
+      <Container fluid className="py-4">
+        <Alert variant="danger">
+          Error loading illegal reports: {error.message}
+        </Alert>
+      </Container>
+    );
+  }
 
   return (
     <Container fluid className="py-4">
@@ -192,7 +232,9 @@ const Illegals = () => {
               <Card.Body>
                 <h6 className="text-muted mb-2">Resolution Rate</h6>
                 <h3 className="mb-0 text-info">
-                  {Math.round((districtTotals.resolved / districtTotals.totalViolations) * 100)}%
+                  {districtTotals.totalViolations > 0
+                    ? Math.round((districtTotals.resolved / districtTotals.totalViolations) * 100)
+                    : 0}%
                 </h3>
               </Card.Body>
             </Card>
@@ -218,8 +260,8 @@ const Illegals = () => {
             </tr>
           </thead>
           <tbody>
-            {DISTRICTS[selectedDistrict].map(municipality => {
-              const data = mockData[selectedDistrict][municipality];
+            {processedData && DISTRICTS[selectedDistrict].map(municipality => {
+              const data = processedData[selectedDistrict][municipality];
               return (
                 <tr key={municipality}>
                   <td className="fw-medium">{municipality}</td>
@@ -259,32 +301,6 @@ const Illegals = () => {
           )}
         </Table>
       </div>
-
-      <style>
-        {`
-          .table th {
-            background-color: #f8f9fa;
-            white-space: nowrap;
-          }
-
-          .table td {
-            vertical-align: middle;
-          }
-
-          .table-responsive {
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-          }
-
-          .card {
-            transition: transform 0.2s;
-          }
-
-          .card:hover {
-            transform: translateY(-2px);
-          }
-        `}
-      </style>
     </Container>
   );
 };
