@@ -4,6 +4,7 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '../firebase/config';
 import { doc, getDoc } from 'firebase/firestore';
 import { useUserRole } from '../context/UserContext';
+import { Container, Card, Form, Button, Alert, Spinner, Stack } from 'react-bootstrap';
 
 function Login() {
   const navigate = useNavigate();
@@ -77,99 +78,114 @@ function Login() {
   };
 
   return (
-    <div
+    <Container
+      fluid
+      className="d-flex align-items-center justify-content-center"
       style={{
         minHeight: '100vh',
-        width: '100vw',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: '#f5f5f5',
+        minWidth: '100vw',
         padding: 0,
         margin: 0,
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        zIndex: 10
+        background: 'linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%)',
       }}
     >
-      <div className='card shadow-lg' style={{maxWidth: '500px', width: '100%', borderRadius: '1rem'}}>
-        <div className='card-body p-5'>
-          <div className="text-center">
-            <div className="d-flex justify-content-center align-items-center mb-4">
-              <div 
-                style={{ 
-                  width: '120px',
-                  height: '120px',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  margin: '0 auto'
-                }}
-              >
-                <img 
+      <Card
+        className="shadow border-0"
+        style={{
+          maxWidth: 420,
+          width: '100%',
+          margin: 'auto',
+          borderRadius: '1.5rem',
+          background: 'linear-gradient(120deg, #f8fafc 60%, #e3e9f7 100%)',
+          boxShadow: '0 8px 32px 0 rgba(31,38,135,0.10)',
+        }}
+      >
+        <Card.Body className="p-4">
+          <div className="text-center mb-4">
+            <Stack direction="vertical" gap={3} className="align-items-center">
+              <div style={{
+                width: '80px',
+                height: '80px',
+                background: 'rgba(33,147,176,0.13)',
+                borderRadius: '50%',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                margin: '0 auto',
+                boxShadow: '0 2px 8px 0 rgba(33,147,176,0.08)',
+              }}>
+                <img
                   src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Ph_seal_bataan2.png"
                   alt="Bataan Seal"
-                  style={{ 
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'contain'
-                  }}
+                  style={{ width: '54px', height: '54px', objectFit: 'contain' }}
                 />
               </div>
-            </div>
-            <h2 className="fw-bold mb-2">Welcome to IPatroller</h2>
-            <p className="text-muted mb-5">Please enter your login credentials</p>
+              <h2 className="fw-bold mb-1" style={{ letterSpacing: '1px', color: '#2193b0', fontSize: '2.2rem' }}>IPatroller</h2>
+              <p className="text-muted mb-4" style={{ fontSize: '1.08rem', fontWeight: 500 }}>Sign in to your account</p>
+            </Stack>
           </div>
 
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4 w-100">
-              <label className="form-label">Email address</label>
-              <input
+          <Form onSubmit={handleSubmit}>
+            <Form.Group className="mb-3 w-100" controlId="loginEmail">
+              <Form.Label className="fw-semibold">Email address</Form.Label>
+              <Form.Control
                 type="email"
-                className="form-control"
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
                 required
+                autoFocus
+                size="lg"
+                placeholder="Enter your email"
+                style={{ background: '#f5f7fa', border: 'none', borderRadius: '0.7rem' }}
               />
-            </div>
-            <div className="mb-4 w-100">
-              <label className="form-label">Password</label>
-              <input
+            </Form.Group>
+            <Form.Group className="mb-3 w-100" controlId="loginPassword">
+              <Form.Label className="fw-semibold">Password</Form.Label>
+              <Form.Control
                 type="password"
-                className="form-control"
                 name="password"
                 value={formData.password}
                 onChange={handleInputChange}
                 required
+                size="lg"
+                placeholder="Enter your password"
+                style={{ background: '#f5f7fa', border: 'none', borderRadius: '0.7rem' }}
               />
-            </div>
+            </Form.Group>
 
             {error && (
-              <div className="alert alert-danger text-center mb-4">
+              <Alert variant="danger" className="text-center mb-3">
                 {error}
-              </div>
+              </Alert>
             )}
 
-            <button 
+            <Button
               type="submit"
-              className="btn btn-primary mb-4 w-100"
+              variant="primary"
+              className="mb-2 w-100 py-2 fw-bold"
+              style={{
+                borderRadius: '0.9rem',
+                letterSpacing: '1px',
+                background: 'linear-gradient(90deg, #2193b0 0%, #6dd5ed 100%)',
+                border: 'none',
+                fontSize: '1.1rem',
+                boxShadow: '0 2px 8px 0 rgba(33,147,176,0.08)'
+              }}
               disabled={loading}
+              size="lg"
             >
               {loading ? (
                 <>
-                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  <Spinner animation="border" size="sm" className="me-2" />
                   Signing in...
                 </>
               ) : 'Login'}
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
+            </Button>
+          </Form>
+        </Card.Body>
+      </Card>
+    </Container>
   );
 }
 
