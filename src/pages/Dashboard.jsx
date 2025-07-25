@@ -1,16 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  MDBContainer,
-  MDBRow,
-  MDBCol,
-  MDBCard,
-  MDBCardBody,
-  MDBIcon,
-  MDBBtn,
-  MDBNavbar,
-  MDBNavbarBrand
-} from 'mdb-react-ui-kit';
+// Removed all MDB imports
 import DashboardLayout from '../components/DashboardLayout';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../firebase/config';
@@ -97,7 +87,7 @@ function Dashboard() {
       {/* Welcome Section */}
       <div className="bg-white shadow-sm rounded-4 p-4 mb-4 d-flex align-items-center gap-3">
         <div className="d-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle" style={{ width: 60, height: 60 }}>
-          <MDBIcon fas icon="tachometer-alt" className="text-primary" size="2x" />
+          <i className="fas fa-tachometer-alt text-primary fa-2x"></i>
         </div>
         <div>
           <h2 className="fw-bold mb-1">Welcome back, Admin!</h2>
@@ -111,7 +101,7 @@ function Dashboard() {
           <div className="card shadow-sm h-100 border-0">
             <div className="card-body d-flex flex-column align-items-center justify-content-center text-center">
               <div className="rounded-circle p-3 bg-info bg-opacity-10 mb-2">
-                <MDBIcon fas icon="file-alt" className="text-info" size="lg" />
+                <i className="fas fa-file-alt text-info fa-lg"></i>
               </div>
               <h6 className="fw-bold mb-1">Total Reports</h6>
               <h2 className="fw-bold mb-0 text-info">{stats.totalReports}</h2>
@@ -122,7 +112,7 @@ function Dashboard() {
           <div className="card shadow-sm h-100 border-0">
             <div className="card-body d-flex flex-column align-items-center justify-content-center text-center">
               <div className="rounded-circle p-3 bg-warning bg-opacity-10 mb-2">
-                <MDBIcon fas icon="hourglass-half" className="text-warning" size="lg" />
+                <i className="fas fa-hourglass-half text-warning fa-lg"></i>
               </div>
               <h6 className="fw-bold mb-1">Pending Reports</h6>
               <h2 className="fw-bold mb-0 text-warning">{stats.pendingReports}</h2>
@@ -133,7 +123,7 @@ function Dashboard() {
           <div className="card shadow-sm h-100 border-0">
             <div className="card-body d-flex flex-column align-items-center justify-content-center text-center">
               <div className="rounded-circle p-3 bg-success bg-opacity-10 mb-2">
-                <MDBIcon fas icon="check-circle" className="text-success" size="lg" />
+                <i className="fas fa-check-circle text-success fa-lg"></i>
               </div>
               <h6 className="fw-bold mb-1">Resolved Reports</h6>
               <h2 className="fw-bold mb-0 text-success">{stats.resolvedReports}</h2>
@@ -144,7 +134,7 @@ function Dashboard() {
           <div className="card shadow-sm h-100 border-0">
             <div className="card-body d-flex flex-column align-items-center justify-content-center text-center">
               <div className="rounded-circle p-3 bg-primary bg-opacity-10 mb-2">
-                <MDBIcon fas icon="users" className="text-primary" size="lg" />
+                <i className="fas fa-users text-primary fa-lg"></i>
               </div>
               <h6 className="fw-bold mb-1">Active Patrollers</h6>
               <h2 className="fw-bold mb-0 text-primary">{stats.activePatrollers}</h2>
@@ -155,7 +145,7 @@ function Dashboard() {
           <div className="card shadow-sm h-100 border-0">
             <div className="card-body d-flex flex-column align-items-center justify-content-center text-center">
               <div className="rounded-circle p-3 bg-success bg-opacity-10 mb-2">
-                <MDBIcon fas icon="user-check" className="text-success" size="lg" />
+                <i className="fas fa-user-check text-success fa-lg"></i>
               </div>
               <h6 className="fw-bold mb-1">On Duty</h6>
               <h2 className="fw-bold mb-0 text-success">{stats.onDutyPatrollers}</h2>
@@ -166,7 +156,7 @@ function Dashboard() {
           <div className="card shadow-sm h-100 border-0">
             <div className="card-body d-flex flex-column align-items-center justify-content-center text-center">
               <div className="rounded-circle p-3 bg-secondary bg-opacity-10 mb-2">
-                <MDBIcon fas icon="map-marker-alt" className="text-secondary" size="lg" />
+                <i className="fas fa-map-marker-alt text-secondary fa-lg"></i>
               </div>
               <h6 className="fw-bold mb-1">Total Areas</h6>
               <h2 className="fw-bold mb-0 text-secondary">{stats.totalAreas}</h2>
@@ -177,7 +167,7 @@ function Dashboard() {
           <div className="card shadow-sm h-100 border-0">
             <div className="card-body d-flex flex-column align-items-center justify-content-center text-center">
               <div className="rounded-circle p-3 bg-success bg-opacity-10 mb-2">
-                <MDBIcon fas icon="user-check" className="text-success" size="lg" />
+                <i className="fas fa-user-check text-success fa-lg"></i>
               </div>
               <h6 className="fw-bold mb-1">Active Patrollers (Yesterday)</h6>
               <h2 className="fw-bold mb-0 text-success">{activeCount}</h2>
@@ -189,7 +179,7 @@ function Dashboard() {
           <div className="card shadow-sm h-100 border-0">
             <div className="card-body d-flex flex-column align-items-center justify-content-center text-center">
               <div className="rounded-circle p-3 bg-danger bg-opacity-10 mb-2">
-                <MDBIcon fas icon="user-times" className="text-danger" size="lg" />
+                <i className="fas fa-user-times text-danger fa-lg"></i>
               </div>
               <h6 className="fw-bold mb-1">Inactive Patrollers (Yesterday)</h6>
               <h2 className="fw-bold mb-0 text-danger">{inactiveCount}</h2>

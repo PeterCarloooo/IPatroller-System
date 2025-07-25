@@ -3,13 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebase/config';
 import Profile from '../pages/Profile';
-import {
-  MDBContainer,
-  MDBNavbar,
-  MDBNavbarBrand,
-  MDBBtn,
-  MDBIcon,
-} from 'mdb-react-ui-kit';
 import { useUserRole } from '../context/UserContext';
 import { db } from '../firebase/config';
 import { doc, getDoc } from 'firebase/firestore';
@@ -196,15 +189,14 @@ function DashboardLayout({ children, activePage }) {
 
           {/* Sidebar Footer */}
           <div className="p-4 border-top bg-light mt-auto">
-            <MDBBtn 
-              color="primary" 
-              className={`d-flex align-items-center gap-2 ${!isSidebarOpen ? 'justify-content-center w-auto px-3' : 'w-100 justify-content-center'}`}
+            <button 
+              className={`btn btn-primary d-flex align-items-center gap-2 ${!isSidebarOpen ? 'justify-content-center w-auto px-3' : 'w-100 justify-content-center'}`}
               style={{ fontWeight: 600, fontSize: '1.08em', letterSpacing: '0.5px' }}
               onClick={handleLogout}
             >
-              <MDBIcon fas icon="sign-out-alt" className={!isSidebarOpen ? '' : 'me-2'} />
+              <i className="fas fa-sign-out-alt"></i>
               {isSidebarOpen && <span>Logout</span>}
-            </MDBBtn>
+            </button>
           </div>
         </div>
       </div>
@@ -212,21 +204,20 @@ function DashboardLayout({ children, activePage }) {
       {/* Main Content */}
       <div className={`main-content ${isSidebarOpen ? 'content-expanded' : 'content-collapsed'}`} style={{ background: '#f8fafc', minHeight: '100vh' }}>
         {/* Top Navbar */}
-        <MDBNavbar light bgColor='white' className='top-navbar shadow-sm border-bottom border-2 border-light'>
-          <MDBContainer fluid className="px-4">
+        <nav className='top-navbar shadow-sm border-bottom border-2 border-light'>
+          <div className="container-fluid px-4">
             <div className="d-flex align-items-center justify-content-between w-100">
               <div className="d-flex align-items-center">
-                <MDBBtn 
-                  color='link' 
-                  onClick={toggleSidebar}
+                <button 
                   className='text-dark p-0 me-3'
                   style={{ fontSize: '1.5rem' }}
+                  onClick={toggleSidebar}
                 >
-                  <MDBIcon fas icon={isSidebarOpen ? 'chevron-left' : 'chevron-right'} />
-                </MDBBtn>
-                <MDBNavbarBrand className="fw-bold fs-4">
+                  <i className={`fas ${isSidebarOpen ? 'chevron-left' : 'chevron-right'}`}></i>
+                </button>
+                <h4 className="fw-bold fs-4">
                   {activePage === 'settings' ? 'Settings' : 'Dashboard'}
-                </MDBNavbarBrand>
+                </h4>
               </div>
 
               {/* User Account Section */}
@@ -246,12 +237,12 @@ function DashboardLayout({ children, activePage }) {
                   style={{ cursor: 'pointer' }}
                   onClick={() => setShowProfileModal(true)}
                 >
-                  <MDBIcon fas icon="user" className="text-primary" />
+                  <i className="fas fa-user text-primary"></i>
                 </button>
               </div>
             </div>
-          </MDBContainer>
-        </MDBNavbar>
+          </div>
+        </nav>
 
         {/* Content Area */}
         <div className="content-wrapper p-3 p-md-4">
