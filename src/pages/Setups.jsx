@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import DashboardLayout from '../components/DashboardLayout';
+import { Container, Card, Row, Col, Stack, Button, Form } from 'react-bootstrap';
 
 function Setups() {
   // Demo state for settings
@@ -33,80 +34,79 @@ function Setups() {
   };
 
   return (
-    <div style={{ height: '100%', minHeight: '100vh', width: '100%', minWidth: '100vw', margin: 0, padding: 0, boxSizing: 'border-box' }}>
-      <DashboardLayout activePage="setups">
-        <div className="bg-white shadow-sm rounded-4 p-4 mb-4">
-          <h2 className="fw-bold mb-0">Setups</h2>
-          <p className="text-muted mb-0">Configure system settings and modules</p>
-        </div>
-        <div className="row g-4 justify-content-center">
-          {/* Advanced Setups Tile */}
-          <div className="col-12 col-lg-6 d-flex">
-            <div className="card shadow-sm h-100 flex-fill">
-              <div className="card-body p-4">
-                <h3 className="fw-bold mb-3 text-primary">Advanced Setups</h3>
-                <form onSubmit={handleSaveAdvanced}>
-                  <div className="mb-4">
-                    <label className="form-label fw-semibold">Enable Advanced Feature</label>
-                    <div className="form-check form-switch">
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        id="featureEnabled"
-                        checked={featureEnabled}
-                        onChange={e => setFeatureEnabled(e.target.checked)}
-                      />
-                      <label className="form-check-label" htmlFor="featureEnabled">
-                        {featureEnabled ? 'Enabled' : 'Disabled'}
-                      </label>
-                    </div>
-                  </div>
-                  <div className="mb-4">
-                    <label className="form-label fw-semibold">Enable Maintenance Mode</label>
-                    <div className="form-check form-switch">
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        id="maintenanceMode"
-                        checked={maintenanceMode}
-                        onChange={e => setMaintenanceMode(e.target.checked)}
-                      />
-                      <label className="form-check-label" htmlFor="maintenanceMode">
-                        {maintenanceMode ? 'Enabled' : 'Disabled'}
-                      </label>
-                    </div>
-                  </div>
-                  <div className="mb-4">
-                    <label className="form-label fw-semibold">Enable Notifications</label>
-                    <div className="form-check form-switch">
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        id="notificationsEnabled"
-                        checked={notificationsEnabled}
-                        onChange={e => setNotificationsEnabled(e.target.checked)}
-                      />
-                      <label className="form-check-label" htmlFor="notificationsEnabled">
-                        {notificationsEnabled ? 'Enabled' : 'Disabled'}
-                      </label>
-                    </div>
-                  </div>
-                  <button type="submit" className="btn btn-primary px-4 fw-bold">Save Advanced</button>
-                  {saveStatusAdvanced && <span className="ms-3 text-success fw-semibold">{saveStatusAdvanced}</span>}
-                </form>
-              </div>
+    <DashboardLayout activePage="setups">
+      <Container fluid className="py-4 px-2 px-md-4" style={{ minHeight: '100vh' }}>
+        <Card className="mb-4 border-0 shadow-sm rounded-4 bg-light bg-opacity-75 p-4">
+          <Stack direction="horizontal" gap={3} className="align-items-center flex-wrap">
+            <div className="d-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle shadow" style={{ width: 56, height: 56 }}>
+              <i className="fas fa-cogs text-success" style={{ fontSize: '1.7rem' }}></i>
             </div>
-          </div>
+            <div>
+              <h2 className="fw-bold mb-0" style={{ fontSize: '1.6rem', letterSpacing: '0.5px' }}>Setups</h2>
+              <p className="text-muted mb-0" style={{ fontSize: '1.05rem' }}>Configure system settings and modules</p>
+            </div>
+          </Stack>
+        </Card>
+        <Row className="g-4 justify-content-center">
+          {/* Advanced Setups Tile */}
+          <Col xs={12} lg={6} className="d-flex">
+            <Card className="shadow-sm h-100 flex-fill border-0 rounded-4">
+              <Card.Body className="p-4">
+                <Stack direction="horizontal" gap={2} className="align-items-center mb-3">
+                  <i className="fas fa-sliders-h text-primary" style={{ fontSize: '1.3rem' }}></i>
+                  <h3 className="fw-bold mb-0 text-primary">Advanced Setups</h3>
+                </Stack>
+                <Form onSubmit={handleSaveAdvanced}>
+                  <Form.Group className="mb-4">
+                    <Form.Label className="fw-semibold">Enable Advanced Feature</Form.Label>
+                    <Form.Check
+                      type="switch"
+                      id="featureEnabled"
+                      label={featureEnabled ? 'Enabled' : 'Disabled'}
+                      checked={featureEnabled}
+                      onChange={e => setFeatureEnabled(e.target.checked)}
+                    />
+                  </Form.Group>
+                  <Form.Group className="mb-4">
+                    <Form.Label className="fw-semibold">Enable Maintenance Mode</Form.Label>
+                    <Form.Check
+                      type="switch"
+                      id="maintenanceMode"
+                      label={maintenanceMode ? 'Enabled' : 'Disabled'}
+                      checked={maintenanceMode}
+                      onChange={e => setMaintenanceMode(e.target.checked)}
+                    />
+                  </Form.Group>
+                  <Form.Group className="mb-4">
+                    <Form.Label className="fw-semibold">Enable Notifications</Form.Label>
+                    <Form.Check
+                      type="switch"
+                      id="notificationsEnabled"
+                      label={notificationsEnabled ? 'Enabled' : 'Disabled'}
+                      checked={notificationsEnabled}
+                      onChange={e => setNotificationsEnabled(e.target.checked)}
+                    />
+                  </Form.Group>
+                  <div className="d-grid gap-2 d-md-block">
+                    <Button type="submit" variant="primary" className="px-4 fw-bold">Save Advanced</Button>
+                  </div>
+                  {saveStatusAdvanced && <span className="ms-3 text-success fw-semibold">{saveStatusAdvanced}</span>}
+                </Form>
+              </Card.Body>
+            </Card>
+          </Col>
           {/* Configuration Options Tile */}
-          <div className="col-12 col-lg-6 d-flex">
-            <div className="card shadow-sm h-100 flex-fill">
-              <div className="card-body p-4">
-                <h3 className="fw-bold mb-3 text-success">Configuration Options</h3>
-                <form onSubmit={handleSaveConfig}>
-                  <div className="mb-4">
-                    <label className="form-label fw-semibold" htmlFor="defaultView">Default Dashboard View</label>
-                    <select
-                      className="form-select"
+          <Col xs={12} lg={6} className="d-flex">
+            <Card className="shadow-sm h-100 flex-fill border-0 rounded-4">
+              <Card.Body className="p-4">
+                <Stack direction="horizontal" gap={2} className="align-items-center mb-3">
+                  <i className="fas fa-cog text-success" style={{ fontSize: '1.3rem' }}></i>
+                  <h3 className="fw-bold mb-0 text-success">Configuration Options</h3>
+                </Stack>
+                <Form onSubmit={handleSaveConfig}>
+                  <Form.Group className="mb-4">
+                    <Form.Label className="fw-semibold" htmlFor="defaultView">Default Dashboard View</Form.Label>
+                    <Form.Select
                       id="defaultView"
                       value={defaultView}
                       onChange={e => setDefaultView(e.target.value)}
@@ -114,12 +114,11 @@ function Setups() {
                       <option value="dashboard">Dashboard</option>
                       <option value="reports">Reports</option>
                       <option value="users">Users</option>
-                    </select>
-                  </div>
-                  <div className="mb-4">
-                    <label className="form-label fw-semibold" htmlFor="incidentSeverity">Default Incident Severity Filter</label>
-                    <select
-                      className="form-select"
+                    </Form.Select>
+                  </Form.Group>
+                  <Form.Group className="mb-4">
+                    <Form.Label className="fw-semibold" htmlFor="incidentSeverity">Default Incident Severity Filter</Form.Label>
+                    <Form.Select
                       id="incidentSeverity"
                       value={incidentSeverity}
                       onChange={e => setIncidentSeverity(e.target.value)}
@@ -128,39 +127,39 @@ function Setups() {
                       <option value="high">High</option>
                       <option value="medium">Medium</option>
                       <option value="low">Low</option>
-                    </select>
-                  </div>
-                <div className="mb-4">
-                    <label className="form-label fw-semibold" htmlFor="maxPatrollers">Max Active Patrollers</label>
-                    <input
+                    </Form.Select>
+                  </Form.Group>
+                  <Form.Group className="mb-4">
+                    <Form.Label className="fw-semibold" htmlFor="maxPatrollers">Max Active Patrollers</Form.Label>
+                    <Form.Control
                       type="number"
-                      className="form-control"
                       id="maxPatrollers"
                       min={1}
                       value={maxPatrollers}
                       onChange={e => setMaxPatrollers(Number(e.target.value))}
                     />
-                </div>
-                  <div className="mb-4">
-                    <label className="form-label fw-semibold" htmlFor="checkinInterval">Patroller Check-in Interval (minutes)</label>
-                    <input
+                  </Form.Group>
+                  <Form.Group className="mb-4">
+                    <Form.Label className="fw-semibold" htmlFor="checkinInterval">Patroller Check-in Interval (minutes)</Form.Label>
+                    <Form.Control
                       type="number"
-                      className="form-control"
                       id="checkinInterval"
                       min={1}
                       value={checkinInterval}
                       onChange={e => setCheckinInterval(Number(e.target.value))}
                     />
-                </div>
-                  <button type="submit" className="btn btn-success px-4 fw-bold">Save Config</button>
+                  </Form.Group>
+                  <div className="d-grid gap-2 d-md-block">
+                    <Button type="submit" variant="success" className="px-4 fw-bold">Save Config</Button>
+                  </div>
                   {saveStatusConfig && <span className="ms-3 text-success fw-semibold">{saveStatusConfig}</span>}
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
-      </DashboardLayout>
-    </div>
+                </Form>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
+    </DashboardLayout>
   );
 }
 

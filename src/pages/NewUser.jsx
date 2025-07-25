@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import DashboardLayout from '../components/DashboardLayout';
 import AddUserModal from '../components/AddUserModal';
+import { Container, Card, Stack, Button } from 'react-bootstrap';
 // No MDB imports
 
 // Start with an empty users array
@@ -36,17 +37,26 @@ function NewUser() {
 
   return (
     <DashboardLayout activePage="users">
-      <div className="bg-white shadow-sm rounded-4 p-4 mb-4 d-flex justify-content-between align-items-center">
-        <div>
-          <h2 className="fw-bold mb-0">Users</h2>
-          <p className="text-muted mb-0">Manage user accounts and permissions</p>
-        </div>
-        <button className="btn btn-primary d-flex align-items-center" onClick={() => setShowModal(true)} type="button">
-          <i className="fas fa-user-plus me-2"></i>
-          Add New User
-        </button>
-      </div>
-      <AddUserModal isOpen={showModal} onClose={() => setShowModal(false)} onAddUser={handleAddUser} />
+      <Container fluid className="py-4 px-2 px-md-4">
+        <Card className="mb-4 border-0 shadow-sm rounded-4 bg-light bg-opacity-75 p-4 d-flex flex-row align-items-center justify-content-between">
+          <Stack direction="horizontal" gap={3} className="align-items-center flex-wrap">
+            <div className="d-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle shadow" style={{ width: 56, height: 56 }}>
+              <i className="fas fa-users text-primary" style={{ fontSize: '1.7rem' }}></i>
+            </div>
+            <div>
+              <h2 className="fw-bold mb-0" style={{ fontSize: '1.6rem', letterSpacing: '0.5px' }}>Users</h2>
+              <p className="text-muted mb-0" style={{ fontSize: '1.05rem' }}>Manage user accounts and permissions</p>
+            </div>
+          </Stack>
+          <div className="d-grid gap-2 d-md-block">
+            <Button variant="primary" className="d-flex align-items-center px-4 py-2 rounded-3 fw-semibold" onClick={() => setShowModal(true)} type="button">
+              <i className="fas fa-user-plus me-2"></i>
+              Add New User
+            </Button>
+          </div>
+        </Card>
+        <AddUserModal isOpen={showModal} onClose={() => setShowModal(false)} onAddUser={handleAddUser} />
+      </Container>
     </DashboardLayout>
   );
 }

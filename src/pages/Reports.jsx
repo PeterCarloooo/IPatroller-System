@@ -5,6 +5,7 @@ import { Chart, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from '
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { Chart as ChartJS } from 'chart.js';
+import { Container, Card, Row, Col, Stack } from 'react-bootstrap';
 
 Chart.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -335,271 +336,272 @@ export default function Reports() {
 
   return (
     <DashboardLayout activePage="reports">
-      <div className="container-fluid py-4" style={{ minHeight: '100vh', background: '#f8fafc' }}>
-        <div ref={printRef} className="w-100">
-          {/* Report Generation */}
-          <div className="row mb-4">
-            <div className="col-12">
-              <div className="card shadow-sm p-4 border-0 text-center">
-                <h2 className="fw-bold mb-2">Report Generation</h2>
-                <p className="text-muted mb-4" style={{fontSize: '1.1rem'}}>
-                  Select which parts of the report you want to print or export. Adjust the period and date range as needed. Hover over the info icons for details about each section.
-                </p>
-                <div className="mb-3 d-flex flex-wrap justify-content-center gap-3 align-items-center">
-                  <div className="form-check form-check-inline" title="Print or export the entire report, including all sections.">
-                    <input className="form-check-input" type="checkbox" id="printAll" checked={printSections.all} onChange={() => handleSectionChange('all')} />
-                    <label className="form-check-label" htmlFor="printAll">All <i className="fas fa-info-circle text-secondary ms-1" /></label>
-                  </div>
-                  <div className="form-check form-check-inline" title="Summary cards showing key statistics.">
-                    <input className="form-check-input" type="checkbox" id="printSummary" checked={printSections.summary} disabled={printSections.all} onChange={() => handleSectionChange('summary')} />
-                    <label className="form-check-label" htmlFor="printSummary">Summary Cards <i className="fas fa-info-circle text-secondary ms-1" /></label>
-                  </div>
-                  <div className="form-check form-check-inline" title="Charts and analytics for the selected period.">
-                    <input className="form-check-input" type="checkbox" id="printAnalytics" checked={printSections.analytics} disabled={printSections.all} onChange={() => handleSectionChange('analytics')} />
-                    <label className="form-check-label" htmlFor="printAnalytics">Data Analytics <i className="fas fa-info-circle text-secondary ms-1" /></label>
-                  </div>
-                  <div className="form-check form-check-inline" title="List of totals per municipality.">
-                    <input className="form-check-input" type="checkbox" id="printTotal" checked={printSections.total} disabled={printSections.all} onChange={() => handleSectionChange('total')} />
-                    <label className="form-check-label" htmlFor="printTotal">Total Per Municipality <i className="fas fa-info-circle text-secondary ms-1" /></label>
-                  </div>
-                </div>
-                <div className="row mb-3 justify-content-center align-items-center g-2">
-                  <div className="col-auto">
-                    <select className="form-select w-auto" value={selectedYear} onChange={e => setSelectedYear(Number(e.target.value))} aria-label="Select year">
-                      {[...Array(5)].map((_, i) => {
-                        const year = new Date().getFullYear() - i;
-                        return <option key={year} value={year}>{year}</option>;
-                      })}
-                    </select>
-                  </div>
-                  <div className="col-auto">
-                    <select className="form-select w-auto" value={period} onChange={e => setPeriod(e.target.value)} aria-label="Select period">
-                      <option value="monthly">Monthly</option>
-                      <option value="quarterly">Quarterly</option>
-                    </select>
-                  </div>
-                  <div className="col-auto">
-                    {period === 'monthly' ? (
-                      <select className="form-select w-auto" value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)} aria-label="Select month">
-                        {months.map(m => (
-                          <option key={m.value} value={m.value}>{m.label}</option>
-                        ))}
-                      </select>
-                    ) : (
-                      <select className="form-select w-auto" value={selectedQuarter} onChange={e => setSelectedQuarter(e.target.value)} aria-label="Select quarter">
-                        {quarters.map(q => (
-                          <option key={q.value} value={q.value}>{q.label}</option>
-                        ))}
-                      </select>
-                    )}
-                  </div>
-                </div>
-                <div className="d-flex flex-wrap justify-content-center gap-2">
-                  <button className="btn btn-success" onClick={handlePrint}>
-                    <i className="fas fa-print me-2"></i> Print Report
-                  </button>
-                  {/* Export buttons will be added in the next step */}
-                </div>
-                <div className="mt-3">
-                  <p className="mb-0">
-                    <strong>Note:</strong> Piliin kung anong bahagi ng report ang ipiprint. Default ay All.
-                  </p>
-                </div>
+      <Container fluid className="py-4 px-2 px-md-4" style={{ minHeight: '100vh', background: '#f8fafc' }}>
+        <Card className="mb-4 border-0 shadow-sm rounded-4 bg-light bg-opacity-75">
+          <Card.Body>
+            <div className="d-flex flex-column align-items-center justify-content-center text-center mb-3">
+              <div className="d-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle shadow mb-3" style={{ width: 72, height: 72 }}>
+                <i className="fas fa-chart-line text-primary" style={{ fontSize: '2.2rem' }}></i>
               </div>
-            </div>
-          </div>
-          {/* Tile Layout for Report Sections */}
-          <div className="row g-4 mb-4">
-            <div className="col-12 mb-4">
-              <div id="print-analytics" className="h-100 p-4 bg-white rounded-4 shadow-lg d-flex flex-column justify-content-between border border-2 border-success-subtle" style={{ minHeight: 480 }}>
-                <div className="d-flex flex-wrap align-items-center mb-2 gap-3">
-                  <h2 className="fw-bold text-success text-start mb-0" style={{fontSize: '2rem', letterSpacing: '0.5px'}}>Data Analytics</h2>
-                  <select className="form-select w-auto" value={granularity} onChange={e => setGranularity(e.target.value)}>
-                    <option value="monthly">Per Month</option>
-                    <option value="quarterly">Quarterly</option>
-                  </select>
-                  {granularity === 'monthly' && (
-                    <select className="form-select w-auto" value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)}>
-                      {months.map(m => (
-                        <option key={m.value} value={m.value}>{m.label}</option>
-                      ))}
-                    </select>
-                  )}
-                  {granularity === 'quarterly' && (
-                    <select className="form-select w-auto" value={selectedQuarter} onChange={e => setSelectedQuarter(e.target.value)}>
-                      {quarters.map(q => (
-                        <option key={q.value} value={q.value}>{q.label}</option>
-                      ))}
-                    </select>
-                  )}
-                </div>
-                <hr className="mb-3 mt-2" style={{ borderTop: '2px solid #e0f2f1' }} />
-                <p className="text-muted mb-4 text-start" style={{fontSize: '1.1rem'}}>
-                  Visual representation and breakdown of patrol counts per municipality for the selected period.
+              <h2 className="fw-bold mb-1" style={{ fontSize: '2rem', letterSpacing: '0.5px' }}>Report Generation</h2>
+              <p className="text-muted mb-0" style={{ fontSize: '1.1rem' }}>
+                Select which parts of the report you want to print or export. Adjust the period and date range as needed. Hover over the info icons for details about each section.
               </p>
-                <div className="d-flex justify-content-center align-items-center mb-4" style={{minHeight: 340, width: '100%'}}>
-                  {chartData ? (
-                    <Bar ref={chartRef} data={chartData} options={{ responsive: true, plugins: { legend: { position: 'top' } } }} height={320} width={800} />
-                  ) : (
-                    <div className="text-center w-100 py-5 text-muted">No data available for the selected period.</div>
-                  )}
-                </div>
-                <h5 className="fw-bold mb-3 text-info text-start" style={{fontSize: '1.2rem'}}>
-                  {granularity === 'monthly' ? 'Active/Inactive Per Month' : 'Active/Inactive Per Municipality'}
-                </h5>
-                <div className="table-responsive mb-2">
-                  <table className="table table-striped table-hover align-middle mb-0 border rounded-3 overflow-hidden">
-                    <thead className="table-info">
-                      <tr>
-                        <th className="text-info">Municipality</th>
-                        <th className="text-success">Active</th>
-                        <th className="text-danger">Inactive</th>
-                        <th className="text-success" title="Percentage of this municipality's total (active + inactive) out of the grand total for the quarter.">% <i className='fas fa-info-circle text-secondary ms-1' /></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(() => {
-                        const grandTotal = activeInactiveData.reduce((sum, { active, inactive }) => sum + active + inactive, 0);
-                        return activeInactiveData.map(({ name, active, inactive }) => {
-                          const total = active + inactive;
-                          const percentOfGrand = grandTotal ? ((total / grandTotal) * 100).toFixed(1) : 0;
-                          return (
-                            <tr key={name}>
-                              <td>{name}</td>
-                              <td className="fw-bold text-center text-success">{active}</td>
-                              <td className="fw-bold text-center text-danger">{inactive}</td>
-                              <td className="fw-semibold text-center align-middle" style={{minWidth: 120}}>
-                                <div className="d-flex align-items-center gap-2">
-                                  <span>{percentOfGrand}%</span>
-                                  <div className="progress flex-grow-1" style={{height: 8, minWidth: 50}}>
-                                    <div className="progress-bar bg-success" role="progressbar" style={{width: `${percentOfGrand}%`}} aria-valuenow={percentOfGrand} aria-valuemin={0} aria-valuemax={100}></div>
-                                  </div>
+            </div>
+            {/* Controls and Print Section (unchanged) */}
+            <div className="mb-3 d-flex flex-wrap justify-content-center gap-3 align-items-center">
+              <div className="form-check form-check-inline" title="Print or export the entire report, including all sections.">
+                <input className="form-check-input" type="checkbox" id="printAll" checked={printSections.all} onChange={() => handleSectionChange('all')} />
+                <label className="form-check-label" htmlFor="printAll">All <i className="fas fa-info-circle text-secondary ms-1" /></label>
+              </div>
+              <div className="form-check form-check-inline" title="Summary cards showing key statistics.">
+                <input className="form-check-input" type="checkbox" id="printSummary" checked={printSections.summary} disabled={printSections.all} onChange={() => handleSectionChange('summary')} />
+                <label className="form-check-label" htmlFor="printSummary">Summary Cards <i className="fas fa-info-circle text-secondary ms-1" /></label>
+              </div>
+              <div className="form-check form-check-inline" title="Charts and analytics for the selected period.">
+                <input className="form-check-input" type="checkbox" id="printAnalytics" checked={printSections.analytics} disabled={printSections.all} onChange={() => handleSectionChange('analytics')} />
+                <label className="form-check-label" htmlFor="printAnalytics">Data Analytics <i className="fas fa-info-circle text-secondary ms-1" /></label>
+              </div>
+              <div className="form-check form-check-inline" title="List of totals per municipality.">
+                <input className="form-check-input" type="checkbox" id="printTotal" checked={printSections.total} disabled={printSections.all} onChange={() => handleSectionChange('total')} />
+                <label className="form-check-label" htmlFor="printTotal">Total Per Municipality <i className="fas fa-info-circle text-secondary ms-1" /></label>
+              </div>
+            </div>
+            <div className="row mb-3 justify-content-center align-items-center g-2">
+              <div className="col-auto">
+                <select className="form-select w-auto" value={selectedYear} onChange={e => setSelectedYear(Number(e.target.value))} aria-label="Select year">
+                  {[...Array(5)].map((_, i) => {
+                    const year = new Date().getFullYear() - i;
+                    return <option key={year} value={year}>{year}</option>;
+                  })}
+                </select>
+              </div>
+              <div className="col-auto">
+                <select className="form-select w-auto" value={period} onChange={e => setPeriod(e.target.value)} aria-label="Select period">
+                  <option value="monthly">Monthly</option>
+                  <option value="quarterly">Quarterly</option>
+                </select>
+              </div>
+              <div className="col-auto">
+                {period === 'monthly' ? (
+                  <select className="form-select w-auto" value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)} aria-label="Select month">
+                    {months.map(m => (
+                      <option key={m.value} value={m.value}>{m.label}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <select className="form-select w-auto" value={selectedQuarter} onChange={e => setSelectedQuarter(e.target.value)} aria-label="Select quarter">
+                    {quarters.map(q => (
+                      <option key={q.value} value={q.value}>{q.label}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
+            </div>
+            <div className="d-flex flex-wrap justify-content-center gap-2">
+              <button className="btn btn-success" onClick={handlePrint}>
+                <i className="fas fa-print me-2"></i> Print Report
+              </button>
+              {/* Export buttons will be added in the next step */}
+            </div>
+            <div className="mt-3">
+              <p className="mb-0">
+                <strong>Note:</strong> Piliin kung anong bahagi ng report ang ipiprint. Default ay All.
+              </p>
+            </div>
+          </Card.Body>
+        </Card>
+        {/* Tile Layout for Report Sections */}
+        <Row className="g-4 mb-4">
+          <Col xs={12} className="mb-4">
+            <Card id="print-analytics" className="h-100 p-4 bg-white rounded-4 shadow-lg border border-2 border-success-subtle d-flex flex-column justify-content-between">
+              <div className="d-flex flex-wrap align-items-center mb-2 gap-3">
+                <h2 className="fw-bold text-success text-start mb-0" style={{fontSize: '2rem', letterSpacing: '0.5px'}}>Data Analytics</h2>
+                <select className="form-select w-auto" value={granularity} onChange={e => setGranularity(e.target.value)}>
+                  <option value="monthly">Per Month</option>
+                  <option value="quarterly">Quarterly</option>
+                </select>
+                {granularity === 'monthly' && (
+                  <select className="form-select w-auto" value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)}>
+                    {months.map(m => (
+                      <option key={m.value} value={m.value}>{m.label}</option>
+                    ))}
+                  </select>
+                )}
+                {granularity === 'quarterly' && (
+                  <select className="form-select w-auto" value={selectedQuarter} onChange={e => setSelectedQuarter(e.target.value)}>
+                    {quarters.map(q => (
+                      <option key={q.value} value={q.value}>{q.label}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
+              <hr className="mb-3 mt-2" style={{ borderTop: '2px solid #e0f2f1' }} />
+              <p className="text-muted mb-4 text-start" style={{fontSize: '1.1rem'}}>
+                Visual representation and breakdown of patrol counts per municipality for the selected period.
+              </p>
+              <div className="d-flex justify-content-center align-items-center mb-4" style={{minHeight: 340, width: '100%'}}>
+                {chartData ? (
+                  <Bar ref={chartRef} data={chartData} options={{ responsive: true, plugins: { legend: { position: 'top' } } }} height={320} width={800} />
+                ) : (
+                  <div className="text-center w-100 py-5 text-muted">No data available for the selected period.</div>
+                )}
+              </div>
+              <h5 className="fw-bold mb-3 text-info text-start" style={{fontSize: '1.2rem'}}>
+                {granularity === 'monthly' ? 'Active/Inactive Per Month' : 'Active/Inactive Per Municipality'}
+              </h5>
+              <div className="table-responsive mb-2">
+                <table className="table table-striped table-hover align-middle mb-0 border rounded-3 overflow-hidden">
+                  <thead className="table-info">
+                    <tr>
+                      <th className="text-info">Municipality</th>
+                      <th className="text-success">Active</th>
+                      <th className="text-danger">Inactive</th>
+                      <th className="text-success" title="Percentage of this municipality's total (active + inactive) out of the grand total for the quarter.">% <i className='fas fa-info-circle text-secondary ms-1' /></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(() => {
+                      const grandTotal = activeInactiveData.reduce((sum, { active, inactive }) => sum + active + inactive, 0);
+                      return activeInactiveData.map(({ name, active, inactive }) => {
+                        const total = active + inactive;
+                        const percentOfGrand = grandTotal ? ((total / grandTotal) * 100).toFixed(1) : 0;
+                        return (
+                          <tr key={name}>
+                            <td>{name}</td>
+                            <td className="fw-bold text-center text-success">{active}</td>
+                            <td className="fw-bold text-center text-danger">{inactive}</td>
+                            <td className="fw-semibold text-center align-middle" style={{minWidth: 120}}>
+                              <div className="d-flex align-items-center gap-2">
+                                <span>{percentOfGrand}%</span>
+                                <div className="progress flex-grow-1" style={{height: 8, minWidth: 50}}>
+                                  <div className="progress-bar bg-success" role="progressbar" style={{width: `${percentOfGrand}%`}} aria-valuenow={percentOfGrand} aria-valuemin={0} aria-valuemax={100}></div>
                                 </div>
-                              </td>
-                            </tr>
-                          );
-                        });
-                      })()}
-                    </tbody>
-                  </table>
-                  <div className="text-muted small mt-2"><i className="fas fa-info-circle me-1" /> Percentage shows each municipality's share of the total patrol counts for the selected quarter.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="row g-4 mb-4">
-            <div className="col-12 col-lg-4">
-              <div id="print-total" className="p-4 bg-white rounded-4 shadow-sm border border-2 border-warning-subtle d-flex flex-column justify-content-between h-100">
-                  <h2 className="fw-bold mb-3 text-warning text-start" style={{fontSize: '1.5rem', letterSpacing: '0.5px', borderBottom: '2px solid #fff3cd', paddingBottom: 6}}>Total Per Municipality</h2>
-                  <p className="text-muted mb-4 text-start" style={{fontSize: '1.05rem'}}>
-                    List of all municipalities and their total patrol counts for the selected period.
-                  </p>
-                  <div className="table-responsive">
-                    <table className="table table-striped table-hover align-middle mb-0 border rounded-3 overflow-hidden">
-                      <thead className="table-warning">
-                        <tr>
-                          <th className="text-warning">Municipality</th>
-                          <th className="text-warning">Total</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {insights.map((insight, idx) => (
-                          <tr key={idx}>
-                            <td>{insight.name}</td>
-                            <td className="fw-bold text-center">{insight.count}</td>
+                              </div>
+                            </td>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                    </div>
-                  </div>
-            <div className="col-12 col-lg-4">
-              <div id="print-incidents" className="p-4 bg-white rounded-4 shadow-sm border border-2 border-danger-subtle d-flex flex-column justify-content-between h-100">
-                <h2 className="fw-bold mb-3 text-danger text-start" style={{fontSize: '1.5rem', letterSpacing: '0.5px', borderBottom: '2px solid #f8d7da', paddingBottom: 6}}>Incidents Report</h2>
-                <p className="text-muted mb-4 text-start" style={{fontSize: '1.05rem'}}>
-                  Incident counts per municipality for the selected year.
-                </p>
-                <div className="table-responsive">
-                  <table className="table table-striped table-hover align-middle mb-0 border rounded-3 overflow-hidden">
-                    <thead className="table-danger">
-                      <tr>
-                        <th className="text-danger">Municipality</th>
-                        <th className="text-danger">Incidents</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {incidentsByMunicipality.length === 0 ? (
-                        <tr><td colSpan={2} className="text-center text-muted">No data</td></tr>
-                      ) : incidentsByMunicipality.map(({ muni, count }) => (
-                        <tr key={muni}>
-                          <td>{muni}</td>
-                          <td className="fw-bold text-center">{count}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                        );
+                      });
+                    })()}
+                  </tbody>
+                </table>
+                <div className="text-muted small mt-2"><i className="fas fa-info-circle me-1" /> Percentage shows each municipality's share of the total patrol counts for the selected quarter.</div>
               </div>
-            </div>
-            <div className="col-12 col-lg-4">
-              <div id="print-summary" className="p-4 bg-white rounded-4 shadow-sm border border-2 border-primary-subtle d-flex flex-column justify-content-between h-100">
-                <h2 className="fw-bold mb-3 text-primary text-start" style={{fontSize: '1.5rem', letterSpacing: '0.5px', borderBottom: '2px solid #cfe2ff', paddingBottom: 6}}>Summary</h2>
-                <p className="text-muted mb-4 text-start" style={{fontSize: '1.05rem'}}>
-                  System-wide summary for the selected year, aggregating all reports.
-                </p>
-                <div className="table-responsive mb-3">
-                  <table className="table table-bordered align-middle mb-0">
-                    <tbody>
-                      <tr>
-                        <th>Total Patrollers (Year)</th>
-                        <td className="fw-bold text-center">{allSummary.totalPatrollers}</td>
+            </Card>
+          </Col>
+        </Row>
+        <Row className="g-4 mb-4">
+          <Col xs={12} lg={4}>
+            <Card id="print-total" className="p-4 bg-white rounded-4 shadow-sm border border-2 border-warning-subtle d-flex flex-column justify-content-between h-100">
+              <h2 className="fw-bold mb-3 text-warning text-start" style={{fontSize: '1.5rem', letterSpacing: '0.5px', borderBottom: '2px solid #fff3cd', paddingBottom: 6}}>Total Per Municipality</h2>
+              <p className="text-muted mb-4 text-start" style={{fontSize: '1.05rem'}}>
+                List of all municipalities and their total patrol counts for the selected period.
+              </p>
+              <div className="table-responsive">
+                <table className="table table-striped table-hover align-middle mb-0 border rounded-3 overflow-hidden">
+                  <thead className="table-warning">
+                    <tr>
+                      <th className="text-warning">Municipality</th>
+                      <th className="text-warning">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {insights.map((insight, idx) => (
+                      <tr key={idx}>
+                        <td>{insight.name}</td>
+                        <td className="fw-bold text-center">{insight.count}</td>
                       </tr>
-                      <tr>
-                        <th>Total Incidents (Year)</th>
-                        <td className="fw-bold text-center">{allSummary.totalIncidents}</td>
-                      </tr>
-                      <tr>
-                        <th>Total Patrol Counts</th>
-                        <td className="fw-bold text-center">{allSummary.totalPatrols}</td>
-                      </tr>
-                      <tr>
-                        <th>Total Municipalities</th>
-                        <td className="fw-bold text-center">{allSummary.totalMunicipalities}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <h5 className="fw-bold mb-2 text-primary text-start" style={{fontSize: '1.1rem', letterSpacing: '0.5px'}}>Monthly Breakdown</h5>
-                <div className="table-responsive">
-                  <table className="table table-striped table-hover summary-table align-middle mb-0 border rounded-3 overflow-hidden">
-                    <thead className="table-primary">
-                      <tr>
-                        <th className="text-primary">Month</th>
-                        <th className="text-primary">Patrollers</th>
-                        <th className="text-primary">% of Year</th>
-                        <th className="text-primary">Incidents</th>
-                        <th className="text-primary">% of Year</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {monthlySummary.map((row, idx) => (
-                        <tr key={idx}>
-                          <td className="fw-semibold">{row.month}</td>
-                          <td className="fs-6 fw-bold text-center">{row.patrollers}</td>
-                          <td className="text-center">{row.patrollersPct}%</td>
-                          <td className="fs-6 fw-bold text-center">{row.incidents}</td>
-                          <td className="text-center">{row.incidentsPct}%</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
+            </Card>
+          </Col>
+          <Col xs={12} lg={4}>
+            <Card id="print-incidents" className="p-4 bg-white rounded-4 shadow-sm border border-2 border-danger-subtle d-flex flex-column justify-content-between h-100">
+              <h2 className="fw-bold mb-3 text-danger text-start" style={{fontSize: '1.5rem', letterSpacing: '0.5px', borderBottom: '2px solid #f8d7da', paddingBottom: 6}}>Incidents Report</h2>
+              <p className="text-muted mb-4 text-start" style={{fontSize: '1.05rem'}}>
+                Incident counts per municipality for the selected year.
+              </p>
+              <div className="table-responsive">
+                <table className="table table-striped table-hover align-middle mb-0 border rounded-3 overflow-hidden">
+                  <thead className="table-danger">
+                    <tr>
+                      <th className="text-danger">Municipality</th>
+                      <th className="text-danger">Incidents</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {incidentsByMunicipality.length === 0 ? (
+                      <tr><td colSpan={2} className="text-center text-muted">No data</td></tr>
+                    ) : incidentsByMunicipality.map(({ muni, count }) => (
+                      <tr key={muni}>
+                        <td>{muni}</td>
+                        <td className="fw-bold text-center">{count}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </Col>
+          <Col xs={12} lg={4}>
+            <Card id="print-summary" className="p-4 bg-white rounded-4 shadow-sm border border-2 border-primary-subtle d-flex flex-column justify-content-between h-100">
+              <h2 className="fw-bold mb-3 text-primary text-start" style={{fontSize: '1.5rem', letterSpacing: '0.5px', borderBottom: '2px solid #cfe2ff', paddingBottom: 6}}>Summary</h2>
+              <p className="text-muted mb-4 text-start" style={{fontSize: '1.05rem'}}>
+                System-wide summary for the selected year, aggregating all reports.
+              </p>
+              <div className="table-responsive mb-3">
+                <table className="table table-bordered align-middle mb-0">
+                  <tbody>
+                    <tr>
+                      <th>Total Patrollers (Year)</th>
+                      <td className="fw-bold text-center">{allSummary.totalPatrollers}</td>
+                    </tr>
+                    <tr>
+                      <th>Total Incidents (Year)</th>
+                      <td className="fw-bold text-center">{allSummary.totalIncidents}</td>
+                    </tr>
+                    <tr>
+                      <th>Total Patrol Counts</th>
+                      <td className="fw-bold text-center">{allSummary.totalPatrols}</td>
+                    </tr>
+                    <tr>
+                      <th>Total Municipalities</th>
+                      <td className="fw-bold text-center">{allSummary.totalMunicipalities}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <h5 className="fw-bold mb-2 text-primary text-start" style={{fontSize: '1.1rem', letterSpacing: '0.5px'}}>Monthly Breakdown</h5>
+              <div className="table-responsive">
+                <table className="table table-striped table-hover summary-table align-middle mb-0 border rounded-3 overflow-hidden">
+                  <thead className="table-primary">
+                    <tr>
+                      <th className="text-primary">Month</th>
+                      <th className="text-primary">Patrollers</th>
+                      <th className="text-primary">% of Year</th>
+                      <th className="text-primary">Incidents</th>
+                      <th className="text-primary">% of Year</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {monthlySummary.map((row, idx) => (
+                      <tr key={idx}>
+                        <td className="fw-semibold">{row.month}</td>
+                        <td className="fs-6 fw-bold text-center">{row.patrollers}</td>
+                        <td className="text-center">{row.patrollersPct}%</td>
+                        <td className="fs-6 fw-bold text-center">{row.incidents}</td>
+                        <td className="text-center">{row.incidentsPct}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
     </DashboardLayout>
   );
 }

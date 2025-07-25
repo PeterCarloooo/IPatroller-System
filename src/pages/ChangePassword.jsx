@@ -4,6 +4,8 @@ import { auth } from '../firebase/config';
 import { db } from '../firebase/config';
 import { collection, addDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
+import { Button, Form, Spinner, Alert } from 'react-bootstrap';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
 function ChangePassword({ isOpen, onClose }) {
   const [form, setForm] = useState({
@@ -108,12 +110,12 @@ function ChangePassword({ isOpen, onClose }) {
         <div className="modal-content border-0 shadow-lg rounded-4 p-2" style={{ background: '#fff' }}>
           <div className="modal-header border-0 pb-0" style={{ background: '#f5f7fa', borderTopLeftRadius: '1rem', borderTopRightRadius: '1rem' }}>
             <h5 className="modal-title d-flex align-items-center fw-bold">
-              <i className="fas fa-key me-2 text-primary" />
+              <i className="bi bi-shield-lock-fill me-2 text-primary" style={{ fontSize: '1.3rem' }} />
               Change Password
             </h5>
             <button type="button" className="btn-close" onClick={handleClose} aria-label="Close"></button>
           </div>
-          <form onSubmit={handleSubmit} autoComplete="off">
+          <Form onSubmit={handleSubmit} autoComplete="off">
             <div className="modal-body pt-3 pb-4 px-4">
               <div className="mb-4 p-3 bg-light rounded-3">
                 <p className="text-muted small mb-2 fw-bold">Password Requirements:</p>
@@ -123,99 +125,99 @@ function ChangePassword({ isOpen, onClose }) {
                   <li>Contains at least one number</li>
                 </ul>
               </div>
-              <div className="mb-3">
-                <label className="form-label fw-semibold">Current Password</label>
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-semibold">Current Password</Form.Label>
                 <div className="input-group">
-                  <input
+                  <Form.Control
                     type={showCurrent ? 'text' : 'password'}
-                    className="form-control form-control-lg rounded-3"
+                    className="form-control-lg rounded-3"
                     name="currentPassword"
                     value={form.currentPassword}
                     onChange={handleInputChange}
                     required
                   />
-                  <button
-                    type="button"
-                    className="btn btn-outline-secondary border-0 bg-transparent input-group-text"
+                  <Button
+                    variant="outline-secondary"
+                    className="border-0 bg-transparent input-group-text"
                     tabIndex={-1}
                     style={{ color: '#888', borderTopRightRadius: '0.5rem', borderBottomRightRadius: '0.5rem' }}
                     onClick={() => setShowCurrent((v) => !v)}
                   >
-                    <i className={`fas fa-${showCurrent ? 'eye-slash' : 'eye'}`}></i>
-                  </button>
+                    <i className={`bi bi-eye${showCurrent ? '-slash' : ''}`}></i>
+                  </Button>
                 </div>
-              </div>
-              <div className="mb-3">
-                <label className="form-label fw-semibold">New Password</label>
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-semibold">New Password</Form.Label>
                 <div className="input-group">
-                  <input
+                  <Form.Control
                     type={showNew ? 'text' : 'password'}
-                    className="form-control form-control-lg rounded-3"
+                    className="form-control-lg rounded-3"
                     name="newPassword"
                     value={form.newPassword}
                     onChange={handleInputChange}
                     required
                   />
-                  <button
-                    type="button"
-                    className="btn btn-outline-secondary border-0 bg-transparent input-group-text"
+                  <Button
+                    variant="outline-secondary"
+                    className="border-0 bg-transparent input-group-text"
                     tabIndex={-1}
                     style={{ color: '#888', borderTopRightRadius: '0.5rem', borderBottomRightRadius: '0.5rem' }}
                     onClick={() => setShowNew((v) => !v)}
                   >
-                    <i className={`fas fa-${showNew ? 'eye-slash' : 'eye'}`}></i>
-                  </button>
+                    <i className={`bi bi-eye${showNew ? '-slash' : ''}`}></i>
+                  </Button>
                 </div>
-              </div>
-              <div className="mb-3">
-                <label className="form-label fw-semibold">Confirm New Password</label>
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-semibold">Confirm New Password</Form.Label>
                 <div className="input-group">
-                  <input
+                  <Form.Control
                     type={showConfirm ? 'text' : 'password'}
-                    className="form-control form-control-lg rounded-3"
+                    className="form-control-lg rounded-3"
                     name="confirmPassword"
                     value={form.confirmPassword}
                     onChange={handleInputChange}
                     required
                   />
-                  <button
-                    type="button"
-                    className="btn btn-outline-secondary border-0 bg-transparent input-group-text"
+                  <Button
+                    variant="outline-secondary"
+                    className="border-0 bg-transparent input-group-text"
                     tabIndex={-1}
                     style={{ color: '#888', borderTopRightRadius: '0.5rem', borderBottomRightRadius: '0.5rem' }}
                     onClick={() => setShowConfirm((v) => !v)}
                   >
-                    <i className={`fas fa-${showConfirm ? 'eye-slash' : 'eye'}`}></i>
-                  </button>
+                    <i className={`bi bi-eye${showConfirm ? '-slash' : ''}`}></i>
+                  </Button>
                 </div>
-              </div>
-              {error && <div className="alert alert-danger text-center mb-3">{error}</div>}
-              {success && <div className="alert alert-success text-center mb-3">{success}</div>}
+              </Form.Group>
+              {error && <Alert variant="danger" className="text-center mb-3">{error}</Alert>}
+              {success && <Alert variant="success" className="text-center mb-3">{success}</Alert>}
               {error === 'No authenticated user found. Please log in again.' && (
-                <button className="btn btn-primary mt-2" onClick={() => navigate('/login')}>
+                <Button variant="primary" className="mt-2" onClick={() => navigate('/login')}>
                   Go to Login
-                </button>
+                </Button>
               )}
             </div>
             <div className="modal-footer border-0 pt-0 pb-4 px-4">
-              <button type="button" className="btn btn-secondary px-4 py-2 rounded-3" onClick={handleClose} disabled={loading}>
+              <Button type="button" variant="secondary" className="px-4 py-2 rounded-3" onClick={handleClose} disabled={loading}>
                 Cancel
-              </button>
-              <button type="submit" className="btn btn-primary px-4 py-2 rounded-3 ms-2" disabled={loading}>
+              </Button>
+              <Button type="submit" variant="primary" className="px-4 py-2 rounded-3 ms-2" disabled={loading}>
                 {loading ? (
                   <>
-                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    <Spinner animation="border" size="sm" className="me-2" />
                     Changing...
                   </>
                 ) : (
                   <>
-                    <i className="fas fa-save me-2"></i>
+                    <i className="bi bi-save me-2"></i>
                     Change Password
                   </>
                 )}
-              </button>
+              </Button>
             </div>
-          </form>
+          </Form>
         </div>
       </div>
     </div>

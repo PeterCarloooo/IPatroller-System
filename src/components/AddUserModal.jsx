@@ -5,7 +5,7 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { Modal, Form, Button, Row, Col, Alert, Spinner } from 'react-bootstrap';
 
 function AddUserModal({ isOpen, onClose, onAddUser, editUser, onEditUser }) {
-  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '', role: 'User', municipality: '' });
+  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '', role: 'User', municipality: '', status: 'Active' });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -19,10 +19,11 @@ function AddUserModal({ isOpen, onClose, onAddUser, editUser, onEditUser }) {
         email: editUser.email || '',
         password: '',
         role: editUser.role || 'User',
-        municipality: editUser.municipality || ''
+        municipality: editUser.municipality || '',
+        status: editUser.status || 'Active',
       });
     } else {
-      setForm({ firstName: '', lastName: '', email: '', password: '', role: 'User', municipality: '' });
+      setForm({ firstName: '', lastName: '', email: '', password: '', role: 'User', municipality: '', status: 'Active' });
     }
     setError('');
     setSuccess('');
@@ -41,16 +42,17 @@ function AddUserModal({ isOpen, onClose, onAddUser, editUser, onEditUser }) {
     setError('');
     setSuccess('');
     setLoading(true);
-    if (!form.firstName || !form.lastName || !form.email || (!editUser && !form.password) || !form.role || !form.municipality) {
+    if (!form.firstName || !form.lastName || !form.email || (!editUser && !form.password) || !form.role || !form.municipality || !form.status) {
       setError('All fields are required');
       setLoading(false);
       return;
     }
     try {
       if (editUser) {
-        onEditUser({ ...editUser, ...form });
+        await onEditUser({ ...editUser, ...form });
+        setSuccess('User updated successfully!');
         setLoading(false);
-        handleClose();
+        setTimeout(() => setSuccess(''), 2000);
       } else {
         const userCredential = await createUserWithEmailAndPassword(auth, form.email, form.password);
         const uid = userCredential.user.uid;
@@ -60,9 +62,9 @@ function AddUserModal({ isOpen, onClose, onAddUser, editUser, onEditUser }) {
           email: form.email,
           role: form.role || 'User',
           municipality: form.municipality || '',
-          status: 'Active',
+          status: form.status || 'Active',
           createdAt: new Date(),
-          id: uid
+          id: uid // Always set id to Auth UID
         });
         setSuccess('User added successfully!');
         onAddUser({
@@ -70,16 +72,16 @@ function AddUserModal({ isOpen, onClose, onAddUser, editUser, onEditUser }) {
           email: form.email,
           role: form.role,
           municipality: form.municipality,
-          id: uid,
-          status: 'Active'
+          id: uid, // Always use Auth UID
+          status: form.status || 'Active'
         });
         setLoading(false);
-        setTimeout(() => {
-          handleClose();
-        }, 500);
+        // Do not close or reset the form here; keep the modal open and data as-is
       }
     } catch (err) {
-      if (err.code === 'auth/email-already-in-use') {
+      if (editUser) {
+        setError('Failed to update user: ' + (err.message || err));
+      } else if (err.code === 'auth/email-already-in-use') {
         setError('Email is already in use.');
       } else if (err.code === 'auth/weak-password') {
         setError('Password is too weak.');
@@ -91,7 +93,7 @@ function AddUserModal({ isOpen, onClose, onAddUser, editUser, onEditUser }) {
   };
 
   const handleClose = () => {
-    setForm({ firstName: '', lastName: '', email: '', password: '', role: 'User', municipality: '' });
+    setForm({ firstName: '', lastName: '', email: '', password: '', role: 'User', municipality: '', status: 'Active' });
     setError('');
     setSuccess('');
     setLoading(false);
@@ -190,6 +192,21 @@ function AddUserModal({ isOpen, onClose, onAddUser, editUser, onEditUser }) {
             >
               <option value="User">User</option>
               <option value="Administrator">Administrator</option>
+            </Form.Select>
+          </Form.Group>
+          <Form.Group className="mb-3" controlId="status">
+            <Form.Label className="fw-semibold">Status</Form.Label>
+            <Form.Select
+              name="status"
+              value={form.status}
+              onChange={handleInputChange}
+              required
+              size="lg"
+              className="rounded-3"
+              disabled={!!editUser}
+            >
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
             </Form.Select>
           </Form.Group>
           <Form.Group className="mb-3" controlId="municipality">

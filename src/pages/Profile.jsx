@@ -4,6 +4,7 @@ import { auth } from '../firebase/config';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import ChangePassword from './ChangePassword';
+import { Container, Card, Row, Col, Stack, Button, Form, Spinner, Alert } from 'react-bootstrap';
 
 function Profile({ section }) {
   const navigate = useNavigate();
@@ -167,172 +168,106 @@ function Profile({ section }) {
 
   // Profile Info Card
   const profileInfoCard = (
-    <div className="w-100" style={{ padding: '0rem 1.5rem' }}>
-      <div className="d-flex flex-column align-items-center mb-4">
-        <h3 className="fw-bold mb-1 text-center" style={{ fontSize: '2rem' }}>Profile Information</h3>
-        <p className="text-muted mb-0 text-center" style={{ fontSize: '1.1rem' }}>Update your account information</p>
-        <button className="btn btn-outline-secondary btn-sm mt-3" onClick={fetchProfile} disabled={refreshing || loading}>
-          {refreshing ? (
-            <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-          ) : (
-            <i className="fas fa-sync-alt me-2"></i>
-          )}
-          Refresh
-        </button>
-      </div>
-      <hr className="my-4" />
-      {loading ? (
-        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: 200 }}>
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">Loading...</span>
+    <Container fluid className="py-4 px-2 px-md-4">
+      <Card className="mb-4 border-0 shadow-sm rounded-4 bg-light bg-opacity-75 p-4">
+        <Stack direction="horizontal" gap={3} className="align-items-center flex-wrap mb-3">
+          <div className="d-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle shadow" style={{ width: 56, height: 56 }}>
+            <i className="fas fa-user text-primary" style={{ fontSize: '1.7rem' }}></i>
           </div>
-        </div>
-      ) : (
-        <>
-          {success && <div className="alert alert-success text-center">{success}</div>}
-          {error && <div className="alert alert-danger text-center">{error}</div>}
-          <div className="row g-3 mb-4">
-            {userRole === 'Administrator' ? (
-              <>
-                <div className="col-12 col-md-6">
-                  <div className="form-group mb-2">
-                    <label htmlFor="email" className="fw-semibold mb-1">Email</label>
-                    <input
-                      type="email"
-                      className="form-control form-control-lg"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      disabled
-                      style={{ background: '#f1f3f6', border: '1px solid #e0e0e0' }}
-                    />
-                  </div>
-                </div>
-                <div className="col-12 col-md-6">
-                  <div className="form-group mb-2">
-                    <label htmlFor="role" className="fw-semibold mb-1">Role</label>
-                    <input
-                      type="text"
-                      className="form-control form-control-lg"
-                      id="role"
-                      value={formData.role}
-                      disabled
-                      style={{ background: '#f1f3f6', border: '1px solid #e0e0e0' }}
-                    />
-                  </div>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="col-12 col-md-6">
-                  <div className="form-group mb-2">
-                    <label htmlFor="firstName" className="fw-semibold mb-1">First Name</label>
-                    <input
-                      type="text"
-                      className="form-control form-control-lg"
-                      id="firstName"
-                      name="firstName"
-                      value={formData.firstName}
-                      onChange={handleInputChange}
-                      disabled={!isEditing}
-                      style={{ background: !isEditing ? '#f1f3f6' : undefined, border: !isEditing ? '1px solid #e0e0e0' : undefined }}
-                    />
-                  </div>
-                </div>
-                <div className="col-12 col-md-6">
-                  <div className="form-group mb-2">
-                    <label htmlFor="lastName" className="fw-semibold mb-1">Last Name</label>
-                    <input
-                      type="text"
-                      className="form-control form-control-lg"
-                      id="lastName"
-                      name="lastName"
-                      value={formData.lastName}
-                      onChange={handleInputChange}
-                      disabled={!isEditing}
-                      style={{ background: !isEditing ? '#f1f3f6' : undefined, border: !isEditing ? '1px solid #e0e0e0' : undefined }}
-                    />
-                  </div>
-                </div>
-                <div className="col-12 col-md-6">
-                  <div className="form-group mb-2">
-                    <label htmlFor="email" className="fw-semibold mb-1">Email</label>
-                    <input
-                      type="email"
-                      className="form-control form-control-lg"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      disabled
-                      style={{ background: '#f1f3f6', border: '1px solid #e0e0e0' }}
-                    />
-                  </div>
-                </div>
-                <div className="col-12 col-md-6">
-                  <div className="form-group mb-2">
-                    <label htmlFor="role" className="fw-semibold mb-1">Role</label>
-                    <input
-                      type="text"
-                      className="form-control form-control-lg"
-                      id="role"
-                      value={formData.role}
-                      disabled
-                      style={{ background: '#f1f3f6', border: '1px solid #e0e0e0' }}
-                    />
-                  </div>
-                </div>
-                <div className="col-12 col-md-6">
-                  <div className="form-group mb-2">
-                    <label htmlFor="phoneNumber" className="fw-semibold mb-1">Phone Number</label>
-                    <input
-                      type="text"
-                      className="form-control form-control-lg"
-                      id="phoneNumber"
-                      name="phoneNumber"
-                      value={formData.phoneNumber}
-                      onChange={handleInputChange}
-                      disabled={!isEditing}
-                      style={{ background: !isEditing ? '#f1f3f6' : undefined, border: !isEditing ? '1px solid #e0e0e0' : undefined }}
-                    />
-                  </div>
-                </div>
-                <div className="col-12 col-md-6">
-                  <div className="form-group mb-2">
-                    <label htmlFor="municipality" className="fw-semibold mb-1">Municipality</label>
-                    <input
-                      type="text"
-                      className="form-control form-control-lg"
-                      id="municipality"
-                      value={formData.municipality}
-                      onChange={handleInputChange}
-                      disabled={!isEditing}
-                      style={{ background: !isEditing ? '#f1f3f6' : undefined, border: !isEditing ? '1px solid #e0e0e0' : undefined }}
-                    />
-                  </div>
-                </div>
-              </>
-            )}
+          <div>
+            <h3 className="fw-bold mb-1" style={{ fontSize: '1.6rem', letterSpacing: '0.5px' }}>Profile Information</h3>
+            <p className="text-muted mb-0" style={{ fontSize: '1.05rem' }}>Update your account information</p>
           </div>
-          <div className="d-flex flex-column flex-md-row gap-2 justify-content-center mt-2">
-            {userRole !== 'Administrator' && !isEditing ? (
-              <button className="btn btn-primary flex-fill py-2 px-4" onClick={() => setIsEditing(true)}>
-                <i className="fas fa-edit me-2"></i>Edit Profile
-              </button>
-            ) : null}
-            {userRole !== 'Administrator' && isEditing ? (
-              <>
-                <button className="btn btn-success flex-fill py-2 px-4" onClick={handleSave}>
-                  <i className="fas fa-save me-2"></i>Save
-                </button>
-                <button className="btn btn-danger flex-fill py-2 px-4" onClick={() => setIsEditing(false)}>
-                  <i className="fas fa-times me-2"></i>Cancel
-                </button>
-              </>
-            ) : null}
+        </Stack>
+        <hr className="my-4" />
+        {loading ? (
+          <div className="d-flex justify-content-center align-items-center" style={{ minHeight: 200 }}>
+            <Spinner animation="border" variant="primary" />
           </div>
-        </>
-      )}
-    </div>
+        ) : (
+          <>
+            {success && <Alert variant="success" className="text-center">{success}</Alert>}
+            {error && <Alert variant="danger" className="text-center">{error}</Alert>}
+            <Row className="g-3 mb-4">
+              {userRole === 'Administrator' ? (
+                <>
+                  <Col xs={12} md={6}>
+                    <Form.Group className="mb-2">
+                      <Form.Label className="fw-semibold mb-1">Email</Form.Label>
+                      <Form.Control type="email" value={formData.email} disabled style={{ background: '#f1f3f6', border: '1px solid #e0e0e0' }} />
+                    </Form.Group>
+                  </Col>
+                  <Col xs={12} md={6}>
+                    <Form.Group className="mb-2">
+                      <Form.Label className="fw-semibold mb-1">Role</Form.Label>
+                      <Form.Control type="text" value={formData.role} disabled style={{ background: '#f1f3f6', border: '1px solid #e0e0e0' }} />
+                    </Form.Group>
+                  </Col>
+                </>
+              ) : (
+                <>
+                  <Col xs={12} md={6}>
+                    <Form.Group className="mb-2">
+                      <Form.Label className="fw-semibold mb-1">First Name</Form.Label>
+                      <Form.Control type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} disabled={!isEditing} style={{ background: !isEditing ? '#f1f3f6' : undefined, border: !isEditing ? '1px solid #e0e0e0' : undefined }} />
+                    </Form.Group>
+                  </Col>
+                  <Col xs={12} md={6}>
+                    <Form.Group className="mb-2">
+                      <Form.Label className="fw-semibold mb-1">Last Name</Form.Label>
+                      <Form.Control type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} disabled={!isEditing} style={{ background: !isEditing ? '#f1f3f6' : undefined, border: !isEditing ? '1px solid #e0e0e0' : undefined }} />
+                    </Form.Group>
+                  </Col>
+                  <Col xs={12} md={6}>
+                    <Form.Group className="mb-2">
+                      <Form.Label className="fw-semibold mb-1">Email</Form.Label>
+                      <Form.Control type="email" value={formData.email} disabled style={{ background: '#f1f3f6', border: '1px solid #e0e0e0' }} />
+                    </Form.Group>
+                  </Col>
+                  <Col xs={12} md={6}>
+                    <Form.Group className="mb-2">
+                      <Form.Label className="fw-semibold mb-1">Role</Form.Label>
+                      <Form.Control type="text" value={formData.role} disabled style={{ background: '#f1f3f6', border: '1px solid #e0e0e0' }} />
+                    </Form.Group>
+                  </Col>
+                  <Col xs={12} md={6}>
+                    <Form.Group className="mb-2">
+                      <Form.Label className="fw-semibold mb-1">Phone Number</Form.Label>
+                      <Form.Control type="text" name="phoneNumber" value={formData.phoneNumber} onChange={handleInputChange} disabled={!isEditing} style={{ background: !isEditing ? '#f1f3f6' : undefined, border: !isEditing ? '1px solid #e0e0e0' : undefined }} />
+                    </Form.Group>
+                  </Col>
+                  <Col xs={12} md={6}>
+                    <Form.Group className="mb-2">
+                      <Form.Label className="fw-semibold mb-1">Municipality</Form.Label>
+                      <Form.Control type="text" value={formData.municipality} onChange={handleInputChange} disabled={!isEditing} style={{ background: !isEditing ? '#f1f3f6' : undefined, border: !isEditing ? '1px solid #e0e0e0' : undefined }} />
+                    </Form.Group>
+                  </Col>
+                </>
+              )}
+            </Row>
+            <Stack direction="horizontal" gap={2} className="justify-content-center mt-2 flex-wrap">
+              {userRole !== 'Administrator' && !isEditing ? (
+                <div className="d-grid gap-2 d-md-block">
+                  <Button variant="primary" className="flex-fill py-2 px-4 d-flex align-items-center justify-content-center" onClick={() => setIsEditing(true)}>
+                    <i className="fas fa-edit me-2"></i>Edit Profile
+                  </Button>
+                </div>
+              ) : null}
+              {userRole !== 'Administrator' && isEditing ? (
+                <div className="d-grid gap-2 d-md-block">
+                  <Button variant="success" className="flex-fill py-2 px-4 d-flex align-items-center justify-content-center" onClick={handleSave}>
+                    <i className="fas fa-save me-2"></i>Save
+                  </Button>
+                  <Button variant="danger" className="flex-fill py-2 px-4 d-flex align-items-center justify-content-center" onClick={() => setIsEditing(false)}>
+                    <i className="fas fa-times me-2"></i>Cancel
+                  </Button>
+                </div>
+              ) : null}
+            </Stack>
+          </>
+        )}
+      </Card>
+    </Container>
   );
 
   // Security Card (placeholder)
@@ -348,41 +283,43 @@ function Profile({ section }) {
   // Render based on section prop
   if (section === 'profile') {
     return (
-      <div className="row justify-content-center">
-        {profileInfoCard}
-      </div>
+      <Row className="justify-content-center">
+        <Col xs={12} md={10} lg={8}>{profileInfoCard}</Col>
+      </Row>
     );
   }
   if (section === 'account') {
     return (
-      <div className="card shadow-sm mb-4">
-        <div className="card-body">
+      <Card className="shadow-sm mb-4">
+        <Card.Body>
           <h5 className="fw-bold mb-4">Account Settings</h5>
           <div className="text-muted">Account settings are now managed in the Settings tab.</div>
-        </div>
-      </div>
+        </Card.Body>
+      </Card>
     );
   }
   if (section === 'security') {
     return (
-      <div className="row justify-content-center">
-        <div className="col-md-8 mb-4"></div>
-        <div className="col-md-4">
-          {securityCard}
-        </div>
-      </div>
+      <Row className="justify-content-center">
+        <Col md={8} className="mb-4"></Col>
+        <Col md={4}>
+          <Card className="shadow-sm mb-4">
+            <Card.Body>
+              <h5 className="fw-bold mb-4">Security</h5>
+              <p className="text-muted">Security settings and options will be available here.</p>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
     );
   }
   // Default: show all
   return (
-    <div style={{ backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
-      <div className="container py-5">
-        <div className="row justify-content-center">
-          {profileInfoCard}
-          {/* AccountSettings removed */}
-        </div>
-      </div>
-    </div>
+    <Container fluid style={{ backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
+      <Row className="justify-content-center py-5">
+        <Col xs={12} md={10} lg={8}>{profileInfoCard}</Col>
+      </Row>
+    </Container>
   );
 }
 

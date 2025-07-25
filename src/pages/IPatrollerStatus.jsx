@@ -4,6 +4,7 @@ import AddModal from './add';
 import { db } from '../firebase/config';
 import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
 import { updateDoc, doc as firestoreDoc } from 'firebase/firestore';
+import { Container, Card, Row, Col, Stack, Button, Form, Nav } from 'react-bootstrap';
 
 const districts = [
   {
@@ -205,56 +206,55 @@ function IPatrollerStatus() {
   }, [selectedMonth]);
 
   return (
-    <div style={{ height: '100%', minHeight: '100vh', width: '100%', minWidth: '100vw', margin: 0, padding: 0, boxSizing: 'border-box' }}>
-      <DashboardLayout activePage="ipatroller-status">
-        <div className="bg-white shadow-sm rounded-4 p-4 mb-4">
-          <h2 className="fw-bold mb-0">IPatroller Status</h2>
-          <p className="text-muted mb-0">Monitor your patrollers in real-time</p>
-        </div>
-        {/* Month selection and Add button always visible */}
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <div></div>
-          <div className="d-flex align-items-center gap-2">
-            <select
-              className="form-select w-auto"
+    <DashboardLayout activePage="ipatroller-status">
+      <Container fluid className="py-4 px-2 px-md-4" style={{ minHeight: '100vh' }}>
+        <Card className="mb-4 border-0 shadow-sm rounded-4 bg-light bg-opacity-75 p-4">
+          <Stack direction="horizontal" gap={3} className="align-items-center flex-wrap">
+            <div className="d-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle shadow" style={{ width: 56, height: 56 }}>
+              <i className="fas fa-shield-alt text-success" style={{ fontSize: '1.7rem' }}></i>
+            </div>
+            <div>
+              <h2 className="fw-bold mb-0" style={{ fontSize: '1.6rem', letterSpacing: '0.5px' }}>IPatroller Status</h2>
+              <p className="text-muted mb-0" style={{ fontSize: '1.05rem' }}>Monitor your patrollers in real-time</p>
+            </div>
+          </Stack>
+        </Card>
+        {/* Month selection and Add/Edit buttons */}
+        <Row className="mb-3 align-items-center">
+          <Col xs={12} md={8} className="mb-2 mb-md-0"></Col>
+          <Col xs={12} md={4} className="d-flex justify-content-end align-items-center gap-2">
+            <Form.Select
+              className="w-auto"
               value={selectedMonth}
               onChange={handleMonthChange}
             >
               {months.map(m => (
                 <option key={m.value} value={m.value}>{m.label}</option>
               ))}
-            </select>
-            <button
-              className="btn btn-success ms-2"
-              onClick={handleAddClick}
-            >
-              Add
-            </button>
-            <button
-              className="btn btn-primary ms-2"
-              onClick={handleEditClick}
-            >
-              Edit
-            </button>
-          </div>
-        </div>
-        <ul className="nav nav-tabs mb-4 d-flex align-items-center justify-content-between">
-          <div className="d-flex">
-            <li className="nav-item">
-              <button className={`nav-link${activeTab === 'status' ? ' active' : ''}`} onClick={() => setActiveTab('status')}>
-                Status
-              </button>
-            </li>
-            <li className="nav-item">
-              <button className={`nav-link${activeTab === 'daily' ? ' active' : ''}`} onClick={() => setActiveTab('daily')}>
-                Daily Counts
-              </button>
-            </li>
-          </div>
-        </ul>
+            </Form.Select>
+            <Button variant="success" className="ms-2 d-flex align-items-center" onClick={handleAddClick}>
+              <i className="fas fa-plus me-2"></i> Add
+            </Button>
+            <Button variant="primary" className="ms-2 d-flex align-items-center" onClick={handleEditClick}>
+              <i className="fas fa-edit me-2"></i> Edit
+            </Button>
+          </Col>
+        </Row>
+        <Nav variant="tabs" className="mb-4">
+          <Nav.Item>
+            <Nav.Link active={activeTab === 'status'} onClick={() => setActiveTab('status')}>
+              Status
+            </Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link active={activeTab === 'daily'} onClick={() => setActiveTab('daily')}>
+              Daily Counts
+            </Nav.Link>
+          </Nav.Item>
+        </Nav>
         <div className="tab-content">
           <div className={`tab-pane fade${activeTab === 'status' ? ' show active' : ''}`}>
-            <div className="card shadow-sm p-4">
+            <Card className="shadow-sm p-4 mb-4 border-0 rounded-4">
               <h4 className="fw-bold mb-3">Patroller Status Overview</h4>
               <p className="text-muted">This section will show a summary of patroller status (e.g., Active or Inactive).</p>
               <div className="table-responsive" style={{ maxHeight: '70vh', overflow: 'auto', borderRadius: '1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.07)' }}>
@@ -385,138 +385,141 @@ function IPatrollerStatus() {
                   </tbody>
                 </table>
               </div>
-            </div>
+            </Card>
           </div>
           <div className={`tab-pane fade${activeTab === 'daily' ? ' show active' : ''}`}>
-            <div className="table-responsive" style={{ maxHeight: '70vh', overflow: 'auto', borderRadius: '1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.07)' }}>
-              <table className="table table-bordered table-striped align-middle table-hover mb-0" style={{ minWidth: 1200 }}>
-                <thead className="table-success">
-                  <tr>
-                    <th
-                      style={{
-                        minWidth: 120,
-                        maxWidth: 120,
-                        width: 120,
-                        height: 48,
-                        position: 'sticky',
-                        top: 0,
-                        left: 0,
-                        zIndex: 10,
-                        background: '#198754',
-                        color: '#fff',
-                        verticalAlign: 'middle',
-                        textAlign: 'center',
-                        boxShadow: '2px 0 4px -2px rgba(0,0,0,0.05)',
-                        borderRight: '2px solid #fff',
-                        borderBottom: '2px solid #145c32',
-                        padding: '0.5rem',
-                        whiteSpace: 'nowrap',
-                        wordBreak: 'break-word',
-                      }}
-                    >
-                      MUNICIPALITY
-                    </th>
-                    {dateHeaders.map((date, idx) => (
+            <Card className="shadow-sm p-4 mb-4 border-0 rounded-4">
+              <h4 className="fw-bold mb-3">Daily Patroller Counts</h4>
+              <div className="table-responsive" style={{ maxHeight: '70vh', overflow: 'auto', borderRadius: '1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.07)' }}>
+                <table className="table table-bordered table-striped align-middle table-hover mb-0" style={{ minWidth: 1200 }}>
+                  <thead className="table-success">
+                    <tr>
                       <th
-                        key={idx}
                         style={{
-                          minWidth: 90,
-                          maxWidth: 90,
-                          width: 90,
+                          minWidth: 120,
+                          maxWidth: 120,
+                          width: 120,
                           height: 48,
-                          fontSize: '0.75em',
                           position: 'sticky',
                           top: 0,
-                          zIndex: 5,
+                          left: 0,
+                          zIndex: 10,
                           background: '#198754',
                           color: '#fff',
-                          textAlign: 'center',
                           verticalAlign: 'middle',
+                          textAlign: 'center',
+                          boxShadow: '2px 0 4px -2px rgba(0,0,0,0.05)',
+                          borderRight: '2px solid #fff',
                           borderBottom: '2px solid #145c32',
-                          padding: '0.25rem',
-                          whiteSpace: 'normal',
+                          padding: '0.5rem',
+                          whiteSpace: 'nowrap',
                           wordBreak: 'break-word',
                         }}
                       >
-                        {date}
+                        MUNICIPALITY
                       </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {districts.map((district, dIdx) => (
-                    <React.Fragment key={district.name}>
-                      <tr style={{ background: '#145c32', color: '#fff', fontWeight: 'bold', height: 48 }}>
-                        <td
+                      {dateHeaders.map((date, idx) => (
+                        <th
+                          key={idx}
                           style={{
-                            position: 'sticky',
-                            left: 0,
-                            zIndex: 4,
-                            background: '#145c32',
-                            color: '#fff',
-                            textAlign: 'left',
-                            fontWeight: 'bold',
-                            borderRight: '2px solid #fff',
-                            minWidth: 120,
-                            maxWidth: 120,
-                            width: 120,
+                            minWidth: 90,
+                            maxWidth: 90,
+                            width: 90,
                             height: 48,
+                            fontSize: '0.75em',
+                            position: 'sticky',
+                            top: 0,
+                            zIndex: 5,
+                            background: '#198754',
+                            color: '#fff',
+                            textAlign: 'center',
                             verticalAlign: 'middle',
-                            padding: '0.5rem',
+                            borderBottom: '2px solid #145c32',
+                            padding: '0.25rem',
                             whiteSpace: 'normal',
                             wordBreak: 'break-word',
                           }}
-                          colSpan={1}
                         >
-                          {/* Display as '1st District', '2nd District', etc. */}
-                          {(() => {
-                            const n = dIdx + 1;
-                            const ord = n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th';
-                            return `${n}${ord} District`;
-                          })()}
-                        </td>
-                        <td colSpan={dateHeaders.length} style={{ background: '#145c32', color: '#fff', height: 48, padding: '0.5rem' }}></td>
-                      </tr>
-                      {district.municipalities.map((muni) => (
-                        <tr key={muni} style={{ height: 48 }}>
+                          {date}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {districts.map((district, dIdx) => (
+                      <React.Fragment key={district.name}>
+                        <tr style={{ background: '#145c32', color: '#fff', fontWeight: 'bold', height: 48 }}>
                           <td
                             style={{
                               position: 'sticky',
                               left: 0,
-                              zIndex: 3,
-                              background: '#fff',
-                              fontWeight: 'bold',
-                              borderRight: '2px solid #e9ecef',
+                              zIndex: 4,
+                              background: '#145c32',
+                              color: '#fff',
                               textAlign: 'left',
-                              verticalAlign: 'middle',
-                              boxShadow: '2px 0 4px -2px rgba(0,0,0,0.05)',
+                              fontWeight: 'bold',
+                              borderRight: '2px solid #fff',
                               minWidth: 120,
                               maxWidth: 120,
                               width: 120,
                               height: 48,
+                              verticalAlign: 'middle',
                               padding: '0.5rem',
                               whiteSpace: 'normal',
                               wordBreak: 'break-word',
                             }}
+                            colSpan={1}
                           >
-                            {muni}
+                            {/* Display as '1st District', '2nd District', etc. */}
+                            {(() => {
+                              const n = dIdx + 1;
+                              const ord = n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th';
+                              return `${n}${ord} District`;
+                            })()}
                           </td>
-                          {data[muni].map((val, i) => (
-                            <td key={i} style={{ textAlign: 'center', verticalAlign: 'middle', background: '#f8f9fa', minWidth: 90, maxWidth: 90, width: 90, height: 48, padding: '0.25rem', whiteSpace: 'normal', wordBreak: 'break-word' }}>{val}</td>
-                          ))}
+                          <td colSpan={dateHeaders.length} style={{ background: '#145c32', color: '#fff', height: 48, padding: '0.5rem' }}></td>
                         </tr>
-                      ))}
-                    </React.Fragment>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                        {district.municipalities.map((muni) => (
+                          <tr key={muni} style={{ height: 48 }}>
+                            <td
+                              style={{
+                                position: 'sticky',
+                                left: 0,
+                                zIndex: 3,
+                                background: '#fff',
+                                fontWeight: 'bold',
+                                borderRight: '2px solid #e9ecef',
+                                textAlign: 'left',
+                                verticalAlign: 'middle',
+                                boxShadow: '2px 0 4px -2px rgba(0,0,0,0.05)',
+                                minWidth: 120,
+                                maxWidth: 120,
+                                width: 120,
+                                height: 48,
+                                padding: '0.5rem',
+                                whiteSpace: 'normal',
+                                wordBreak: 'break-word',
+                              }}
+                            >
+                              {muni}
+                            </td>
+                            {data[muni].map((val, i) => (
+                              <td key={i} style={{ textAlign: 'center', verticalAlign: 'middle', background: '#f8f9fa', minWidth: 90, maxWidth: 90, width: 90, height: 48, padding: '0.25rem', whiteSpace: 'normal', wordBreak: 'break-word' }}>{val}</td>
+                            ))}
+                          </tr>
+                        ))}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
           </div>
         </div>
         <AddModal isOpen={showAddModal} onClose={handleModalClose} onSave={handleSave} />
         <AddModal isOpen={showEditModal} onClose={handleEditModalClose} onSave={handleEditSave} initialData={editData} />
-      </DashboardLayout>
-    </div>
+      </Container>
+    </DashboardLayout>
   );
 }
 

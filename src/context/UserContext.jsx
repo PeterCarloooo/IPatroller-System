@@ -1,7 +1,8 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { auth, db } from '../firebase/config';
+import { auth, db, rtdb } from '../firebase/config';
 import { onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { ref as dbRef, onDisconnect, set as rtdbSet, serverTimestamp } from 'firebase/database';
 
 const UserContext = createContext();
 
