@@ -35,9 +35,22 @@ export default function Reports() {
 
   // Dynamic summary state
   const [summaryStats, setSummaryStats] = useState({
-    commandCenter: 0, // unique municipalities with patrols
     patrollersOnDuty: 0, // total active patrollers (count >= 5)
     incidents: 0, // incident reports in period
+  });
+
+  // Monthly summary state
+  const [monthlySummary, setMonthlySummary] = useState([]);
+
+  // Incidents per municipality for the selected year
+  const [incidentsByMunicipality, setIncidentsByMunicipality] = useState([]);
+
+  // All reports summary
+  const [allSummary, setAllSummary] = useState({
+    totalPatrollers: 0,
+    totalIncidents: 0,
+    totalPatrols: 0,
+    totalMunicipalities: 0,
   });
 
   // Generate months for the selected year
@@ -168,12 +181,9 @@ export default function Reports() {
       setInsights(sorted);
 
       // --- SUMMARY CALCULATION ---
-      // Command Center: unique municipalities with patrols
-      const muniSet = new Set();
       let patrollersOnDuty = 0;
       snapshot.forEach(doc => {
-        const { municipality, count } = doc.data();
-        if (municipality) muniSet.add(municipality);
+        const { count } = doc.data();
         if (typeof count === 'number' && count >= 5) patrollersOnDuty += count;
       });
       // Incidents: count from incidents collection for the period
@@ -187,8 +197,6 @@ export default function Reports() {
         const [year, qStr] = selectedQuarter.split('-Q');
         const quarter = parseInt(qStr, 10);
         const startMonth = (quarter - 1) * 3 + 1;
-        const monthsInQuarter = [0, 1, 2].map(i => `${year}-${String(startMonth + i).padStart(2, '0')}`);
-        // Get all dates in quarter
         const startDate = `${year}-${String(startMonth).padStart(2, '0')}-01`;
         const endDate = `${year}-${String(startMonth+2).padStart(2, '0')}-31`;
         const incQ = query(collection(db, 'incidents'), where('date', '>=', startDate), where('date', '<=', endDate));
@@ -196,10 +204,61 @@ export default function Reports() {
         incidentsCount = incSnap.size;
       }
       setSummaryStats({
-        commandCenter: muniSet.size,
         patrollersOnDuty,
         incidents: incidentsCount,
       });
+
+      // --- MONTHLY SUMMARY CALCULATION ---
+      // For the selected year, aggregate per month
+      const yearStr = String(selectedYear);
+      const monthlyStats = {};
+      for (let m = 1; m <= 12; m++) {
+        const monthKey = `${yearStr}-${String(m).padStart(2, '0')}`;
+        monthlyStats[monthKey] = { patrollers: 0, incidents: 0 };
+      }
+      // Daily counts for patrollers
+      const allDailyCounts = await getDocs(query(collection(db, 'daily_counts'), where('month', '>=', `${yearStr}-01`), where('month', '<=', `${yearStr}-12`)));
+      allDailyCounts.forEach(doc => {
+        const { month, count } = doc.data();
+        if (monthlyStats[month]) monthlyStats[month].patrollers += count;
+      });
+      // Incidents per month
+      const allIncidents = await getDocs(query(collection(db, 'incidents'), where('date', '>=', `${yearStr}-01-01`), where('date', '<=', `${yearStr}-12-31`)));
+      allIncidents.forEach(doc => {
+        const { date } = doc.data();
+        const m = date?.slice(0, 7);
+        if (monthlyStats[m]) monthlyStats[m].incidents += 1;
+      });
+      // Calculate totals for percentage
+      const totalPatrollers = Object.values(monthlyStats).reduce((sum, m) => sum + m.patrollers, 0);
+      const totalIncidents = Object.values(monthlyStats).reduce((sum, m) => sum + m.incidents, 0);
+      // Prepare summary array
+      const summaryArr = Object.entries(monthlyStats).map(([month, { patrollers, incidents }]) => ({
+        month: new Date(month + '-01').toLocaleString('en-US', { month: 'short' }),
+        patrollers,
+        incidents,
+        patrollersPct: totalPatrollers ? ((patrollers / totalPatrollers) * 100).toFixed(1) : '0.0',
+        incidentsPct: totalIncidents ? ((incidents / totalIncidents) * 100).toFixed(1) : '0.0',
+      }));
+      setMonthlySummary(summaryArr);
+      // --- ALL REPORTS SUMMARY ---
+      setAllSummary({
+        totalPatrollers,
+        totalIncidents,
+        totalPatrols: insights.reduce((sum, i) => sum + i.count, 0),
+        totalMunicipalities: insights.length,
+      });
+
+      // --- INCIDENTS BY MUNICIPALITY ---
+      const incidentsSnap = await getDocs(query(collection(db, 'incidents'), where('date', '>=', `${selectedYear}-01-01`), where('date', '<=', `${selectedYear}-12-31`)));
+      const muniCounts = {};
+      incidentsSnap.forEach(doc => {
+        const { municipality } = doc.data();
+        if (municipality) muniCounts[municipality] = (muniCounts[municipality] || 0) + 1;
+      });
+      const muniArr = Object.entries(muniCounts).map(([muni, count]) => ({ muni, count }));
+      muniArr.sort((a, b) => a.muni.localeCompare(b.muni));
+      setIncidentsByMunicipality(muniArr);
     }
     fetchData();
   }, [period, selectedMonth, selectedQuarter, granularity]);
@@ -268,6 +327,10 @@ export default function Reports() {
     win.document.write('</div></body></html>');
     win.document.close();
     win.print();
+    win.onafterprint = () => {
+      win.close();
+      window.location.reload();
+    };
   };
 
   return (
@@ -346,9 +409,9 @@ export default function Reports() {
             </div>
           </div>
           {/* Tile Layout for Report Sections */}
-          <div className="row g-4 mb-4" style={{ minHeight: '60vh' }}>
-            <div className="col-12 col-lg-9 d-flex order-lg-1">
-              <div id="print-analytics" className="flex-fill h-100 ps-4 pe-2 bg-white rounded-4 shadow-lg d-flex flex-column justify-content-between border border-2 border-success-subtle" style={{ minHeight: 480 }}>
+          <div className="row g-4 mb-4">
+            <div className="col-12 mb-4">
+              <div id="print-analytics" className="h-100 p-4 bg-white rounded-4 shadow-lg d-flex flex-column justify-content-between border border-2 border-success-subtle" style={{ minHeight: 480 }}>
                 <div className="d-flex flex-wrap align-items-center mb-2 gap-3">
                   <h2 className="fw-bold text-success text-start mb-0" style={{fontSize: '2rem', letterSpacing: '0.5px'}}>Data Analytics</h2>
                   <select className="form-select w-auto" value={granularity} onChange={e => setGranularity(e.target.value)}>
@@ -373,7 +436,7 @@ export default function Reports() {
                 <hr className="mb-3 mt-2" style={{ borderTop: '2px solid #e0f2f1' }} />
                 <p className="text-muted mb-4 text-start" style={{fontSize: '1.1rem'}}>
                   Visual representation and breakdown of patrol counts per municipality for the selected period.
-                </p>
+              </p>
                 <div className="d-flex justify-content-center align-items-center mb-4" style={{minHeight: 340, width: '100%'}}>
                   {chartData ? (
                     <Bar ref={chartRef} data={chartData} options={{ responsive: true, plugins: { legend: { position: 'top' } } }} height={320} width={800} />
@@ -391,7 +454,7 @@ export default function Reports() {
                         <th className="text-info">Municipality</th>
                         <th className="text-success">Active</th>
                         <th className="text-danger">Inactive</th>
-                        <th className="text-success">%</th>
+                        <th className="text-success" title="Percentage of this municipality's total (active + inactive) out of the grand total for the quarter.">% <i className='fas fa-info-circle text-secondary ms-1' /></th>
                       </tr>
                     </thead>
                     <tbody>
@@ -405,19 +468,28 @@ export default function Reports() {
                               <td>{name}</td>
                               <td className="fw-bold text-center text-success">{active}</td>
                               <td className="fw-bold text-center text-danger">{inactive}</td>
-                              <td className="fw-semibold text-center">{percentOfGrand}%</td>
+                              <td className="fw-semibold text-center align-middle" style={{minWidth: 120}}>
+                                <div className="d-flex align-items-center gap-2">
+                                  <span>{percentOfGrand}%</span>
+                                  <div className="progress flex-grow-1" style={{height: 8, minWidth: 50}}>
+                                    <div className="progress-bar bg-success" role="progressbar" style={{width: `${percentOfGrand}%`}} aria-valuenow={percentOfGrand} aria-valuemin={0} aria-valuemax={100}></div>
+                                  </div>
+                                </div>
+                              </td>
                             </tr>
                           );
                         });
                       })()}
                     </tbody>
                   </table>
+                  <div className="text-muted small mt-2"><i className="fas fa-info-circle me-1" /> Percentage shows each municipality's share of the total patrol counts for the selected quarter.</div>
                 </div>
               </div>
             </div>
-            <div className="col-12 col-lg-3 order-lg-2 d-flex flex-column justify-content-between" style={{gap: '1.5rem', minHeight: 480}}>
-              <div className="flex-fill d-flex flex-column justify-content-between" style={{height: '50%'}}>
-                <div id="print-total" className="p-4 bg-white rounded-4 shadow-sm border border-2 border-warning-subtle d-flex flex-column justify-content-between h-100">
+          </div>
+          <div className="row g-4 mb-4">
+            <div className="col-12 col-lg-4">
+              <div id="print-total" className="p-4 bg-white rounded-4 shadow-sm border border-2 border-warning-subtle d-flex flex-column justify-content-between h-100">
                   <h2 className="fw-bold mb-3 text-warning text-start" style={{fontSize: '1.5rem', letterSpacing: '0.5px', borderBottom: '2px solid #fff3cd', paddingBottom: 6}}>Total Per Municipality</h2>
                   <p className="text-muted mb-4 text-start" style={{fontSize: '1.05rem'}}>
                     List of all municipalities and their total patrol counts for the selected period.
@@ -440,38 +512,88 @@ export default function Reports() {
                       </tbody>
                     </table>
                   </div>
+                    </div>
+                  </div>
+            <div className="col-12 col-lg-4">
+              <div id="print-incidents" className="p-4 bg-white rounded-4 shadow-sm border border-2 border-danger-subtle d-flex flex-column justify-content-between h-100">
+                <h2 className="fw-bold mb-3 text-danger text-start" style={{fontSize: '1.5rem', letterSpacing: '0.5px', borderBottom: '2px solid #f8d7da', paddingBottom: 6}}>Incidents Report</h2>
+                <p className="text-muted mb-4 text-start" style={{fontSize: '1.05rem'}}>
+                  Incident counts per municipality for the selected year.
+                </p>
+                <div className="table-responsive">
+                  <table className="table table-striped table-hover align-middle mb-0 border rounded-3 overflow-hidden">
+                    <thead className="table-danger">
+                      <tr>
+                        <th className="text-danger">Municipality</th>
+                        <th className="text-danger">Incidents</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {incidentsByMunicipality.length === 0 ? (
+                        <tr><td colSpan={2} className="text-center text-muted">No data</td></tr>
+                      ) : incidentsByMunicipality.map(({ muni, count }) => (
+                        <tr key={muni}>
+                          <td>{muni}</td>
+                          <td className="fw-bold text-center">{count}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
-              <div className="flex-fill d-flex flex-column justify-content-between" style={{height: '50%'}}>
-                <div id="print-summary" className="p-4 bg-white rounded-4 shadow-sm border border-2 border-primary-subtle d-flex flex-column justify-content-between h-100">
-                  <h2 className="fw-bold mb-3 text-primary text-start" style={{fontSize: '1.5rem', letterSpacing: '0.5px', borderBottom: '2px solid #cfe2ff', paddingBottom: 6}}>Summary</h2>
-                  <p className="text-muted mb-4 text-start" style={{fontSize: '1.05rem'}}>
-                    Key statistics for the selected period, including active operations, patrollers on duty, and incidents today.
-                  </p>
-                  <div className="table-responsive">
-                    <table className="table table-striped table-hover summary-table align-middle mb-0 border rounded-3 overflow-hidden">
-                      <thead className="table-primary">
-                        <tr>
-                          <th className="text-primary">Section</th>
-                          <th className="text-primary">Value</th>
+            </div>
+            <div className="col-12 col-lg-4">
+              <div id="print-summary" className="p-4 bg-white rounded-4 shadow-sm border border-2 border-primary-subtle d-flex flex-column justify-content-between h-100">
+                <h2 className="fw-bold mb-3 text-primary text-start" style={{fontSize: '1.5rem', letterSpacing: '0.5px', borderBottom: '2px solid #cfe2ff', paddingBottom: 6}}>Summary</h2>
+                <p className="text-muted mb-4 text-start" style={{fontSize: '1.05rem'}}>
+                  System-wide summary for the selected year, aggregating all reports.
+                </p>
+                <div className="table-responsive mb-3">
+                  <table className="table table-bordered align-middle mb-0">
+                    <tbody>
+                      <tr>
+                        <th>Total Patrollers (Year)</th>
+                        <td className="fw-bold text-center">{allSummary.totalPatrollers}</td>
+                      </tr>
+                      <tr>
+                        <th>Total Incidents (Year)</th>
+                        <td className="fw-bold text-center">{allSummary.totalIncidents}</td>
+                      </tr>
+                      <tr>
+                        <th>Total Patrol Counts</th>
+                        <td className="fw-bold text-center">{allSummary.totalPatrols}</td>
+                      </tr>
+                      <tr>
+                        <th>Total Municipalities</th>
+                        <td className="fw-bold text-center">{allSummary.totalMunicipalities}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <h5 className="fw-bold mb-2 text-primary text-start" style={{fontSize: '1.1rem', letterSpacing: '0.5px'}}>Monthly Breakdown</h5>
+                <div className="table-responsive">
+                  <table className="table table-striped table-hover summary-table align-middle mb-0 border rounded-3 overflow-hidden">
+                    <thead className="table-primary">
+                      <tr>
+                        <th className="text-primary">Month</th>
+                        <th className="text-primary">Patrollers</th>
+                        <th className="text-primary">% of Year</th>
+                        <th className="text-primary">Incidents</th>
+                        <th className="text-primary">% of Year</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {monthlySummary.map((row, idx) => (
+                        <tr key={idx}>
+                          <td className="fw-semibold">{row.month}</td>
+                          <td className="fs-6 fw-bold text-center">{row.patrollers}</td>
+                          <td className="text-center">{row.patrollersPct}%</td>
+                          <td className="fs-6 fw-bold text-center">{row.incidents}</td>
+                          <td className="text-center">{row.incidentsPct}%</td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td className="fw-semibold">Command Center</td>
-                          <td className="fs-5 fw-bold text-center">{summaryStats.commandCenter}</td>
-                        </tr>
-                        <tr>
-                          <td className="fw-semibold">IPatroller Status</td>
-                          <td className="fs-5 fw-bold text-center">{summaryStats.patrollersOnDuty}</td>
-                        </tr>
-                        <tr>
-                          <td className="fw-semibold">Incidents</td>
-                          <td className="fs-5 fw-bold text-center">{summaryStats.incidents}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
@@ -480,4 +602,4 @@ export default function Reports() {
       </div>
     </DashboardLayout>
   );
-} 
+}

@@ -129,7 +129,7 @@ function Setups() {
                     <option value="low">Low</option>
                   </select>
                 </div>
-                <div className="mb-4">
+              <div className="mb-4">
                   <label className="form-label fw-semibold" htmlFor="maxPatrollers">Max Active Patrollers</label>
                   <input
                     type="number"
@@ -139,7 +139,7 @@ function Setups() {
                     value={maxPatrollers}
                     onChange={e => setMaxPatrollers(Number(e.target.value))}
                   />
-                </div>
+              </div>
                 <div className="mb-4">
                   <label className="form-label fw-semibold" htmlFor="checkinInterval">Patroller Check-in Interval (minutes)</label>
                   <input
@@ -150,7 +150,7 @@ function Setups() {
                     value={checkinInterval}
                     onChange={e => setCheckinInterval(Number(e.target.value))}
                   />
-                </div>
+              </div>
                 <button type="submit" className="btn btn-success px-4 fw-bold">Save Config</button>
                 {saveStatusConfig && <span className="ms-3 text-success fw-semibold">{saveStatusConfig}</span>}
               </form>

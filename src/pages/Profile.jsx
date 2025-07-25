@@ -169,9 +169,6 @@ function Profile({ section }) {
   const profileInfoCard = (
     <div className="w-100" style={{ padding: '0rem 1.5rem' }}>
       <div className="d-flex flex-column align-items-center mb-4">
-        {/* <div className="rounded-circle bg-white shadow mb-4 d-flex align-items-center justify-content-center border" style={{ width: 110, height: 110, borderColor: '#e0e0e0', borderWidth: 2, borderStyle: 'solid', boxShadow: '0 2px 12px rgba(18,102,241,0.10)' }}>
-          <i className="fas fa-user text-primary" style={{ fontSize: 56 }}></i>
-        </div> */}
         <h3 className="fw-bold mb-1 text-center" style={{ fontSize: '2rem' }}>Profile Information</h3>
         <p className="text-muted mb-0 text-center" style={{ fontSize: '1.1rem' }}>Update your account information</p>
         <button className="btn btn-outline-secondary btn-sm mt-3" onClick={fetchProfile} disabled={refreshing || loading}>
@@ -195,111 +192,143 @@ function Profile({ section }) {
           {success && <div className="alert alert-success text-center">{success}</div>}
           {error && <div className="alert alert-danger text-center">{error}</div>}
           <div className="row g-3 mb-4">
-            <div className="col-12 col-md-6">
-              <div className="form-group mb-2">
-                <label htmlFor="firstName" className="fw-semibold mb-1">First Name</label>
-                <input
-                  type="text"
-                  className="form-control form-control-lg"
-                  id="firstName"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleInputChange}
-                  disabled={userRole !== 'Administrator' || !isEditing}
-                  style={{ background: (!isEditing || userRole !== 'Administrator') ? '#f1f3f6' : undefined, border: (!isEditing || userRole !== 'Administrator') ? '1px solid #e0e0e0' : undefined }}
-                />
-              </div>
-            </div>
-            <div className="col-12 col-md-6">
-              <div className="form-group mb-2">
-                <label htmlFor="lastName" className="fw-semibold mb-1">Last Name</label>
-                <input
-                  type="text"
-                  className="form-control form-control-lg"
-                  id="lastName"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleInputChange}
-                  disabled={userRole !== 'Administrator' || !isEditing}
-                  style={{ background: (!isEditing || userRole !== 'Administrator') ? '#f1f3f6' : undefined, border: (!isEditing || userRole !== 'Administrator') ? '1px solid #e0e0e0' : undefined }}
-                />
-              </div>
-            </div>
-            <div className="col-12 col-md-6">
-              <div className="form-group mb-2">
-                <label htmlFor="email" className="fw-semibold mb-1">Email</label>
-                <input
-                  type="email"
-                  className="form-control form-control-lg"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  disabled
-                  style={{ background: '#f1f3f6', border: '1px solid #e0e0e0' }}
-                />
-              </div>
-            </div>
-            <div className="col-12 col-md-6">
-              <div className="form-group mb-2">
-                <label htmlFor="role" className="fw-semibold mb-1">Role</label>
-                <input
-                  type="text"
-                  className="form-control form-control-lg"
-                  id="role"
-                  value={formData.role}
-                  disabled
-                  style={{ background: '#f1f3f6', border: '1px solid #e0e0e0' }}
-                />
-              </div>
-            </div>
-            <div className="col-12 col-md-6">
-              <div className="form-group mb-2">
-                <label htmlFor="phoneNumber" className="fw-semibold mb-1">Phone Number</label>
-                <input
-                  type="text"
-                  className="form-control form-control-lg"
-                  id="phoneNumber"
-                  name="phoneNumber"
-                  value={formData.phoneNumber}
-                  onChange={handleInputChange}
-                  disabled={userRole !== 'Administrator' || !isEditing}
-                  style={{ background: (!isEditing || userRole !== 'Administrator') ? '#f1f3f6' : undefined, border: (!isEditing || userRole !== 'Administrator') ? '1px solid #e0e0e0' : undefined }}
-                />
-              </div>
-            </div>
-            <div className="col-12 col-md-6">
-              <div className="form-group mb-2">
-                <label htmlFor="municipality" className="fw-semibold mb-1">Municipality</label>
-                <input
-                  type="text"
-                  className="form-control form-control-lg"
-                  id="municipality"
-                  value={formData.municipality}
-                  onChange={handleInputChange}
-                  disabled={userRole !== 'Administrator' || !isEditing}
-                  style={{ background: (!isEditing || userRole !== 'Administrator') ? '#f1f3f6' : undefined, border: (!isEditing || userRole !== 'Administrator') ? '1px solid #e0e0e0' : undefined }}
-                />
-              </div>
-            </div>
+            {userRole === 'Administrator' ? (
+              <>
+                <div className="col-12 col-md-6">
+                  <div className="form-group mb-2">
+                    <label htmlFor="email" className="fw-semibold mb-1">Email</label>
+                    <input
+                      type="email"
+                      className="form-control form-control-lg"
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      disabled
+                      style={{ background: '#f1f3f6', border: '1px solid #e0e0e0' }}
+                    />
+                  </div>
+                </div>
+                <div className="col-12 col-md-6">
+                  <div className="form-group mb-2">
+                    <label htmlFor="role" className="fw-semibold mb-1">Role</label>
+                    <input
+                      type="text"
+                      className="form-control form-control-lg"
+                      id="role"
+                      value={formData.role}
+                      disabled
+                      style={{ background: '#f1f3f6', border: '1px solid #e0e0e0' }}
+                    />
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="col-12 col-md-6">
+                  <div className="form-group mb-2">
+                    <label htmlFor="firstName" className="fw-semibold mb-1">First Name</label>
+                    <input
+                      type="text"
+                      className="form-control form-control-lg"
+                      id="firstName"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleInputChange}
+                      disabled={!isEditing}
+                      style={{ background: !isEditing ? '#f1f3f6' : undefined, border: !isEditing ? '1px solid #e0e0e0' : undefined }}
+                    />
+                  </div>
+                </div>
+                <div className="col-12 col-md-6">
+                  <div className="form-group mb-2">
+                    <label htmlFor="lastName" className="fw-semibold mb-1">Last Name</label>
+                    <input
+                      type="text"
+                      className="form-control form-control-lg"
+                      id="lastName"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleInputChange}
+                      disabled={!isEditing}
+                      style={{ background: !isEditing ? '#f1f3f6' : undefined, border: !isEditing ? '1px solid #e0e0e0' : undefined }}
+                    />
+                  </div>
+                </div>
+                <div className="col-12 col-md-6">
+                  <div className="form-group mb-2">
+                    <label htmlFor="email" className="fw-semibold mb-1">Email</label>
+                    <input
+                      type="email"
+                      className="form-control form-control-lg"
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      disabled
+                      style={{ background: '#f1f3f6', border: '1px solid #e0e0e0' }}
+                    />
+                  </div>
+                </div>
+                <div className="col-12 col-md-6">
+                  <div className="form-group mb-2">
+                    <label htmlFor="role" className="fw-semibold mb-1">Role</label>
+                    <input
+                      type="text"
+                      className="form-control form-control-lg"
+                      id="role"
+                      value={formData.role}
+                      disabled
+                      style={{ background: '#f1f3f6', border: '1px solid #e0e0e0' }}
+                    />
+                  </div>
+                </div>
+                <div className="col-12 col-md-6">
+                  <div className="form-group mb-2">
+                    <label htmlFor="phoneNumber" className="fw-semibold mb-1">Phone Number</label>
+                    <input
+                      type="text"
+                      className="form-control form-control-lg"
+                      id="phoneNumber"
+                      name="phoneNumber"
+                      value={formData.phoneNumber}
+                      onChange={handleInputChange}
+                      disabled={!isEditing}
+                      style={{ background: !isEditing ? '#f1f3f6' : undefined, border: !isEditing ? '1px solid #e0e0e0' : undefined }}
+                    />
+                  </div>
+                </div>
+                <div className="col-12 col-md-6">
+                  <div className="form-group mb-2">
+                    <label htmlFor="municipality" className="fw-semibold mb-1">Municipality</label>
+                    <input
+                      type="text"
+                      className="form-control form-control-lg"
+                      id="municipality"
+                      value={formData.municipality}
+                      onChange={handleInputChange}
+                      disabled={!isEditing}
+                      style={{ background: !isEditing ? '#f1f3f6' : undefined, border: !isEditing ? '1px solid #e0e0e0' : undefined }}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
           </div>
           <div className="d-flex flex-column flex-md-row gap-2 justify-content-center mt-2">
-            {userRole === 'Administrator' && (
-              !isEditing ? (
-                <button className="btn btn-primary flex-fill py-2 px-4" onClick={() => setIsEditing(true)}>
-                  <i className="fas fa-edit me-2"></i>Edit Profile
+            {userRole !== 'Administrator' && !isEditing ? (
+              <button className="btn btn-primary flex-fill py-2 px-4" onClick={() => setIsEditing(true)}>
+                <i className="fas fa-edit me-2"></i>Edit Profile
+              </button>
+            ) : null}
+            {userRole !== 'Administrator' && isEditing ? (
+              <>
+                <button className="btn btn-success flex-fill py-2 px-4" onClick={handleSave}>
+                  <i className="fas fa-save me-2"></i>Save
                 </button>
-              ) : (
-                <>
-                  <button className="btn btn-success flex-fill py-2 px-4" onClick={handleSave}>
-                    <i className="fas fa-save me-2"></i>Save
-                  </button>
-                  <button className="btn btn-danger flex-fill py-2 px-4" onClick={() => setIsEditing(false)}>
-                    <i className="fas fa-times me-2"></i>Cancel
-                  </button>
-                </>
-              )
-            )}
+                <button className="btn btn-danger flex-fill py-2 px-4" onClick={() => setIsEditing(false)}>
+                  <i className="fas fa-times me-2"></i>Cancel
+                </button>
+              </>
+            ) : null}
           </div>
         </>
       )}
