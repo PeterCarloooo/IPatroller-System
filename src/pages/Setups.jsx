@@ -761,109 +761,282 @@ function Setups() {
         )}
 
         {activeTab === 'backup' && (
-          <Card className="shadow-sm border-0 rounded-3">
-            <Card.Body className="p-3">
-              <h4 className="fw-bold mb-3">Backup & Restore</h4>
-              <p className="text-muted">Manage system backups and data restoration.</p>
-              
-              <Row className="g-3">
-                <Col md={6}>
-                  <Card className="border-0 shadow-sm">
-                    <Card.Body className="text-center">
-                      <i className="fas fa-download text-primary fs-1 mb-3"></i>
-                      <h5 className="fw-bold mb-3">Create Backup</h5>
-                      <p className="text-muted mb-3">Create a complete backup of all IPatroller data</p>
-                      <Button variant="primary" onClick={createBackup}>
-                        <i className="fas fa-download me-2"></i>
-                        Create Backup
-                      </Button>
-                      <div className="mt-3">
-                        <small className="text-muted">
-                          <i className="fas fa-info-circle me-1"></i>
-                          Backup includes: IPatroller data, system settings, and metadata
-                        </small>
-                      </div>
-                    </Card.Body>
-                  </Card>
-                </Col>
-                
-                <Col md={6}>
-                  <Card className="border-0 shadow-sm">
-                    <Card.Body className="text-center">
-                      <i className="fas fa-upload text-warning fs-1 mb-3"></i>
-                      <h5 className="fw-bold mb-3">Restore Data</h5>
-                      <p className="text-muted mb-3">Restore system data from a backup file</p>
-                      <input
-                        type="file"
-                        accept=".json"
-                        onChange={restoreData}
-                        style={{ display: 'none' }}
-                        id="restore-file"
-                      />
-                      <Button 
-                        variant="warning" 
-                        onClick={() => document.getElementById('restore-file').click()}
-                      >
-                        <i className="fas fa-upload me-2"></i>
-                        Restore Data
-                      </Button>
-                      <div className="mt-3">
-                        <small className="text-muted">
-                          <i className="fas fa-exclamation-triangle me-1"></i>
-                          Warning: This will overwrite current data
-                        </small>
-                      </div>
-                    </Card.Body>
-                  </Card>
-                </Col>
-              </Row>
+          <div className="backup-container">
+            {/* Header Section */}
+            <div className="mb-4">
+              <div className="d-flex align-items-center gap-3 mb-3">
+                <div className="d-flex align-items-center justify-content-center rounded-circle" style={{
+                  width: 56,
+                  height: 56,
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)'
+                }}>
+                  <i className="fas fa-shield-alt text-white fs-4"></i>
+                </div>
+                <div>
+                  <h4 className="fw-bold mb-1">Backup & Restore</h4>
+                  <p className="text-muted mb-0">Secure your data with automated backups and manual restoration</p>
+                </div>
+              </div>
+            </div>
 
-              {/* Backup Information */}
-              <Row className="mt-4">
-                <Col md={12}>
-                  <Card className="border-0 bg-light">
-                    <Card.Body>
-                      <h6 className="fw-bold mb-3">
-                        <i className="fas fa-info-circle text-info me-2"></i>
-                        Backup Information
-                      </h6>
-                      <Row>
-                        <Col md={4}>
-                          <div className="text-center">
-                            <h5 className="text-primary mb-1">{Object.keys(allData).length}</h5>
-                            <small className="text-muted">Months with Data</small>
+            {/* Main Backup Actions */}
+            <Row className="g-4 mb-4">
+              <Col lg={6}>
+                <Card className="border-0 shadow-sm h-100" style={{
+                  background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                  borderRadius: '16px',
+                  border: '1px solid rgba(102, 126, 234, 0.1)'
+                }}>
+                  <Card.Body className="p-4 text-center">
+                    <div className="mb-4">
+                      <div className="d-flex align-items-center justify-content-center rounded-circle mx-auto mb-3" style={{
+                        width: 80,
+                        height: 80,
+                        background: 'linear-gradient(135deg, #28a745 0%, #20c997 100%)',
+                        boxShadow: '0 8px 25px rgba(40, 167, 69, 0.3)'
+                      }}>
+                        <i className="fas fa-download text-white fs-2"></i>
+                      </div>
+                      <h5 className="fw-bold mb-2">Create Backup</h5>
+                      <p className="text-muted mb-3">Generate a complete backup of all system data including IPatroller records, settings, and metadata</p>
+                    </div>
+                    
+                    <Button 
+                      variant="success" 
+                      size="lg"
+                      onClick={createBackup}
+                      className="rounded-pill px-4 py-2"
+                      style={{
+                        background: 'linear-gradient(135deg, #28a745 0%, #20c997 100%)',
+                        border: 'none',
+                        boxShadow: '0 4px 15px rgba(40, 167, 69, 0.3)',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.transform = 'translateY(-2px)';
+                        e.target.style.boxShadow = '0 6px 20px rgba(40, 167, 69, 0.4)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = '0 4px 15px rgba(40, 167, 69, 0.3)';
+                      }}
+                    >
+                      <i className="fas fa-download me-2"></i>
+                      Create Backup
+                    </Button>
+                    
+                    <div className="mt-4 p-3 rounded-3" style={{ background: 'rgba(40, 167, 69, 0.1)' }}>
+                      <div className="d-flex align-items-center justify-content-center gap-2 mb-2">
+                        <i className="fas fa-check-circle text-success"></i>
+                        <small className="fw-semibold text-success">What's Included</small>
+                      </div>
+                      <div className="row text-center">
+                        <div className="col-4">
+                          <small className="text-muted d-block">IPatroller Data</small>
+                        </div>
+                        <div className="col-4">
+                          <small className="text-muted d-block">System Settings</small>
+                        </div>
+                        <div className="col-4">
+                          <small className="text-muted d-block">Metadata</small>
+                        </div>
+                      </div>
+                    </div>
+                  </Card.Body>
+                </Card>
+              </Col>
+              
+              <Col lg={6}>
+                <Card className="border-0 shadow-sm h-100" style={{
+                  background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                  borderRadius: '16px',
+                  border: '1px solid rgba(255, 193, 7, 0.1)'
+                }}>
+                  <Card.Body className="p-4 text-center">
+                    <div className="mb-4">
+                      <div className="d-flex align-items-center justify-content-center rounded-circle mx-auto mb-3" style={{
+                        width: 80,
+                        height: 80,
+                        background: 'linear-gradient(135deg, #ffc107 0%, #fd7e14 100%)',
+                        boxShadow: '0 8px 25px rgba(255, 193, 7, 0.3)'
+                      }}>
+                        <i className="fas fa-upload text-white fs-2"></i>
+                      </div>
+                      <h5 className="fw-bold mb-2">Restore Data</h5>
+                      <p className="text-muted mb-3">Restore your system from a previously created backup file</p>
+                    </div>
+                    
+                    <input
+                      type="file"
+                      accept=".json"
+                      onChange={restoreData}
+                      style={{ display: 'none' }}
+                      id="restore-file"
+                    />
+                    <Button 
+                      variant="warning" 
+                      size="lg"
+                      onClick={() => document.getElementById('restore-file').click()}
+                      className="rounded-pill px-4 py-2"
+                      style={{
+                        background: 'linear-gradient(135deg, #ffc107 0%, #fd7e14 100%)',
+                        border: 'none',
+                        boxShadow: '0 4px 15px rgba(255, 193, 7, 0.3)',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.transform = 'translateY(-2px)';
+                        e.target.style.boxShadow = '0 6px 20px rgba(255, 193, 7, 0.4)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = '0 4px 15px rgba(255, 193, 7, 0.3)';
+                      }}
+                    >
+                      <i className="fas fa-upload me-2"></i>
+                      Restore Data
+                    </Button>
+                    
+                    <div className="mt-4 p-3 rounded-3" style={{ background: 'rgba(220, 53, 69, 0.1)' }}>
+                      <div className="d-flex align-items-center justify-content-center gap-2 mb-2">
+                        <i className="fas fa-exclamation-triangle text-danger"></i>
+                        <small className="fw-semibold text-danger">Important Warning</small>
+                      </div>
+                      <small className="text-muted">This action will overwrite all current data. Please ensure you have a backup before proceeding.</small>
+                    </div>
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Row>
+
+            {/* Backup Information Dashboard */}
+            <Row className="g-4">
+              <Col lg={8}>
+                <Card className="border-0 shadow-sm h-100" style={{
+                  background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                  borderRadius: '16px',
+                  border: '1px solid rgba(102, 126, 234, 0.1)'
+                }}>
+                  <Card.Body className="p-4">
+                    <div className="d-flex align-items-center gap-3 mb-4">
+                      <div className="d-flex align-items-center justify-content-center rounded-circle" style={{
+                        width: 48,
+                        height: 48,
+                        background: 'linear-gradient(135deg, #17a2b8 0%, #20c997 100%)',
+                        boxShadow: '0 4px 15px rgba(23, 162, 184, 0.3)'
+                      }}>
+                        <i className="fas fa-chart-line text-white"></i>
+                      </div>
+                      <div>
+                        <h5 className="fw-bold mb-1">Backup Information</h5>
+                        <p className="text-muted mb-0">Current system data overview</p>
+                      </div>
+                    </div>
+                    
+                    <Row className="g-3">
+                      <Col md={4}>
+                        <div className="text-center p-3 rounded-3" style={{ background: 'rgba(102, 126, 234, 0.1)' }}>
+                          <div className="d-flex align-items-center justify-content-center rounded-circle mx-auto mb-2" style={{
+                            width: 48,
+                            height: 48,
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)'
+                          }}>
+                            <i className="fas fa-calendar-alt text-white"></i>
                           </div>
-                        </Col>
-                        <Col md={4}>
-                          <div className="text-center">
-                            <h5 className="text-success mb-1">12</h5>
-                            <small className="text-muted">Total Municipalities</small>
+                          <h4 className="fw-bold text-primary mb-1">{Object.keys(allData).length}</h4>
+                          <small className="text-muted fw-semibold">Months with Data</small>
+                        </div>
+                      </Col>
+                      
+                      <Col md={4}>
+                        <div className="text-center p-3 rounded-3" style={{ background: 'rgba(40, 167, 69, 0.1)' }}>
+                          <div className="d-flex align-items-center justify-content-center rounded-circle mx-auto mb-2" style={{
+                            width: 48,
+                            height: 48,
+                            background: 'linear-gradient(135deg, #28a745 0%, #20c997 100%)',
+                            boxShadow: '0 4px 15px rgba(40, 167, 69, 0.3)'
+                          }}>
+                            <i className="fas fa-map-marker-alt text-white"></i>
                           </div>
-                        </Col>
-                        <Col md={4}>
-                          <div className="text-center">
-                            <h5 className="text-info mb-1">
-                              {new Date().toLocaleDateString()}
-                            </h5>
-                            <small className="text-muted">Last Backup Date</small>
+                          <h4 className="fw-bold text-success mb-1">12</h4>
+                          <small className="text-muted fw-semibold">Total Municipalities</small>
+                        </div>
+                      </Col>
+                      
+                      <Col md={4}>
+                        <div className="text-center p-3 rounded-3" style={{ background: 'rgba(23, 162, 184, 0.1)' }}>
+                          <div className="d-flex align-items-center justify-content-center rounded-circle mx-auto mb-2" style={{
+                            width: 48,
+                            height: 48,
+                            background: 'linear-gradient(135deg, #17a2b8 0%, #20c997 100%)',
+                            boxShadow: '0 4px 15px rgba(23, 162, 184, 0.3)'
+                          }}>
+                            <i className="fas fa-clock text-white"></i>
                           </div>
-                        </Col>
-                      </Row>
-                      <Row className="mt-3">
-                        <Col md={12}>
-                          <div className="text-center">
-                            <small className="text-muted">
-                              <strong>Municipalities:</strong> ABUCAY, ORANI, SAMAL, HERMOSA, BALANGA, PILAR, ORION, LIMAY, BAGAC, DINALUPIHAN, MARIVELES, MORONG
-                            </small>
+                          <h4 className="fw-bold text-info mb-1">
+                            {new Date().toLocaleDateString()}
+                          </h4>
+                          <small className="text-muted fw-semibold">Last Backup Date</small>
+                        </div>
+                      </Col>
+                    </Row>
+                  </Card.Body>
+                </Card>
+              </Col>
+              
+              <Col lg={4}>
+                <Card className="border-0 shadow-sm h-100" style={{
+                  background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                  borderRadius: '16px',
+                  border: '1px solid rgba(102, 126, 234, 0.1)'
+                }}>
+                  <Card.Body className="p-4">
+                    <div className="d-flex align-items-center gap-3 mb-4">
+                      <div className="d-flex align-items-center justify-content-center rounded-circle" style={{
+                        width: 48,
+                        height: 48,
+                        background: 'linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%)',
+                        boxShadow: '0 4px 15px rgba(111, 66, 193, 0.3)'
+                      }}>
+                        <i className="fas fa-list text-white"></i>
+                      </div>
+                      <div>
+                        <h5 className="fw-bold mb-1">Municipalities</h5>
+                        <p className="text-muted mb-0">Covered areas</p>
+                      </div>
+                    </div>
+                    
+                    <div className="municipalities-list">
+                      {['ABUCAY', 'ORANI', 'SAMAL', 'HERMOSA', 'BALANGA', 'PILAR', 'ORION', 'LIMAY', 'BAGAC', 'DINALUPIHAN', 'MARIVELES', 'MORONG'].map((municipality, index) => (
+                        <div key={index} className="d-flex align-items-center justify-content-between p-2 mb-2 rounded-3" style={{
+                          background: 'rgba(102, 126, 234, 0.05)',
+                          border: '1px solid rgba(102, 126, 234, 0.1)'
+                        }}>
+                          <div className="d-flex align-items-center gap-2">
+                            <div className="d-flex align-items-center justify-content-center rounded-circle" style={{
+                              width: 24,
+                              height: 24,
+                              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                              boxShadow: '0 2px 8px rgba(102, 126, 234, 0.3)'
+                            }}>
+                              <i className="fas fa-map-marker-alt text-white" style={{ fontSize: '0.7rem' }}></i>
+                            </div>
+                            <small className="fw-semibold text-dark">{municipality}</small>
                           </div>
-                        </Col>
-                      </Row>
-                    </Card.Body>
-                  </Card>
-                </Col>
-              </Row>
-            </Card.Body>
-          </Card>
+                          <Badge bg="success" className="rounded-pill">
+                            <i className="fas fa-check me-1"></i>
+                            Active
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Row>
+          </div>
         )}
 
         {/* Edit Municipality Privileges Modal */}

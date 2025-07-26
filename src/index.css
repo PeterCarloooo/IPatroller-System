@@ -78,3 +78,96 @@ button {
     font-size: 16px;
   }
 }
+
+/* Backup UI Enhancements */
+.backup-container {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.backup-container .card {
+  transition: all 0.3s ease;
+}
+
+.backup-container .card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15) !important;
+}
+
+.municipalities-list {
+  max-height: 300px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(102, 126, 234, 0.3) transparent;
+}
+
+.municipalities-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.municipalities-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.municipalities-list::-webkit-scrollbar-thumb {
+  background: rgba(102, 126, 234, 0.3);
+  border-radius: 3px;
+}
+
+.municipalities-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(102, 126, 234, 0.5);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Enhanced button animations */
+.backup-container .btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.backup-container .btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.backup-container .btn:hover::before {
+  left: 100%;
+}
+
+/* Card hover effects */
+.backup-container .card {
+  position: relative;
+}
+
+.backup-container .card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.backup-container .card:hover::after {
+  opacity: 1;
+}
