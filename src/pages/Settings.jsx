@@ -114,81 +114,108 @@ function Settings() {
     <DashboardLayout activePage="settings">
       <div className="settings-container">
         {/* Enhanced Header */}
-        <div className="mb-4">
-          <div className="d-flex align-items-center gap-3 mb-3">
+        <div className="mb-5">
+          <div className="d-flex align-items-center gap-4 mb-4">
             <div className="d-flex align-items-center justify-content-center rounded-circle" style={{
-              width: 56,
-              height: 56,
+              width: 64,
+              height: 64,
               background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)'
+              boxShadow: '0 8px 25px rgba(102, 126, 234, 0.4)',
+              animation: 'pulse 2s infinite'
             }}>
-              <i className="fas fa-cog text-white fs-4"></i>
+              <i className="fas fa-cog text-white fs-3"></i>
             </div>
             <div>
-              <h4 className="fw-bold mb-1">Settings</h4>
-              <p className="text-muted mb-0">Manage your account preferences and system configuration</p>
+              <h3 className="fw-bold mb-2" style={{ 
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                fontSize: '2rem'
+              }}>
+                Settings
+              </h3>
+              <p className="text-muted mb-0 fs-5">Manage your account preferences and system configuration</p>
             </div>
           </div>
         </div>
 
         {/* Settings Grid */}
-        <Row className="g-4 mb-4">
+        <Row className="g-4 mb-5">
           {settingsCards.map((card) => (
             <Col xs={12} sm={6} lg={4} key={card.id}>
               <Card 
                 className="settings-card border-0 shadow-sm h-100" 
                 style={{
                   background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-                  borderRadius: '16px',
+                  borderRadius: '20px',
                   border: '1px solid rgba(102, 126, 234, 0.1)',
                   cursor: card.action ? 'pointer' : 'default',
-                  transition: 'all 0.3s ease'
+                  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                  position: 'relative',
+                  overflow: 'hidden'
                 }}
                 onClick={card.action}
                 onMouseEnter={(e) => {
                   if (card.action) {
-                    e.target.style.transform = 'translateY(-4px)';
-                    e.target.style.boxShadow = '0 12px 30px rgba(0, 0, 0, 0.15)';
+                    e.target.style.transform = 'translateY(-8px) scale(1.02)';
+                    e.target.style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.15)';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (card.action) {
-                    e.target.style.transform = 'translateY(0)';
-                    e.target.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)';
+                    e.target.style.transform = 'translateY(0) scale(1)';
+                    e.target.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.1)';
                   }
                 }}
               >
-                <Card.Body className="p-4 text-center">
-                  <div className="mb-3">
-                    <div className="d-flex align-items-center justify-content-center rounded-circle mx-auto mb-3" style={{
-                      width: 64,
-                      height: 64,
+                <div className="card-glow" style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: `linear-gradient(135deg, ${card.color.split('(')[1].split(')')[0]}, transparent)`,
+                  opacity: 0,
+                  transition: 'opacity 0.3s ease',
+                  pointerEvents: 'none'
+                }}></div>
+                
+                <Card.Body className="p-5 text-center position-relative">
+                  <div className="mb-4">
+                    <div className="d-flex align-items-center justify-content-center rounded-circle mx-auto mb-4" style={{
+                      width: 80,
+                      height: 80,
                       background: card.color,
-                      boxShadow: '0 6px 20px rgba(0, 0, 0, 0.2)'
+                      boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)',
+                      transition: 'all 0.3s ease'
                     }}>
-                      <i className={`${card.icon} text-white fs-3`}></i>
+                      <i className={`${card.icon} text-white fs-2`}></i>
                     </div>
                     <Badge 
                       bg="light" 
-                      className="rounded-pill mb-2"
+                      className="rounded-pill mb-3 px-3 py-2"
                       style={{ 
                         color: '#667eea', 
-                        fontSize: '0.75rem',
-                        fontWeight: '600'
+                        fontSize: '0.8rem',
+                        fontWeight: '700',
+                        letterSpacing: '0.5px'
                       }}
                     >
                       {card.badge}
                     </Badge>
                   </div>
                   
-                  <h5 className="fw-bold mb-2">{card.title}</h5>
-                  <p className="text-muted mb-3 small">{card.description}</p>
+                  <h4 className="fw-bold mb-3" style={{ fontSize: '1.25rem' }}>{card.title}</h4>
+                  <p className="text-muted mb-4" style={{ fontSize: '0.95rem', lineHeight: '1.6' }}>{card.description}</p>
                   
                   <div className="features-list">
                     {card.features.map((feature, index) => (
-                      <div key={index} className="d-flex align-items-center gap-2 mb-1">
-                        <i className="fas fa-check text-success" style={{ fontSize: '0.7rem' }}></i>
-                        <small className="text-muted">{feature}</small>
+                      <div key={index} className="d-flex align-items-center gap-3 mb-2 p-2 rounded-3" style={{ 
+                        background: 'rgba(102, 126, 234, 0.05)',
+                        transition: 'all 0.3s ease'
+                      }}>
+                        <i className="fas fa-check text-success" style={{ fontSize: '0.8rem' }}></i>
+                        <small className="text-muted fw-semibold">{feature}</small>
                       </div>
                     ))}
                   </div>
@@ -203,85 +230,112 @@ function Settings() {
           <Col lg={8}>
             <Card className="border-0 shadow-sm" style={{
               background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-              borderRadius: '16px',
-              border: '1px solid rgba(102, 126, 234, 0.1)'
+              borderRadius: '20px',
+              border: '1px solid rgba(102, 126, 234, 0.1)',
+              transition: 'all 0.3s ease'
             }}>
-              <Card.Body className="p-4">
-                <div className="d-flex align-items-center gap-3 mb-4">
+              <Card.Body className="p-5">
+                <div className="d-flex align-items-center gap-4 mb-4">
                   <div className="d-flex align-items-center justify-content-center rounded-circle" style={{
-                    width: 48,
-                    height: 48,
+                    width: 56,
+                    height: 56,
                     background: 'linear-gradient(135deg, #17a2b8 0%, #20c997 100%)',
-                    boxShadow: '0 4px 15px rgba(23, 162, 184, 0.3)'
+                    boxShadow: '0 8px 25px rgba(23, 162, 184, 0.4)'
                   }}>
-                    <i className="fas fa-sliders-h text-white"></i>
+                    <i className="fas fa-sliders-h text-white fs-4"></i>
                   </div>
                   <div>
-                    <h5 className="fw-bold mb-1">Quick Settings</h5>
-                    <p className="text-muted mb-0">Common settings you can adjust quickly</p>
+                    <h4 className="fw-bold mb-2" style={{ 
+                      background: 'linear-gradient(135deg, #17a2b8 0%, #20c997 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent'
+                    }}>
+                      Quick Settings
+                    </h4>
+                    <p className="text-muted mb-0 fs-5">Common settings you can adjust quickly</p>
                   </div>
                 </div>
                 
-                <Row className="g-3">
+                <Row className="g-4">
                   <Col md={6}>
-                    <div className="setting-item p-3 rounded-3" style={{ background: 'rgba(102, 126, 234, 0.05)' }}>
-                      <div className="d-flex justify-content-between align-items-center mb-2">
+                    <div className="setting-item p-4 rounded-4" style={{ 
+                      background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(102, 126, 234, 0.05) 100%)',
+                      border: '1px solid rgba(102, 126, 234, 0.1)',
+                      transition: 'all 0.3s ease'
+                    }}>
+                      <div className="d-flex justify-content-between align-items-center">
                         <div>
-                          <h6 className="fw-semibold mb-1">Email Notifications</h6>
+                          <h6 className="fw-bold mb-2" style={{ color: '#667eea' }}>Email Notifications</h6>
                           <small className="text-muted">Receive updates via email</small>
                         </div>
                         <Form.Check 
                           type="switch"
                           checked={settings.notifications.email}
                           onChange={(e) => handleSettingChange('notifications', 'email', e.target.checked)}
+                          style={{ transform: 'scale(1.2)' }}
                         />
                       </div>
                     </div>
                   </Col>
                   
                   <Col md={6}>
-                    <div className="setting-item p-3 rounded-3" style={{ background: 'rgba(40, 167, 69, 0.05)' }}>
-                      <div className="d-flex justify-content-between align-items-center mb-2">
+                    <div className="setting-item p-4 rounded-4" style={{ 
+                      background: 'linear-gradient(135deg, rgba(40, 167, 69, 0.1) 0%, rgba(40, 167, 69, 0.05) 100%)',
+                      border: '1px solid rgba(40, 167, 69, 0.1)',
+                      transition: 'all 0.3s ease'
+                    }}>
+                      <div className="d-flex justify-content-between align-items-center">
                         <div>
-                          <h6 className="fw-semibold mb-1">Two-Factor Auth</h6>
+                          <h6 className="fw-bold mb-2" style={{ color: '#28a745' }}>Two-Factor Auth</h6>
                           <small className="text-muted">Enhanced security protection</small>
                         </div>
                         <Form.Check 
                           type="switch"
                           checked={settings.security.twoFactorAuth}
                           onChange={(e) => handleSettingChange('security', 'twoFactorAuth', e.target.checked)}
+                          style={{ transform: 'scale(1.2)' }}
                         />
                       </div>
                     </div>
                   </Col>
                   
                   <Col md={6}>
-                    <div className="setting-item p-3 rounded-3" style={{ background: 'rgba(255, 193, 7, 0.05)' }}>
-                      <div className="d-flex justify-content-between align-items-center mb-2">
+                    <div className="setting-item p-4 rounded-4" style={{ 
+                      background: 'linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 193, 7, 0.05) 100%)',
+                      border: '1px solid rgba(255, 193, 7, 0.1)',
+                      transition: 'all 0.3s ease'
+                    }}>
+                      <div className="d-flex justify-content-between align-items-center">
                         <div>
-                          <h6 className="fw-semibold mb-1">Push Notifications</h6>
+                          <h6 className="fw-bold mb-2" style={{ color: '#ffc107' }}>Push Notifications</h6>
                           <small className="text-muted">Real-time alerts</small>
                         </div>
                         <Form.Check 
                           type="switch"
                           checked={settings.notifications.push}
                           onChange={(e) => handleSettingChange('notifications', 'push', e.target.checked)}
+                          style={{ transform: 'scale(1.2)' }}
                         />
                       </div>
                     </div>
                   </Col>
                   
                   <Col md={6}>
-                    <div className="setting-item p-3 rounded-3" style={{ background: 'rgba(23, 162, 184, 0.05)' }}>
-                      <div className="d-flex justify-content-between align-items-center mb-2">
+                    <div className="setting-item p-4 rounded-4" style={{ 
+                      background: 'linear-gradient(135deg, rgba(23, 162, 184, 0.1) 0%, rgba(23, 162, 184, 0.05) 100%)',
+                      border: '1px solid rgba(23, 162, 184, 0.1)',
+                      transition: 'all 0.3s ease'
+                    }}>
+                      <div className="d-flex justify-content-between align-items-center">
                         <div>
-                          <h6 className="fw-semibold mb-1">Show Animations</h6>
+                          <h6 className="fw-bold mb-2" style={{ color: '#17a2b8' }}>Show Animations</h6>
                           <small className="text-muted">Interface animations</small>
                         </div>
                         <Form.Check 
                           type="switch"
                           checked={settings.appearance.showAnimations}
                           onChange={(e) => handleSettingChange('appearance', 'showAnimations', e.target.checked)}
+                          style={{ transform: 'scale(1.2)' }}
                         />
                       </div>
                     </div>
@@ -294,22 +348,29 @@ function Settings() {
           <Col lg={4}>
             <Card className="border-0 shadow-sm h-100" style={{
               background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-              borderRadius: '16px',
-              border: '1px solid rgba(102, 126, 234, 0.1)'
+              borderRadius: '20px',
+              border: '1px solid rgba(102, 126, 234, 0.1)',
+              transition: 'all 0.3s ease'
             }}>
-              <Card.Body className="p-4">
-                <div className="d-flex align-items-center gap-3 mb-4">
+              <Card.Body className="p-5">
+                <div className="d-flex align-items-center gap-4 mb-4">
                   <div className="d-flex align-items-center justify-content-center rounded-circle" style={{
-                    width: 48,
-                    height: 48,
+                    width: 56,
+                    height: 56,
                     background: 'linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%)',
-                    boxShadow: '0 4px 15px rgba(111, 66, 193, 0.3)'
+                    boxShadow: '0 8px 25px rgba(111, 66, 193, 0.4)'
                   }}>
-                    <i className="fas fa-info-circle text-white"></i>
+                    <i className="fas fa-info-circle text-white fs-4"></i>
                   </div>
                   <div>
-                    <h5 className="fw-bold mb-1">System Info</h5>
-                    <p className="text-muted mb-0">Current system status</p>
+                    <h4 className="fw-bold mb-2" style={{ 
+                      background: 'linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent'
+                    }}>
+                      System Info
+                    </h4>
+                    <p className="text-muted mb-0 fs-5">Current system status</p>
                   </div>
                 </div>
                 

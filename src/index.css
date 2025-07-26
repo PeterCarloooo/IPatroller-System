@@ -259,3 +259,107 @@ button {
 .settings-container .badge:hover {
   transform: scale(1.05);
 }
+
+/* Enhanced Settings UI Animations */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+}
+
+.settings-card:hover .card-glow {
+  opacity: 0.1;
+}
+
+.settings-card:hover .d-flex.align-items-center.justify-content-center.rounded-circle {
+  transform: scale(1.1);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4) !important;
+}
+
+.setting-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  border-color: rgba(102, 126, 234, 0.3) !important;
+}
+
+/* Enhanced form controls */
+.settings-container .form-check-input {
+  transition: all 0.3s ease;
+}
+
+.settings-container .form-check-input:checked {
+  background-color: #667eea;
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+}
+
+.settings-container .form-check-input:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+}
+
+/* Modal enhancements */
+.modal-content {
+  border-radius: 20px !important;
+  border: none !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3) !important;
+}
+
+.modal-header {
+  border-radius: 20px 20px 0 0 !important;
+}
+
+.modal-footer {
+  border-radius: 0 0 20px 20px !important;
+}
+
+/* Enhanced button styles */
+.settings-container .btn {
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+  transition: all 0.3s ease !important;
+}
+
+.settings-container .btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Gradient text effects */
+.gradient-text {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Enhanced spacing and typography */
+.settings-container h1, .settings-container h2, .settings-container h3, 
+.settings-container h4, .settings-container h5, .settings-container h6 {
+  letter-spacing: -0.5px;
+}
+
+.settings-container p {
+  line-height: 1.7;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+  .settings-container .card-body {
+    padding: 1.5rem !important;
+  }
+  
+  .settings-container .d-flex.align-items-center.gap-4 {
+    gap: 1rem !important;
+  }
+  
+  .settings-container h3 {
+    font-size: 1.5rem !important;
+  }
+}
