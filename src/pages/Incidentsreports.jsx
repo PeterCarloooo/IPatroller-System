@@ -215,22 +215,24 @@ function IncidentsReports() {
 
   return (
     <DashboardLayout activePage="incidents-reports">
-      <Container fluid className="py-4 px-2 px-md-4">
-        <Card className="mb-4 border-0 shadow-sm rounded-4 bg-light bg-opacity-75 p-4 d-flex flex-row align-items-center justify-content-between">
-          <Stack direction="horizontal" gap={3} className="align-items-center flex-wrap">
-            <div className="d-flex align-items-center justify-content-center bg-danger bg-opacity-10 rounded-circle shadow" style={{ width: 56, height: 56 }}>
-              <i className="fas fa-file-alt text-danger" style={{ fontSize: '1.7rem' }}></i>
-            </div>
-            <div>
-              <h2 className="fw-bold mb-0" style={{ fontSize: '1.6rem', letterSpacing: '0.5px' }}>Incidents Reports</h2>
-              <p className="text-muted mb-0" style={{ fontSize: '1.05rem' }}>View, manage, and track police incident reports</p>
-            </div>
-          </Stack>
+      <div className="page-container">
+        {/* Header */}
+        <div className="d-flex align-items-center gap-3 mb-4 p-3 bg-white rounded-3 shadow-sm border" style={{ minHeight: 72, marginTop: '0.5rem' }}>
+          <div className="d-flex align-items-center justify-content-center bg-danger bg-opacity-10 rounded-circle shadow" style={{ width: 56, height: 56 }}>
+            <i className="fas fa-file-alt text-danger fs-4"></i>
+          </div>
+          <div>
+            <h2 className="fw-bold mb-0 fs-4">Incidents Reports</h2>
+            <p className="text-muted mb-0 small">View, manage, and track police incident reports</p>
+          </div>
+        </div>
+        
+        <div className="d-flex justify-content-end mb-4">
           <Button variant="primary" className="fw-bold d-flex align-items-center px-4 py-2 rounded-3" onClick={handleAdd} disabled={saving}>
             <i className="fas fa-plus me-2"></i> Add New Report
           </Button>
-        </Card>
-        <Card className="shadow-sm border-0 mb-4">
+        </div>
+        <Card className="shadow-sm border-0 rounded-4" style={{ width: '100%', height: '100%', margin: 0, borderRadius: '1rem', background: '#fff', boxShadow: '0 8px 30px rgba(0,0,0,0.1)', visibility: 'visible', opacity: 1 }}>
           <Card.Body className="p-0">
             <div className="d-flex justify-content-end px-3 pt-3 pb-2">
               <Button variant="outline-primary" onClick={handlePrintSummary} className="d-flex align-items-center">
@@ -661,7 +663,7 @@ function IncidentsReports() {
             </div>
           </div>
         )}
-      </Container>
+      </div>
     </DashboardLayout>
   );
 }

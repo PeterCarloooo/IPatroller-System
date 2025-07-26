@@ -1,24 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../components/DashboardLayout';
-import { Container, Card, Row, Col, Form, Badge, Stack, Button } from 'react-bootstrap';
+import { Card, Row, Col, Form, Badge, Stack, Button, Alert } from 'react-bootstrap';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../firebase/config';
+import { useUserRole } from '../context/UserContext';
 
 function Dashboard() {
   const navigate = useNavigate();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
-
   const [activeCount, setActiveCount] = useState(0);
   const [inactiveCount, setInactiveCount] = useState(0);
   const [activeMunicipalities, setActiveMunicipalities] = useState([]);
   const [inactiveMunicipalities, setInactiveMunicipalities] = useState([]);
   const [selectedDate, setSelectedDate] = useState(() => {
-    // Default to yesterday's date in YYYY-MM-DD format
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const yyyy = yesterday.getFullYear();
@@ -27,7 +21,14 @@ function Dashboard() {
     return `${yyyy}-${mm}-${dd}`;
   });
 
-  // Helper to get all days in the current month
+  const { 
+    userRole, 
+    userMunicipality, 
+    getUserPrivileges, 
+    canAccessFeature,
+    getAccessibleMunicipalities 
+  } = useUserRole();
+
   function getDaysInMonth(year, month) {
     const date = new Date(year, month, 1);
     const days = [];
@@ -44,7 +45,6 @@ function Dashboard() {
   useEffect(() => {
     if (!selectedDate) return;
     async function fetchIpatrollerStatus() {
-      // Query daily_counts for selectedDate
       const q = query(collection(db, 'daily_counts'), where('date', '==', selectedDate));
       const snapshot = await getDocs(q);
       let active = 0;
@@ -68,174 +68,258 @@ function Dashboard() {
       setActiveMunicipalities(activeMuni);
       setInactiveMunicipalities(inactiveMuni);
     }
-
     fetchIpatrollerStatus();
   }, [selectedDate]);
 
-  // Sample data for statistics
-  const stats = {
-    totalReports: 156,
-    pendingReports: 23,
-    resolvedReports: 133,
-    activePatrollers: 45,
-    onDutyPatrollers: 12,
-    totalAreas: 8
-  };
+  const stats = [
+    { icon: 'fa-file-alt', color: 'info', label: 'Total Reports', value: 156 },
+    { icon: 'fa-hourglass-half', color: 'warning', label: 'Pending Reports', value: 23 },
+    { icon: 'fa-check-circle', color: 'success', label: 'Resolved Reports', value: 133 },
+    { icon: 'fa-users', color: 'primary', label: 'Active Patrollers', value: 45 },
+    { icon: 'fa-user-check', color: 'success', label: 'On Duty', value: 12 },
+    { icon: 'fa-map-marker-alt', color: 'secondary', label: 'Total Areas', value: 8 },
+    { icon: 'fa-user-check', color: 'success', label: 'Active Patrollers (Yesterday)', value: activeCount, badge: { bg: 'success', text: '5 Above' } },
+    { icon: 'fa-user-times', color: 'danger', label: 'Inactive Patrollers (Yesterday)', value: inactiveCount, badge: { bg: 'danger', text: '4 Below' } }
+  ];
+
+  const userPrivileges = getUserPrivileges();
+  const accessibleMunicipalities = getAccessibleMunicipalities();
 
   return (
     <DashboardLayout activePage="dashboard">
-      <div style={{ minHeight: '100vh', padding: '2.5rem 0' }}>
-        <Container fluid style={{ maxWidth: 1400 }}>
-          <Card className="shadow border-0 rounded-4 bg-white bg-opacity-75 p-4 mb-4">
-            {/* Welcome Section */}
-            <Card className="mb-4 border-0 shadow-sm rounded-4 bg-light bg-opacity-75">
-              <Card.Body>
-                <Stack direction="horizontal" gap={4} className="align-items-center flex-wrap">
-                  <div className="d-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle shadow" style={{ width: 72, height: 72 }}>
-                    <i className="fas fa-tachometer-alt text-primary" style={{ fontSize: '2.2rem' }}></i>
-                  </div>
-                  <div>
-                    <h2 className="fw-bold mb-1" style={{ fontSize: '2rem', letterSpacing: '0.5px' }}>Welcome back, Admin!</h2>
-                    <p className="text-muted mb-0" style={{ fontSize: '1.1rem' }}>Here's what's happening in your patrol areas today.</p>
-                  </div>
-                </Stack>
-              </Card.Body>
-            </Card>
+      <div className="page-container">
+        {/* Header */}
+        <div
+          className="d-flex align-items-center gap-4 mb-4 p-4 bg-white rounded-4 shadow border"
+          style={{ 
+            marginTop: '0.5rem', 
+            border: '1px solid #ced4da', 
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)'
+          }}
+        >
+         
+          <div>
+            <h2 className="fw-bold mb-1 fs-4 d-flex align-items-center">
+              <i className="fas fa-tachometer-alt me-2 text-primary"></i>
+              Dashboard
+            </h2>
+            <p className="text-muted mb-0">Welcome to IPatroller System</p>
+          </div>
+        </div>
 
-            {/* Statistics Cards */}
-            <h5 className="fw-bold mb-3" style={{ letterSpacing: '0.5px' }}>Statistics Overview</h5>
-            <Row className="g-4 mb-4">
-              {[
-                {
-                  icon: 'fa-file-alt',
-                  color: 'info',
-                  label: 'Total Reports',
-                  value: stats.totalReports
-                },
-                {
-                  icon: 'fa-hourglass-half',
-                  color: 'warning',
-                  label: 'Pending Reports',
-                  value: stats.pendingReports
-                },
-                {
-                  icon: 'fa-check-circle',
-                  color: 'success',
-                  label: 'Resolved Reports',
-                  value: stats.resolvedReports
-                },
-                {
-                  icon: 'fa-users',
-                  color: 'primary',
-                  label: 'Active Patrollers',
-                  value: stats.activePatrollers
-                },
-                {
-                  icon: 'fa-user-check',
-                  color: 'success',
-                  label: 'On Duty',
-                  value: stats.onDutyPatrollers
-                },
-                {
-                  icon: 'fa-map-marker-alt',
-                  color: 'secondary',
-                  label: 'Total Areas',
-                  value: stats.totalAreas
-                },
-                {
-                  icon: 'fa-user-check',
-                  color: 'success',
-                  label: 'Active Patrollers (Yesterday)',
-                  value: activeCount,
-                  badge: { bg: 'success', text: '5 Above' }
-                },
-                {
-                  icon: 'fa-user-times',
-                  color: 'danger',
-                  label: 'Inactive Patrollers (Yesterday)',
-                  value: inactiveCount,
-                  badge: { bg: 'danger', text: '4 Below' }
-                }
-              ].map((stat, idx) => (
-                <Col xs={12} sm={6} lg={3} key={idx}>
-                  <Card className="shadow-sm h-100 border-0 rounded-4 bg-white" style={{ padding: '1.2rem 0.5rem', minHeight: 180 }}>
-                    <Card.Body className="d-flex flex-column align-items-center justify-content-center text-center p-3">
-                      <div className={`rounded-circle p-3 bg-${stat.color} bg-opacity-10 mb-3 shadow-sm`} style={{ minWidth: 54, minHeight: 54, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <i className={`fas ${stat.icon} text-${stat.color}`} style={{ fontSize: '1.7rem' }}></i>
-                      </div>
-                      <h6 className="fw-bold mb-1" style={{ fontSize: '1rem', letterSpacing: '0.5px' }}>{stat.label}</h6>
-                      <h2 className={`fw-bold mb-0 text-${stat.color}`} style={{ fontSize: '1.5rem' }}>{stat.value}</h2>
-                      {stat.badge && <Badge bg={stat.badge.bg} className="bg-opacity-75 mt-2">{stat.badge.text}</Badge>}
-                    </Card.Body>
-                  </Card>
-                </Col>
-              ))}
-            </Row>
-            <hr className="my-4" style={{ opacity: 0.2 }} />
-            {/* Recent Activity Section */}
-            <Card className="shadow-sm border-0 mt-4 rounded-4 bg-light bg-opacity-75">
+        {/* User Access Information */}
+        <Row className="mb-4">
+          <Col md={12}>
+            <Card className="border-0 shadow-sm">
               <Card.Body>
-                <h5 className="fw-bold mb-4" style={{ fontSize: '1.1rem', letterSpacing: '0.5px' }}>Recent Activity</h5>
-                <Row className="align-items-center mb-4 gap-3">
-                  <Col md="auto">
-                    <span className="fw-semibold">Date:</span> <Badge bg="primary" className="bg-opacity-75 ms-2">{selectedDate}</Badge>
+                <h5 className="fw-bold mb-3">
+                  <i className="fas fa-user-shield text-primary me-2"></i>
+                  Your Access Information
+                </h5>
+                <Row>
+                  <Col md={4}>
+                    <div className="mb-3">
+                      <strong>Role:</strong>
+                      <Badge bg={userRole === 'Administrator' ? 'primary' : 'secondary'} className="ms-2">
+                        {userRole}
+                      </Badge>
+                    </div>
                   </Col>
-                  <Col md="auto">
-                    <Form.Select
-                      value={selectedDate}
-                      onChange={e => setSelectedDate(e.target.value)}
-                      style={{ minWidth: 180 }}
-                    >
-                      <option value="">Select a date</option>
-                      {daysInMonth.map((date, idx) => {
-                        const value = date.toISOString().slice(0, 10);
-                        const isToday = value === new Date().toISOString().slice(0, 10);
-                        return (
-                          <option key={idx} value={value}>
-                            {date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                            {isToday ? ' (Today)' : ''}
-                          </option>
-                        );
-                      })}
-                    </Form.Select>
+                  <Col md={4}>
+                    <div className="mb-3">
+                      <strong>Municipality:</strong>
+                      <Badge bg="info" className="ms-2">
+                        {userMunicipality || 'Not Assigned'}
+                      </Badge>
+                    </div>
                   </Col>
-                </Row>
-                <Row className="g-4">
-                  <Col md={6}>
-                    <div className="mb-2 fw-semibold text-success">Active Municipalities <Badge bg="success" className="bg-opacity-75 ms-1">{activeMunicipalities.length}</Badge></div>
-                    {activeMunicipalities.length > 0 ? (
-                      <ul className="list-group list-group-flush rounded-3 shadow-sm">
-                        {activeMunicipalities.map((muni, idx) => (
-                          <li key={idx} className="list-group-item d-flex justify-content-between align-items-center px-2 py-2">
-                            <span>{muni.name}</span>
-                            <Badge bg="success" className="bg-opacity-75">{muni.count}</Badge>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <div className="text-muted">No active municipalities today.</div>
-                    )}
-                  </Col>
-                  <Col md={6}>
-                    <div className="mb-2 fw-semibold text-danger">Inactive Municipalities <Badge bg="danger" className="bg-opacity-75 ms-1">{inactiveMunicipalities.length}</Badge></div>
-                    {inactiveMunicipalities.length > 0 ? (
-                      <ul className="list-group list-group-flush rounded-3 shadow-sm">
-                        {inactiveMunicipalities.map((muni, idx) => (
-                          <li key={idx} className="list-group-item d-flex justify-content-between align-items-center px-2 py-2">
-                            <span>{muni.name}</span>
-                            <Badge bg="danger" className="bg-opacity-75">{muni.count}</Badge>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <div className="text-muted">No inactive municipalities today.</div>
-                    )}
+                  <Col md={4}>
+                    <div className="mb-3">
+                      <strong>Privileges:</strong>
+                      <span className="ms-2">{userPrivileges.length}</span>
+                    </div>
                   </Col>
                 </Row>
+                
+                {userPrivileges.length > 0 && (
+                  <div className="mb-3">
+                    <strong>Your Privileges:</strong>
+                    <div className="mt-2">
+                      {userPrivileges.map((privilege, idx) => (
+                        <Badge key={idx} bg="light" text="dark" className="me-1 mb-1">
+                          {privilege}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="mb-3">
+                  <strong>Accessible Municipalities:</strong>
+                  <div className="mt-2">
+                    {accessibleMunicipalities.length > 0 ? (
+                      accessibleMunicipalities.map((municipality, idx) => (
+                        <Badge key={idx} bg="success" className="me-1 mb-1">
+                          {municipality}
+                        </Badge>
+                      ))
+                    ) : (
+                      <span className="text-muted">No municipalities accessible</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Feature Access Test */}
+                <div className="mt-3">
+                  <strong>Feature Access Test:</strong>
+                  <div className="mt-2">
+                    <Badge bg={canAccessFeature('add-user') ? 'success' : 'danger'} className="me-1 mb-1">
+                      Add User: {canAccessFeature('add-user') ? 'Yes' : 'No'}
+                    </Badge>
+                    <Badge bg={canAccessFeature('edit-user') ? 'success' : 'danger'} className="me-1 mb-1">
+                      Edit User: {canAccessFeature('edit-user') ? 'Yes' : 'No'}
+                    </Badge>
+                    <Badge bg={canAccessFeature('view-reports') ? 'success' : 'danger'} className="me-1 mb-1">
+                      View Reports: {canAccessFeature('view-reports') ? 'Yes' : 'No'}
+                    </Badge>
+                    <Badge bg={canAccessFeature('system-settings') ? 'success' : 'danger'} className="me-1 mb-1">
+                      System Settings: {canAccessFeature('system-settings') ? 'Yes' : 'No'}
+                    </Badge>
+                  </div>
+                </div>
               </Card.Body>
             </Card>
-          </Card>
-        </Container>
+          </Col>
+        </Row>
+
+        {/* Date Selection */}
+        <Row className="mb-4">
+          <Col md={6}>
+            <Form.Group>
+              <Form.Label className="fw-semibold">Select Date for IPatroller Status</Form.Label>
+              <Form.Control
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="rounded-3 border-0 shadow-sm"
+              />
+            </Form.Group>
+          </Col>
+        </Row>
+
+        {/* Statistics Cards */}
+        <Row className="g-4 mb-4">
+          {stats.map((stat, index) => (
+            <Col key={index} xs={12} sm={6} lg={3}>
+              <Card className="border-0 shadow-sm h-100" style={{ 
+                background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                border: '1px solid rgba(0,0,0,0.05)'
+              }}>
+                <Card.Body className="d-flex flex-column align-items-center justify-content-center p-4">
+                  <div className="mb-3">
+                    <i className={`fas ${stat.icon} text-${stat.color} fs-1`}></i>
+                  </div>
+                  <h3 className="fw-bold mb-1" style={{ color: `var(--bs-${stat.color})` }}>
+                    {stat.value}
+                  </h3>
+                  <p className="text-muted text-center mb-2 small">{stat.label}</p>
+                  {stat.badge && (
+                    <Badge bg={stat.badge.bg} className="small">
+                      {stat.badge.text}
+                    </Badge>
+                  )}
+                </Card.Body>
+              </Card>
+            </Col>
+          ))}
+        </Row>
+
+        {/* Quick Actions */}
+        <Row className="mb-4">
+          <Col md={12}>
+            <Card className="border-0 shadow-sm">
+              <Card.Body>
+                <h5 className="fw-bold mb-3">
+                  <i className="fas fa-bolt text-warning me-2"></i>
+                  Quick Actions
+                </h5>
+                <div className="d-flex flex-wrap gap-2">
+                  {canAccessFeature('view-reports') && (
+                    <Button variant="outline-primary" onClick={() => navigate('/reports')}>
+                      <i className="fas fa-chart-line me-2"></i>
+                      View Reports
+                    </Button>
+                  )}
+                  {canAccessFeature('add-user') && (
+                    <Button variant="outline-success" onClick={() => navigate('/users')}>
+                      <i className="fas fa-user-plus me-2"></i>
+                      Add User
+                    </Button>
+                  )}
+                  {canAccessFeature('system-settings') && (
+                    <Button variant="outline-warning" onClick={() => navigate('/setups')}>
+                      <i className="fas fa-cogs me-2"></i>
+                      System Settings
+                    </Button>
+                  )}
+                  <Button variant="outline-info" onClick={() => navigate('/ipatroller-status')}>
+                    <i className="fas fa-shield-alt me-2"></i>
+                    IPatroller Status
+                  </Button>
+                </div>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+
+        {/* Recent Activity */}
+        <Row>
+          <Col md={6}>
+            <Card className="border-0 shadow-sm h-100">
+              <Card.Body>
+                <h5 className="fw-bold mb-3">
+                  <i className="fas fa-user-check text-success me-2"></i>
+                  Active Municipalities (Yesterday)
+                </h5>
+                {activeMunicipalities.length > 0 ? (
+                  <div>
+                    {activeMunicipalities.map((muni, index) => (
+                      <div key={index} className="d-flex justify-content-between align-items-center mb-2">
+                        <span className="fw-semibold">{muni.name}</span>
+                        <Badge bg="success">{muni.count} patrollers</Badge>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted">No active municipalities for selected date</p>
+                )}
+              </Card.Body>
+            </Card>
+          </Col>
+          <Col md={6}>
+            <Card className="border-0 shadow-sm h-100">
+              <Card.Body>
+                <h5 className="fw-bold mb-3">
+                  <i className="fas fa-user-times text-danger me-2"></i>
+                  Inactive Municipalities (Yesterday)
+                </h5>
+                {inactiveMunicipalities.length > 0 ? (
+                  <div>
+                    {inactiveMunicipalities.map((muni, index) => (
+                      <div key={index} className="d-flex justify-content-between align-items-center mb-2">
+                        <span className="fw-semibold">{muni.name}</span>
+                        <Badge bg="danger">{muni.count} patrollers</Badge>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted">No inactive municipalities for selected date</p>
+                )}
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
       </div>
     </DashboardLayout>
   );

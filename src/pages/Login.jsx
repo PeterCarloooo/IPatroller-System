@@ -1,323 +1,492 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Container, Card, Form, Button, Alert, Spinner } from 'react-bootstrap';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '../firebase/config';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { useUserRole } from '../context/UserContext';
-import { Container, Card, Form, Button, Alert, Spinner, Stack, Modal } from 'react-bootstrap';
-import { sendPasswordResetEmail } from 'firebase/auth';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import { doc, getDoc } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
+
+// Add CSS animations
+const loginStyles = `
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+  }
+  
+  @keyframes float {
+    0%, 100% {
+      transform: translate(0, 0);
+    }
+    25% {
+      transform: translate(10px, -10px);
+    }
+    50% {
+      transform: translate(-5px, 5px);
+    }
+    75% {
+      transform: translate(-10px, -5px);
+    }
+  }
+`;
+
+// Inject styles
+const styleSheet = document.createElement('style');
+styleSheet.type = 'text/css';
+styleSheet.innerText = loginStyles;
+document.head.appendChild(styleSheet);
 
 function Login() {
-  const navigate = useNavigate();
-  const { setUserRole } = useUserRole();
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [showForgotModal, setShowForgotModal] = useState(false);
-  const [forgotEmail, setForgotEmail] = useState('');
-  const [forgotSuccess, setForgotSuccess] = useState('');
-  const [forgotError, setForgotError] = useState('');
-  const [forgotLoading, setForgotLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
+    setError('');
 
     try {
-      // 1. Attempt to sign in the user
-      const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
-
-      // 2. Immediately fetch the user's Firestore profile using their UID
-      const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
-      if (!userDoc.exists()) {
-        setError('Your account is not yet registered. Please contact your administrator to register your account.');
-        setLoading(false);
-        return;
-      }
-
-      // Get geolocation and update status/location
-      async function reverseGeocode(lat, lon) {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      // Check for existing IPatroller data
+      const existingData = localStorage.getItem('ipatrollerData');
+      let hasData = false;
+      let monthCount = 0;
+      
+      if (existingData) {
         try {
-          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
-          const data = await response.json();
-          if (data.address && data.address.city) {
-            return `${data.address.city}, Bataan`;
-          }
-          return data.display_name || 'Unknown Location';
-        } catch (e) {
-          return 'Unknown Location';
+          const parsedData = JSON.parse(existingData);
+          monthCount = Object.keys(parsedData).length;
+          hasData = monthCount > 0;
+        } catch (error) {
+          console.log('No valid IPatroller data found');
         }
       }
-
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(async (position) => {
-          const { latitude, longitude } = position.coords;
-          const locationString = await reverseGeocode(latitude, longitude);
-          await updateDoc(doc(db, 'users', userCredential.user.uid), {
-            status: 'Active',
-            location: locationString
-          });
-          console.log('Status set to Active with location:', locationString);
-        }, async (error) => {
-          await updateDoc(doc(db, 'users', userCredential.user.uid), { status: 'Active' });
-          console.log('Status set to Active (no location permission)');
-        });
+      
+      // Get user data from Firestore
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        const role = userData.role;
+        
+        // Show data restoration notification if data exists
+        if (hasData) {
+          setTimeout(() => {
+            alert(`🎉 Welcome back!\n\n✅ Your IPatroller data has been restored:\n• ${monthCount} month(s) of data available\n• All Excel imports preserved\n• All daily counts maintained\n\nYour data is ready to use!`);
+          }, 500);
+        }
+        
+        // Navigate based on role
+        if (role === 'Administrator') {
+          navigate('/dashboard');
+        } else {
+          navigate('/user-dashboard');
+        }
       } else {
-        await updateDoc(doc(db, 'users', userCredential.user.uid), { status: 'Active' });
-        console.log('Status set to Active (no geolocation support)');
-      }
-
-      // 4. Continue with your role logic and navigation
-      let role = '';
-      if (formData.email === 'admin@admin.com') {
-        role = 'Administrator';
-      } else {
-        role = 'User';
-      }
-      setUserRole(role);
-      if (role === 'Administrator') {
-        navigate('/dashboard');
-      } else {
-        navigate('/user-dashboard', { replace: true });
+        setError('User data not found. Please contact administrator.');
       }
     } catch (error) {
       console.error('Login error:', error);
-      switch (error.code) {
-        case 'auth/invalid-email':
-          setError('Invalid email address');
-          break;
-        case 'auth/user-disabled':
-          setError('This account has been disabled');
-          break;
-        case 'auth/user-not-found':
-          setError('No account found with this email');
-          break;
-        case 'auth/wrong-password':
-          setError('Incorrect password');
-          break;
-        default:
-          setError('Failed to log in. Please try again.');
-      }
+      setError('Invalid email or password. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleForgotPassword = async (e) => {
-    e.preventDefault();
-    setForgotError('');
-    setForgotSuccess('');
-    setForgotLoading(true);
-    try {
-      await sendPasswordResetEmail(auth, forgotEmail);
-      setForgotSuccess('Password reset email sent! Please check your inbox.');
-    } catch (err) {
-      setForgotError('Failed to send reset email. Please check the email address.');
-    } finally {
-      setForgotLoading(false);
-    }
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
-  };
-
   return (
-    <Container
-      fluid
-      className="d-flex align-items-center justify-content-center"
-      style={{
-        minHeight: '100vh',
-        minWidth: '100vw',
-        padding: 0,
-        margin: 0,
-        background: 'linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%)',
-      }}
-    >
-      <Card
-        className="shadow border-0"
-        style={{
-          maxWidth: 420,
-          width: '100%',
-          margin: 'auto',
-          borderRadius: '1.5rem',
-          background: 'linear-gradient(120deg, #f8fafc 60%, #e3e9f7 100%)',
-          boxShadow: '0 8px 32px 0 rgba(31,38,135,0.10)',
-        }}
-      >
-        <Card.Body className="p-4">
-          <div className="text-center mb-4">
-            <Stack direction="vertical" gap={3} className="align-items-center">
-              <div style={{
-                width: '80px',
-                height: '80px',
-                background: 'rgba(33,147,176,0.13)',
-                borderRadius: '50%',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                margin: '0 auto',
-                boxShadow: '0 2px 8px 0 rgba(33,147,176,0.08)',
-              }}>
-                <img
-                  src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Ph_seal_bataan2.png"
-                  alt="Bataan Seal"
+    <div style={{ 
+      minHeight: '100vh', 
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '1rem',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* Background decorative elements */}
+      <div style={{
+        position: 'absolute',
+        top: '-50%',
+        left: '-50%',
+        width: '200%',
+        height: '200%',
+        background: 'radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px)',
+        backgroundSize: '50px 50px',
+        animation: 'float 20s ease-in-out infinite'
+      }} />
+      
+      <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh', position: 'relative', zIndex: 1 }}>
+        <div className="w-100 d-flex flex-column align-items-center justify-content-center" style={{ maxWidth: '450px', minHeight: '80vh' }}>
+          {/* Login Card */}
+          <Card className="shadow-lg border-0 rounded-4" style={{ 
+            width: '100%', 
+            margin: 0, 
+            borderRadius: '20px', 
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            animation: 'slideUp 0.6s ease-out'
+          }}>
+            <Card.Body className="p-5">
+              <div className="text-center mb-5">
+                {/* Logo and Header */}
+                <div 
+                  className="d-flex align-items-center justify-content-center mb-4"
                   style={{
-                    width: 78,
-                    height: 78,
-                    objectFit: 'contain',
-                    borderRadius: '50%',
-                    background: '#fff',
-                    border: '1px solid #fff',
-                    boxShadow: '0 1px 4px 0 rgba(33,147,176,0.10)'
+                    animation: 'pulse 2s ease-in-out infinite'
                   }}
-                />
-              </div>
-              <h2 className="fw-bold mb-1" style={{ letterSpacing: '1px', color: '#2193b0', fontSize: '2.2rem' }}>IPatroller</h2>
-              <p className="text-muted mb-4" style={{ fontSize: '1.08rem', fontWeight: 500 }}>Sign in to your account</p>
-            </Stack>
-          </div>
-
-          <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3 w-100" controlId="loginEmail">
-              <Form.Label className="fw-semibold">Email address</Form.Label>
-              <div className="position-relative">
-                <Form.Control
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  required
-                  autoFocus
-                  size="lg"
-                  placeholder="Email address"
-                  style={{
-                    background: '#f5f7fa',
-                    border: 'none',
-                    borderRadius: '0.7rem',
-                    paddingLeft: '2.7rem',
-                  }}
-                />
-                <i className="bi bi-envelope position-absolute top-50 start-0 translate-middle-y ms-3 text-secondary" style={{ fontSize: '1.1em' }}></i>
-              </div>
-            </Form.Group>
-            <Form.Group className="mb-3 w-100 position-relative" controlId="loginPassword">
-              <Form.Label className="fw-semibold">Password</Form.Label>
-              <div className="position-relative">
-                <Form.Control
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  required
-                  size="lg"
-                  placeholder="Password"
-                  style={{
-                    background: '#f5f7fa',
-                    border: 'none',
-                    borderRadius: '0.7rem',
-                    paddingLeft: '2.7rem',
-                    paddingRight: '2.5rem'
-                  }}
-                />
-                <i className="bi bi-lock position-absolute top-50 start-0 translate-middle-y ms-3 text-secondary" style={{ fontSize: '1.1em' }}></i>
-                <Button
-                  variant="link"
-                  tabIndex={-1}
-                  className="position-absolute top-50 end-0 translate-middle-y px-2 py-0 border-0"
-                  style={{ color: '#2193b0', fontSize: '1.2em', textDecoration: 'none' }}
-                  onClick={e => { e.preventDefault(); setShowPassword(v => !v); }}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
-                  <i className={showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'}></i>
-                </Button>
+                  <div style={{
+                    width: 90,
+                    height: 90,
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #fff 0%, #f8fafc 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                    border: '3px solid rgba(255, 255, 255, 0.8)'
+                  }}>
+                    <img
+                      src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Ph_seal_bataan2.png"
+                      alt="Bataan Seal"
+                      style={{ 
+                        width: 70, 
+                        height: 70, 
+                        objectFit: 'contain',
+                        borderRadius: '50%'
+                      }}
+                    />
+                  </div>
+                </div>
+                <h2 className="fw-bold mb-2" style={{ 
+                  color: '#2c3e50',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  fontSize: '2.2rem'
+                }}>IPatroller</h2>
+                <p className="text-muted mb-0" style={{ fontSize: '1.1rem', fontWeight: 500 }}>Province of Bataan</p>
+                <p className="text-muted mt-2" style={{ fontSize: '0.95rem' }}>Sign in to your account</p>
               </div>
-              <div className="text-end mt-1">
-                <Button variant="link" className="p-0 m-0 align-baseline text-decoration-none" style={{ fontSize: '0.98em', color: '#2193b0' }} onClick={() => setShowForgotModal(true)} tabIndex={0} aria-label="Forgot password?">
-                  Forgot password?
-                </Button>
-              </div>
-            </Form.Group>
 
-            {error && (
-              <Alert variant="danger" className="text-center mb-3">
-                {error}
-              </Alert>
-            )}
+              {error && (
+                <Alert variant="danger" className="rounded-4 mb-4" style={{
+                  background: 'linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%)',
+                  border: '1px solid #f5c6cb',
+                  color: '#721c24',
+                  boxShadow: '0 4px 12px rgba(220, 53, 69, 0.15)'
+                }}>
+                  <i className="fas fa-exclamation-triangle me-2"></i>
+                  {error}
+                </Alert>
+              )}
 
-            <div className="d-grid gap-2 d-md-block">
-              <Button
-                type="submit"
-                variant="primary"
-                className="mb-2 w-100 py-2 fw-bold"
-                style={{
-                  borderRadius: '0.9rem',
-                  letterSpacing: '1px',
-                  background: 'linear-gradient(90deg, #2193b0 0%, #6dd5ed 100%)',
-                  border: 'none',
-                  fontSize: '1.1rem',
-                  boxShadow: '0 2px 8px 0 rgba(33,147,176,0.08)'
-                }}
-                disabled={loading}
-                size="lg"
-              >
-                {loading ? (
-                  <>
-                    <Spinner animation="border" size="sm" className="me-2" />
-                    Signing in...
-                  </>
-                ) : (
-                  <>
-                    <i className="bi bi-box-arrow-in-right me-2"></i>
-                    Login
-                  </>
-                )}
-              </Button>
-            </div>
-          </Form>
-
-          {/* Forgot Password Modal */}
-          <Modal show={showForgotModal} onHide={() => setShowForgotModal(false)} centered contentClassName="border-0 rounded-4 shadow-lg">
-            <Modal.Header closeButton className="border-0 pb-0" style={{ background: '#f5f7fa', borderTopLeftRadius: '1rem', borderTopRightRadius: '1rem' }}>
-              <Modal.Title className="fw-bold">Reset Password</Modal.Title>
-            </Modal.Header>
-            <Modal.Body style={{ padding: '1.2rem' }}>
-              <Form onSubmit={handleForgotPassword}>
-                <Form.Group className="mb-3" controlId="forgotEmail">
-                  <Form.Label>Enter your email address</Form.Label>
+              <Form onSubmit={handleLogin}>
+                <Form.Group className="mb-4">
+                  <Form.Label className="fw-semibold mb-2" style={{ color: '#2c3e50', fontSize: '0.95rem' }}>
+                    <i className="fas fa-envelope me-2" style={{ color: '#667eea' }}></i>Email Address
+                  </Form.Label>
                   <Form.Control
                     type="email"
-                    value={forgotEmail}
-                    onChange={e => setForgotEmail(e.target.value)}
+                    placeholder="Enter your email address"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     required
-                    placeholder="Email address"
-                    autoFocus
+                    className="rounded-4 border-0 shadow-sm"
+                    style={{ 
+                      padding: '1rem 1.25rem',
+                      background: 'rgba(248, 249, 250, 0.8)',
+                      border: '2px solid rgba(102, 126, 234, 0.1)',
+                      fontSize: '1rem',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = 'rgba(102, 126, 234, 0.3)';
+                      e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = 'rgba(102, 126, 234, 0.1)';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </Form.Group>
-                {forgotError && <Alert variant="danger" className="mb-2">{forgotError}</Alert>}
-                {forgotSuccess && <Alert variant="success" className="mb-2">{forgotSuccess}</Alert>}
-                <div className="d-grid gap-2">
-                  <Button type="submit" variant="primary" disabled={forgotLoading} className="fw-bold">
-                    {forgotLoading ? <Spinner animation="border" size="sm" className="me-2" /> : null}
+
+                <Form.Group className="mb-4">
+                  <Form.Label className="fw-semibold mb-2" style={{ color: '#2c3e50', fontSize: '0.95rem' }}>
+                    <i className="fas fa-lock me-2" style={{ color: '#667eea' }}></i>Password
+                  </Form.Label>
+                  <div className="position-relative">
+                    <Form.Control
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Enter your password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      className="rounded-4 border-0 shadow-sm"
+                      style={{ 
+                        padding: '1rem 1.25rem',
+                        paddingRight: '3.5rem',
+                        background: 'rgba(248, 249, 250, 0.8)',
+                        border: '2px solid rgba(102, 126, 234, 0.1)',
+                        fontSize: '1rem',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = 'rgba(102, 126, 234, 0.3)';
+                        e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = 'rgba(102, 126, 234, 0.1)';
+                        e.target.style.boxShadow = 'none';
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="link"
+                      className="position-absolute top-50 end-0 translate-middle-y border-0 p-0 me-3"
+                      onClick={() => setShowPassword(!showPassword)}
+                      style={{ 
+                        background: 'none',
+                        color: '#6c757d',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onMouseOver={e => e.currentTarget.style.color = '#667eea'}
+                      onMouseOut={e => e.currentTarget.style.color = '#6c757d'}
+                    >
+                      <i className={`fas fa-${showPassword ? 'eye-slash' : 'eye'}`} style={{ fontSize: '1.1rem' }}></i>
+                    </Button>
+                  </div>
+                </Form.Group>
+
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                  <Form.Check
+                    type="checkbox"
+                    id="remember-me"
+                    label="Remember me"
+                    className="text-muted"
+                    style={{ fontSize: '0.9rem' }}
+                  />
+                  <Button
+                    variant="link"
+                    className="text-decoration-none p-0"
+                    onClick={() => setShowForgotPassword(true)}
+                    style={{ 
+                      color: '#667eea',
+                      fontSize: '0.9rem',
+                      fontWeight: 500,
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseOver={e => e.currentTarget.style.color = '#5a6fd8'}
+                    onMouseOut={e => e.currentTarget.style.color = '#667eea'}
+                  >
+                    Forgot Password?
+                  </Button>
+                </div>
+
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="w-100 rounded-4 fw-bold py-3"
+                  disabled={loading}
+                  style={{ 
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    border: 'none',
+                    fontSize: '1.1rem',
+                    boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)',
+                    transition: 'all 0.3s ease',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}
+                  onMouseOver={e => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 12px 35px rgba(102, 126, 234, 0.4)';
+                  }}
+                  onMouseOut={e => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.3)';
+                  }}
+                >
+                  {/* Button shine effect */}
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: '-100%',
+                    width: '100%',
+                    height: '100%',
+                    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+                    transition: 'left 0.5s ease',
+                    pointerEvents: 'none'
+                  }} 
+                  onMouseOver={e => e.currentTarget.style.left = '100%'}
+                  />
+                  
+                  {loading ? (
+                    <>
+                      <Spinner as="span" animation="border" size="sm" className="me-2" />
+                      Signing in...
+                    </>
+                  ) : (
+                    <>
+                      <i className="fas fa-sign-in-alt me-2"></i>
+                      Sign In
+                    </>
+                  )}
+                </Button>
+              </Form>
+            </Card.Body>
+          </Card>
+
+          {/* Footer */}
+          <div className="text-center mt-4">
+            <p className="text-white small mb-0" style={{ 
+              fontSize: '0.9rem',
+              fontWeight: 500,
+              textShadow: '0 1px 2px rgba(0,0,0,0.1)'
+            }}>
+              © 2025 Province of Bataan. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </Container>
+
+      {/* Forgot Password Modal */}
+      {showForgotPassword && (
+        <div className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style={{ 
+          background: 'rgba(0,0,0,0.6)', 
+          zIndex: 1050,
+          backdropFilter: 'blur(10px)'
+        }}>
+          <Card className="border-0 shadow-lg rounded-4" style={{ 
+            maxWidth: '450px', 
+            width: '90%',
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            animation: 'slideUp 0.4s ease-out'
+          }}>
+            <Card.Body className="p-5">
+              <div className="text-center mb-4">
+                <div className="d-flex align-items-center justify-content-center rounded-circle mx-auto mb-3" style={{ 
+                  width: 70, 
+                  height: 70, 
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: 'white',
+                  boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)'
+                }}>
+                  <i className="fas fa-key" style={{ fontSize: '1.8rem' }}></i>
+                </div>
+                <h4 className="fw-bold mb-2" style={{ 
+                  color: '#2c3e50',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text'
+                }}>Forgot Password?</h4>
+                <p className="text-muted mb-0" style={{ fontSize: '1rem' }}>Enter your email to reset your password</p>
+              </div>
+
+              <Form>
+                <Form.Group className="mb-4">
+                  <Form.Label className="fw-semibold mb-2" style={{ color: '#2c3e50', fontSize: '0.95rem' }}>
+                    <i className="fas fa-envelope me-2" style={{ color: '#667eea' }}></i>Email Address
+                  </Form.Label>
+                  <Form.Control
+                    type="email"
+                    placeholder="Enter your email address"
+                    className="rounded-4 border-0 shadow-sm"
+                    style={{ 
+                      padding: '1rem 1.25rem',
+                      background: 'rgba(248, 249, 250, 0.8)',
+                      border: '2px solid rgba(102, 126, 234, 0.1)',
+                      fontSize: '1rem',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = 'rgba(102, 126, 234, 0.3)';
+                      e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = 'rgba(102, 126, 234, 0.1)';
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  />
+                </Form.Group>
+
+                <div className="d-flex gap-3">
+                  <Button
+                    variant="light"
+                    className="flex-fill rounded-4 py-2"
+                    onClick={() => setShowForgotPassword(false)}
+                    style={{
+                      background: 'rgba(248, 249, 250, 0.8)',
+                      border: '2px solid rgba(102, 126, 234, 0.1)',
+                      color: '#6c757d',
+                      fontWeight: 500,
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseOver={e => {
+                      e.currentTarget.style.background = 'rgba(102, 126, 234, 0.1)';
+                      e.currentTarget.style.borderColor = 'rgba(102, 126, 234, 0.2)';
+                    }}
+                    onMouseOut={e => {
+                      e.currentTarget.style.background = 'rgba(248, 249, 250, 0.8)';
+                      e.currentTarget.style.borderColor = 'rgba(102, 126, 234, 0.1)';
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="primary"
+                    className="flex-fill rounded-4 py-2"
+                    style={{ 
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      border: 'none',
+                      fontWeight: 500,
+                      boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseOver={e => {
+                      e.currentTarget.style.transform = 'translateY(-1px)';
+                      e.currentTarget.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.4)';
+                    }}
+                    onMouseOut={e => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.3)';
+                    }}
+                  >
+                    <i className="fas fa-paper-plane me-2"></i>
                     Send Reset Link
                   </Button>
                 </div>
               </Form>
-            </Modal.Body>
-          </Modal>
-        </Card.Body>
-      </Card>
-    </Container>
+            </Card.Body>
+          </Card>
+        </div>
+      )}
+    </div>
   );
 }
 

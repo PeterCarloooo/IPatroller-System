@@ -12,30 +12,33 @@ import CommandCenter from './pages/CommandCenter.jsx';
 import Users from './pages/Users.jsx';
 import NewUser from './pages/NewUser.jsx';
 import Settings from './pages/Settings.jsx';
-import ChangePassword from './pages/ChangePassword.jsx';
+import ChangePasswordPage from './pages/ChangePasswordPage.jsx';
+import { IPatrollerProvider } from './context/IPatrollerContext';
 import './App.css'
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/user-dashboard" element={<UserDashboard />} />
-        <Route path="/ipatroller-status" element={<IPatrollerStatus />} />
-        <Route path="/reports" element={<Reports />} />
-        <Route path="/setups" element={<Setups />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/add" element={<Add />} />
-        <Route path="/incidents-reports" element={<IncidentsReports />} />
-        <Route path="/command-center" element={<CommandCenter />} />
-        <Route path="/users" element={<Users />} />
-        <Route path="/new-user" element={<NewUser />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/change-password" element={<ChangePassword />} />
-      </Routes>
-    </BrowserRouter>
+    <IPatrollerProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/user-dashboard" element={<UserDashboard />} />
+          <Route path="/ipatroller-status" element={<IPatrollerStatus />} />
+          <Route path="/reports" element={<Reports />} />
+          <Route path="/setups" element={<Setups />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/add" element={<Add />} />
+          <Route path="/incidents-reports" element={<IncidentsReports />} />
+          <Route path="/command-center" element={<CommandCenter />} />
+          <Route path="/users" element={<Users />} />
+          <Route path="/new-user" element={<NewUser />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/change-password" element={<ChangePasswordPage />} />
+        </Routes>
+      </BrowserRouter>
+    </IPatrollerProvider>
   );
 }
 

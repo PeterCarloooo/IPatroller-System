@@ -11,7 +11,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyCtBFNjmuj5bJ0qWI6qZybJAxlgk3T7TBE",
   authDomain: "bataan-ipatroller.firebaseapp.com",
   projectId: "bataan-ipatroller",
-  storageBucket: "bataan-ipatroller.firebasestorage.app",
+  storageBucket: "bataan-ipatroller.appspot.com",
   messagingSenderId: "714175029857",
   appId: "1:714175029857:web:18889ead2ee19c01f24020",
   measurementId: "G-SL0SV586QH"

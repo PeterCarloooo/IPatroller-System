@@ -38,7 +38,7 @@ function Notifications() {
             </div>
           </Stack>
         </Card>
-        <Card className="shadow-sm border-0 mb-4">
+        <Card className="shadow-sm border-0 rounded-4" style={{ width: '100%', height: '100%', margin: 0, borderRadius: '1rem', background: '#fff', boxShadow: '0 8px 30px rgba(0,0,0,0.1)' }}>
           <Card.Body>
             <Table hover responsive className="align-middle mb-0">
               <thead className="table-light">

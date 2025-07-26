@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { auth } from '../firebase/config';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config';
-import ChangePassword from './ChangePassword';
 import { Container, Card, Row, Col, Stack, Button, Form, Spinner, Alert } from 'react-bootstrap';
 
 function Profile({ section }) {
@@ -168,106 +167,392 @@ function Profile({ section }) {
 
   // Profile Info Card
   const profileInfoCard = (
-    <Container fluid className="py-4 px-2 px-md-4">
-      <Card className="mb-4 border-0 shadow-sm rounded-4 bg-light bg-opacity-75 p-4">
-        <Stack direction="horizontal" gap={3} className="align-items-center flex-wrap mb-3">
-          <div className="d-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle shadow" style={{ width: 56, height: 56 }}>
-            <i className="fas fa-user text-primary" style={{ fontSize: '1.7rem' }}></i>
+    <div className="w-100">
+      <div className="w-100 p-5" style={{
+        background: 'transparent'
+      }}>
+        {/* Header Section */}
+        <div className="text-center mb-5">
+          <div className="d-flex align-items-center justify-content-center mb-4">
+            <div style={{
+              width: 80,
+              height: 80,
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)',
+              border: '3px solid rgba(255, 255, 255, 0.8)'
+            }}>
+              <i className="fas fa-user text-white" style={{ fontSize: '2rem' }}></i>
+            </div>
           </div>
-          <div>
-            <h3 className="fw-bold mb-1" style={{ fontSize: '1.6rem', letterSpacing: '0.5px' }}>Profile Information</h3>
-            <p className="text-muted mb-0" style={{ fontSize: '1.05rem' }}>Update your account information</p>
+          <h2 className="fw-bold mb-2" style={{ 
+            fontSize: '2rem', 
+            letterSpacing: '0.5px',
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text'
+          }}>Profile Information</h2>
+          <p className="text-muted mb-0" style={{ fontSize: '1.1rem', fontWeight: 500 }}>Manage your account details and preferences</p>
+        </div>
+        
+        {/* Last Login Info */}
+        {lastLoginTime && (
+          <div className="text-center mb-4 p-3" style={{
+            background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
+            borderRadius: '12px',
+            border: '1px solid rgba(102, 126, 234, 0.2)'
+          }}>
+            <i className="fas fa-clock text-primary me-2"></i>
+            <span className="fw-semibold" style={{ color: '#667eea' }}>
+              Last Login: {formatLastLogin(lastLoginTime)}
+            </span>
           </div>
-        </Stack>
-        <hr className="my-4" />
+        )}
+        
+        <hr className="my-4" style={{ borderColor: 'rgba(102, 126, 234, 0.2)' }} />
+        
         {loading ? (
           <div className="d-flex justify-content-center align-items-center" style={{ minHeight: 200 }}>
             <Spinner animation="border" variant="primary" />
           </div>
         ) : (
           <>
-            {success && <Alert variant="success" className="text-center">{success}</Alert>}
-            {error && <Alert variant="danger" className="text-center">{error}</Alert>}
-            <Row className="g-3 mb-4">
+            {success && (
+              <Alert variant="success" className="text-center rounded-4 mb-4" style={{
+                background: 'linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%)',
+                border: '1px solid #c3e6cb',
+                color: '#155724'
+              }}>
+                <i className="fas fa-check-circle me-2"></i>
+                {success}
+              </Alert>
+            )}
+            {error && (
+              <Alert variant="danger" className="text-center rounded-4 mb-4" style={{
+                background: 'linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%)',
+                border: '1px solid #f5c6cb',
+                color: '#721c24'
+              }}>
+                <i className="fas fa-exclamation-triangle me-2"></i>
+                {error}
+              </Alert>
+            )}
+            <Row className="g-4 mb-4">
               {userRole === 'Administrator' ? (
                 <>
                   <Col xs={12} md={6}>
-                    <Form.Group className="mb-2">
-                      <Form.Label className="fw-semibold mb-1">Email</Form.Label>
-                      <Form.Control type="email" value={formData.email} disabled style={{ background: '#f1f3f6', border: '1px solid #e0e0e0' }} />
+                    <Form.Group className="mb-3">
+                      <Form.Label className="fw-semibold mb-2" style={{ color: '#2c3e50', fontSize: '0.95rem' }}>
+                        <i className="fas fa-envelope me-2" style={{ color: '#667eea' }}></i>Email
+                      </Form.Label>
+                      <Form.Control 
+                        type="email" 
+                        value={formData.email} 
+                        disabled 
+                        className="rounded-4"
+                        style={{ 
+                          background: 'rgba(248, 249, 250, 0.8)', 
+                          border: '2px solid rgba(102, 126, 234, 0.1)',
+                          padding: '0.75rem 1rem',
+                          fontSize: '1rem'
+                        }} 
+                      />
                     </Form.Group>
                   </Col>
                   <Col xs={12} md={6}>
-                    <Form.Group className="mb-2">
-                      <Form.Label className="fw-semibold mb-1">Role</Form.Label>
-                      <Form.Control type="text" value={formData.role} disabled style={{ background: '#f1f3f6', border: '1px solid #e0e0e0' }} />
+                    <Form.Group className="mb-3">
+                      <Form.Label className="fw-semibold mb-2" style={{ color: '#2c3e50', fontSize: '0.95rem' }}>
+                        <i className="fas fa-user-tag me-2" style={{ color: '#667eea' }}></i>Role
+                      </Form.Label>
+                      <Form.Control 
+                        type="text" 
+                        value={formData.role} 
+                        disabled 
+                        className="rounded-4"
+                        style={{ 
+                          background: 'rgba(248, 249, 250, 0.8)', 
+                          border: '2px solid rgba(102, 126, 234, 0.1)',
+                          padding: '0.75rem 1rem',
+                          fontSize: '1rem'
+                        }} 
+                      />
                     </Form.Group>
                   </Col>
                 </>
               ) : (
                 <>
                   <Col xs={12} md={6}>
-                    <Form.Group className="mb-2">
-                      <Form.Label className="fw-semibold mb-1">First Name</Form.Label>
-                      <Form.Control type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} disabled={!isEditing} style={{ background: !isEditing ? '#f1f3f6' : undefined, border: !isEditing ? '1px solid #e0e0e0' : undefined }} />
+                    <Form.Group className="mb-3">
+                      <Form.Label className="fw-semibold mb-2" style={{ color: '#2c3e50', fontSize: '0.95rem' }}>
+                        <i className="fas fa-user me-2" style={{ color: '#667eea' }}></i>First Name
+                      </Form.Label>
+                      <Form.Control 
+                        type="text" 
+                        name="firstName" 
+                        value={formData.firstName} 
+                        onChange={handleInputChange} 
+                        disabled={!isEditing} 
+                        className="rounded-4"
+                        style={{
+                          background: !isEditing ? 'rgba(248, 249, 250, 0.8)' : 'rgba(255, 255, 255, 0.9)',
+                          border: '2px solid rgba(102, 126, 234, 0.1)',
+                          padding: '0.75rem 1rem',
+                          fontSize: '1rem',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onFocus={(e) => {
+                          if (isEditing) {
+                            e.target.style.borderColor = 'rgba(102, 126, 234, 0.3)';
+                            e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                          }
+                        }}
+                        onBlur={(e) => {
+                          if (isEditing) {
+                            e.target.style.borderColor = 'rgba(102, 126, 234, 0.1)';
+                            e.target.style.boxShadow = 'none';
+                          }
+                        }}
+                      />
                     </Form.Group>
                   </Col>
                   <Col xs={12} md={6}>
-                    <Form.Group className="mb-2">
-                      <Form.Label className="fw-semibold mb-1">Last Name</Form.Label>
-                      <Form.Control type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} disabled={!isEditing} style={{ background: !isEditing ? '#f1f3f6' : undefined, border: !isEditing ? '1px solid #e0e0e0' : undefined }} />
-                    </Form.Group>
-                  </Col>
-                  <Col xs={12} md={6}>
-                    <Form.Group className="mb-2">
-                      <Form.Label className="fw-semibold mb-1">Email</Form.Label>
-                      <Form.Control type="email" value={formData.email} disabled style={{ background: '#f1f3f6', border: '1px solid #e0e0e0' }} />
-                    </Form.Group>
-                  </Col>
-                  <Col xs={12} md={6}>
-                    <Form.Group className="mb-2">
-                      <Form.Label className="fw-semibold mb-1">Role</Form.Label>
-                      <Form.Control type="text" value={formData.role} disabled style={{ background: '#f1f3f6', border: '1px solid #e0e0e0' }} />
-                    </Form.Group>
-                  </Col>
-                  <Col xs={12} md={6}>
-                    <Form.Group className="mb-2">
-                      <Form.Label className="fw-semibold mb-1">Phone Number</Form.Label>
-                      <Form.Control type="text" name="phoneNumber" value={formData.phoneNumber} onChange={handleInputChange} disabled={!isEditing} style={{ background: !isEditing ? '#f1f3f6' : undefined, border: !isEditing ? '1px solid #e0e0e0' : undefined }} />
-                    </Form.Group>
-                  </Col>
-                  <Col xs={12} md={6}>
-                    <Form.Group className="mb-2">
-                      <Form.Label className="fw-semibold mb-1">Municipality</Form.Label>
-                      <Form.Control type="text" value={formData.municipality} onChange={handleInputChange} disabled={!isEditing} style={{ background: !isEditing ? '#f1f3f6' : undefined, border: !isEditing ? '1px solid #e0e0e0' : undefined }} />
+                    <Form.Group className="mb-3">
+                      <Form.Label className="fw-semibold mb-2" style={{ color: '#2c3e50', fontSize: '0.95rem' }}>
+                        <i className="fas fa-user me-2" style={{ color: '#667eea' }}></i>Last Name
+                      </Form.Label>
+                      <Form.Control 
+                        type="text" 
+                        name="lastName" 
+                        value={formData.lastName} 
+                        onChange={handleInputChange} 
+                        disabled={!isEditing} 
+                        className="rounded-4"
+                        style={{
+                          background: !isEditing ? 'rgba(248, 249, 250, 0.8)' : 'rgba(255, 255, 255, 0.9)',
+                          border: '2px solid rgba(102, 126, 234, 0.1)',
+                          padding: '0.75rem 1rem',
+                          fontSize: '1rem',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onFocus={(e) => {
+                          if (isEditing) {
+                            e.target.style.borderColor = 'rgba(102, 126, 234, 0.3)';
+                            e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                          }
+                        }}
+                        onBlur={(e) => {
+                          if (isEditing) {
+                            e.target.style.borderColor = 'rgba(102, 126, 234, 0.1)';
+                            e.target.style.boxShadow = 'none';
+                          }
+                        }}
+                      />
                     </Form.Group>
                   </Col>
                 </>
               )}
+              <Col xs={12} md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label className="fw-semibold mb-2" style={{ color: '#2c3e50', fontSize: '0.95rem' }}>
+                    <i className="fas fa-envelope me-2" style={{ color: '#667eea' }}></i>Email
+                  </Form.Label>
+                  <Form.Control 
+                    type="email" 
+                    value={formData.email} 
+                    disabled 
+                    className="rounded-4"
+                    style={{ 
+                      background: 'rgba(248, 249, 250, 0.8)', 
+                      border: '2px solid rgba(102, 126, 234, 0.1)',
+                      padding: '0.75rem 1rem',
+                      fontSize: '1rem'
+                    }} 
+                  />
+                </Form.Group>
+              </Col>
+              <Col xs={12} md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label className="fw-semibold mb-2" style={{ color: '#2c3e50', fontSize: '0.95rem' }}>
+                    <i className="fas fa-phone me-2" style={{ color: '#667eea' }}></i>Phone Number
+                  </Form.Label>
+                  <Form.Control 
+                    type="tel" 
+                    name="phoneNumber" 
+                    value={formData.phoneNumber} 
+                    onChange={handleInputChange} 
+                    disabled={!isEditing} 
+                    className="rounded-4"
+                    style={{
+                      background: !isEditing ? 'rgba(248, 249, 250, 0.8)' : 'rgba(255, 255, 255, 0.9)',
+                      border: '2px solid rgba(102, 126, 234, 0.1)',
+                      padding: '0.75rem 1rem',
+                      fontSize: '1rem',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onFocus={(e) => {
+                      if (isEditing) {
+                        e.target.style.borderColor = 'rgba(102, 126, 234, 0.3)';
+                        e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                      }
+                    }}
+                    onBlur={(e) => {
+                      if (isEditing) {
+                        e.target.style.borderColor = 'rgba(102, 126, 234, 0.1)';
+                        e.target.style.boxShadow = 'none';
+                      }
+                    }}
+                  />
+                </Form.Group>
+              </Col>
+              <Col xs={12} md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label className="fw-semibold mb-2" style={{ color: '#2c3e50', fontSize: '0.95rem' }}>
+                    <i className="fas fa-map-marker-alt me-2" style={{ color: '#667eea' }}></i>Municipality
+                  </Form.Label>
+                  <Form.Control 
+                    type="text" 
+                    name="municipality" 
+                    value={formData.municipality} 
+                    onChange={handleInputChange} 
+                    disabled={!isEditing} 
+                    className="rounded-4"
+                    style={{
+                      background: !isEditing ? 'rgba(248, 249, 250, 0.8)' : 'rgba(255, 255, 255, 0.9)',
+                      border: '2px solid rgba(102, 126, 234, 0.1)',
+                      padding: '0.75rem 1rem',
+                      fontSize: '1rem',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onFocus={(e) => {
+                      if (isEditing) {
+                        e.target.style.borderColor = 'rgba(102, 126, 234, 0.3)';
+                        e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                      }
+                    }}
+                    onBlur={(e) => {
+                      if (isEditing) {
+                        e.target.style.borderColor = 'rgba(102, 126, 234, 0.1)';
+                        e.target.style.boxShadow = 'none';
+                      }
+                    }}
+                  />
+                </Form.Group>
+              </Col>
+              <Col xs={12} md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label className="fw-semibold mb-2" style={{ color: '#2c3e50', fontSize: '0.95rem' }}>
+                    <i className="fas fa-user-tag me-2" style={{ color: '#667eea' }}></i>Role
+                  </Form.Label>
+                  <Form.Control 
+                    type="text" 
+                    value={formData.role} 
+                    disabled 
+                    className="rounded-4"
+                    style={{ 
+                      background: 'rgba(248, 249, 250, 0.8)', 
+                      border: '2px solid rgba(102, 126, 234, 0.1)',
+                      padding: '0.75rem 1rem',
+                      fontSize: '1rem'
+                    }} 
+                  />
+                </Form.Group>
+              </Col>
             </Row>
-            <Stack direction="horizontal" gap={2} className="justify-content-center mt-2 flex-wrap">
+            
+            {/* Action Buttons */}
+            <div className="text-center mt-4">
               {userRole !== 'Administrator' && !isEditing ? (
-                <div className="d-grid gap-2 d-md-block">
-                  <Button variant="primary" className="flex-fill py-2 px-4 d-flex align-items-center justify-content-center" onClick={() => setIsEditing(true)}>
-                    <i className="fas fa-edit me-2"></i>Edit Profile
-                  </Button>
-                </div>
+                <Button
+                  variant="primary"
+                  className="py-3 px-5 d-flex align-items-center justify-content-center mx-auto"
+                  onClick={() => setIsEditing(true)}
+                  style={{
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    border: 'none',
+                    borderRadius: '12px',
+                    fontSize: '1.1rem',
+                    fontWeight: 600,
+                    boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)',
+                    transition: 'all 0.3s ease',
+                    minWidth: '200px'
+                  }}
+                  onMouseOver={e => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 12px 35px rgba(102, 126, 234, 0.4)';
+                  }}
+                  onMouseOut={e => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.3)';
+                  }}
+                >
+                  <i className="fas fa-edit me-2"></i>Edit Profile
+                </Button>
               ) : null}
               {userRole !== 'Administrator' && isEditing ? (
-                <div className="d-grid gap-2 d-md-block">
-                  <Button variant="success" className="flex-fill py-2 px-4 d-flex align-items-center justify-content-center" onClick={handleSave}>
-                    <i className="fas fa-save me-2"></i>Save
+                <div className="d-flex gap-3 justify-content-center flex-wrap">
+                  <Button
+                    variant="success"
+                    className="py-3 px-5 d-flex align-items-center justify-content-center"
+                    onClick={handleSave}
+                    style={{
+                      background: 'linear-gradient(135deg, #28a745 0%, #20c997 100%)',
+                      border: 'none',
+                      borderRadius: '12px',
+                      fontSize: '1.1rem',
+                      fontWeight: 600,
+                      boxShadow: '0 8px 25px rgba(40, 167, 69, 0.3)',
+                      transition: 'all 0.3s ease',
+                      minWidth: '150px'
+                    }}
+                    onMouseOver={e => {
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = '0 12px 35px rgba(40, 167, 69, 0.4)';
+                    }}
+                    onMouseOut={e => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 8px 25px rgba(40, 167, 69, 0.3)';
+                    }}
+                  >
+                    <i className="fas fa-save me-2"></i>Save Changes
                   </Button>
-                  <Button variant="danger" className="flex-fill py-2 px-4 d-flex align-items-center justify-content-center" onClick={() => setIsEditing(false)}>
+                  <Button 
+                    variant="light" 
+                    className="py-3 px-5 d-flex align-items-center justify-content-center" 
+                    onClick={() => setIsEditing(false)}
+                    style={{
+                      background: 'rgba(248, 249, 250, 0.8)',
+                      border: '2px solid rgba(102, 126, 234, 0.2)',
+                      borderRadius: '12px',
+                      fontSize: '1.1rem',
+                      fontWeight: 600,
+                      color: '#6c757d',
+                      transition: 'all 0.3s ease',
+                      minWidth: '150px'
+                    }}
+                    onMouseOver={e => {
+                      e.currentTarget.style.background = 'rgba(102, 126, 234, 0.1)';
+                      e.currentTarget.style.borderColor = 'rgba(102, 126, 234, 0.3)';
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                    }}
+                    onMouseOut={e => {
+                      e.currentTarget.style.background = 'rgba(248, 249, 250, 0.8)';
+                      e.currentTarget.style.borderColor = 'rgba(102, 126, 234, 0.2)';
+                      e.currentTarget.style.transform = 'translateY(0)';
+                    }}
+                  >
                     <i className="fas fa-times me-2"></i>Cancel
                   </Button>
                 </div>
               ) : null}
-            </Stack>
+            </div>
           </>
         )}
-      </Card>
-    </Container>
+      </div>
+    </div>
   );
 
   // Security Card (placeholder)
@@ -315,11 +600,9 @@ function Profile({ section }) {
   }
   // Default: show all
   return (
-    <Container fluid style={{ backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
-      <Row className="justify-content-center py-5">
-        <Col xs={12} md={10} lg={8}>{profileInfoCard}</Col>
-      </Row>
-    </Container>
+    <div className="w-100">
+      {profileInfoCard}
+    </div>
   );
 }
 

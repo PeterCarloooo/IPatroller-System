@@ -37,8 +37,23 @@ function NewUser() {
 
   return (
     <DashboardLayout activePage="users">
-      <Container fluid className="py-4 px-2 px-md-4">
-        <Card className="mb-4 border-0 shadow-sm rounded-4 bg-light bg-opacity-75 p-4 d-flex flex-row align-items-center justify-content-between">
+      <div className="page-container">
+        {/* Header */}
+        <div className="d-flex align-items-center gap-3 mb-4 p-3 bg-white rounded-3 shadow-sm border" style={{ minHeight: 72 }}>
+          <div className="d-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle shadow" style={{ width: 56, height: 56 }}>
+            <i className="fas fa-users text-primary fs-4"></i>
+          </div>
+          <div>
+            <h2 className="fw-bold mb-0 fs-4">Add New User</h2>
+            <p className="text-muted mb-0 small">Register a new user account</p>
+          </div>
+        </div>
+        {/* Debug Header - Remove this later */}
+        <div className="alert alert-info mb-3" style={{ visibility: 'visible', opacity: 1 }}>
+          <strong>New User Content Loaded Successfully!</strong> If you can see this message, the New User page is working.
+        </div>
+        
+        <Card className="mb-4 border-0 shadow-sm rounded-4 p-4" style={{ width: '100%', height: '100%', margin: 0, borderRadius: '1rem', background: '#fff', boxShadow: '0 8px 30px rgba(0,0,0,0.1)', visibility: 'visible', opacity: 1 }}>
           <Stack direction="horizontal" gap={3} className="align-items-center flex-wrap">
             <div className="d-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle shadow" style={{ width: 56, height: 56 }}>
               <i className="fas fa-users text-primary" style={{ fontSize: '1.7rem' }}></i>
@@ -56,7 +71,7 @@ function NewUser() {
           </div>
         </Card>
         <AddUserModal isOpen={showModal} onClose={() => setShowModal(false)} onAddUser={handleAddUser} />
-      </Container>
+      </div>
     </DashboardLayout>
   );
 }

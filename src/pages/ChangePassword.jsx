@@ -4,8 +4,7 @@ import { auth } from '../firebase/config';
 import { db } from '../firebase/config';
 import { collection, addDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
-import { Button, Form, Spinner, Alert } from 'react-bootstrap';
-import 'bootstrap-icons/font/bootstrap-icons.css';
+import { Button, Form, Spinner, Alert, Card } from 'react-bootstrap';
 
 function ChangePassword({ isOpen, onClose }) {
   const [form, setForm] = useState({
@@ -19,6 +18,7 @@ function ChangePassword({ isOpen, onClose }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState('');
   const navigate = useNavigate();
 
   const handleInputChange = (e) => {
@@ -26,41 +26,78 @@ function ChangePassword({ isOpen, onClose }) {
     setForm(prev => ({ ...prev, [name]: value }));
     setError('');
     setSuccess('');
+    
+    // Calculate password strength for new password
+    if (name === 'newPassword') {
+      let strength = 0;
+      if (value.length >= 8) strength++;
+      if (/[a-z]/.test(value)) strength++;
+      if (/[A-Z]/.test(value)) strength++;
+      if (/[0-9]/.test(value)) strength++;
+      if (/[!@#$%^&*(),.?":{}|<>]/.test(value)) strength++;
+      
+      if (strength < 3) setPasswordStrength('weak');
+      else if (strength < 5) setPasswordStrength('medium');
+      else setPasswordStrength('strong');
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('Change password form submitted');
     setError('');
     setSuccess('');
     setLoading(true);
-    const password = form.newPassword;
-    if (!form.currentPassword || !form.newPassword || !form.confirmPassword) {
-      setError('All fields are required');
-      setLoading(false);
-      return;
-    }
-    if (form.newPassword !== form.confirmPassword) {
-      setError('New passwords do not match');
-      setLoading(false);
-      return;
-    }
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters long.');
-      setLoading(false);
-      return;
-    }
-    if (!/[a-z]/.test(password)) {
-      setError('Password must contain at least one lowercase letter.');
-      setLoading(false);
-      return;
-    }
-    if (!/[0-9]/.test(password)) {
-      setError('Password must contain at least one number.');
-      setLoading(false);
-      return;
-    }
+    
     try {
+      const password = form.newPassword;
+      
+      // Validation
+      if (!form.currentPassword || !form.newPassword || !form.confirmPassword) {
+        setError('All fields are required');
+        setLoading(false);
+        return;
+      }
+      
+      if (form.newPassword !== form.confirmPassword) {
+        setError('New passwords do not match');
+        setLoading(false);
+        return;
+      }
+      
+      if (password.length < 8) {
+        setError('Password must be at least 8 characters long.');
+        setLoading(false);
+        return;
+      }
+      
+      if (!/[a-z]/.test(password)) {
+        setError('Password must contain at least one lowercase letter.');
+        setLoading(false);
+        return;
+      }
+      
+      if (!/[A-Z]/.test(password)) {
+        setError('Password must contain at least one uppercase letter.');
+        setLoading(false);
+        return;
+      }
+      
+      if (!/[0-9]/.test(password)) {
+        setError('Password must contain at least one number.');
+        setLoading(false);
+        return;
+      }
+      
+      if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+        setError('Password must contain at least one special character.');
+        setLoading(false);
+        return;
+      }
+      
+      // Firebase operations
       const user = auth.currentUser;
+      console.log('Current user:', user ? user.email : 'No user');
       if (!user) {
         setError('No authenticated user found. Please log in again.');
         setLoading(false);
@@ -69,9 +106,12 @@ function ChangePassword({ isOpen, onClose }) {
         }, 2000);
         return;
       }
+      console.log('Attempting to reauthenticate user...');
       const credential = EmailAuthProvider.credential(user.email, form.currentPassword);
       await reauthenticateWithCredential(user, credential);
+      console.log('Reauthentication successful, updating password...');
       await updatePassword(user, form.newPassword);
+      console.log('Password updated successfully');
       await addDoc(collection(db, 'password_changes'), {
         userId: user.uid,
         email: user.email,
@@ -105,12 +145,12 @@ function ChangePassword({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   return (
-    <div className="modal fade show" tabIndex="-1" style={{ display: 'block', background: 'rgba(0,0,0,0.5)' }}>
-      <div className="modal-dialog modal-dialog-centered">
-        <div className="modal-content border-0 shadow-lg rounded-4 p-2" style={{ background: '#fff' }}>
+    <div className="modal fade show" tabIndex="-1" style={{ display: 'block', background: 'rgba(0,0,0,0.5)', position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1050 }}>
+      <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: '500px' }}>
+        <Card className="shadow-sm border-0 rounded-4" style={{ borderRadius: '1rem', background: '#fff', boxShadow: '0 8px 30px rgba(0,0,0,0.1)' }}>
           <div className="modal-header border-0 pb-0" style={{ background: '#f5f7fa', borderTopLeftRadius: '1rem', borderTopRightRadius: '1rem' }}>
             <h5 className="modal-title d-flex align-items-center fw-bold">
-              <i className="bi bi-shield-lock-fill me-2 text-primary" style={{ fontSize: '1.3rem' }} />
+              <i className="fas fa-shield-alt me-2 text-primary" style={{ fontSize: '1.3rem' }} />
               Change Password
             </h5>
             <button type="button" className="btn-close" onClick={handleClose} aria-label="Close"></button>
@@ -122,7 +162,9 @@ function ChangePassword({ isOpen, onClose }) {
                 <ul className="text-muted small mb-0" style={{ paddingLeft: '1.2rem' }}>
                   <li>At least 8 characters long</li>
                   <li>Contains at least one lowercase letter</li>
+                  <li>Contains at least one uppercase letter</li>
                   <li>Contains at least one number</li>
+                  <li>Contains at least one special character (!@#$%^&*)</li>
                 </ul>
               </div>
               <Form.Group className="mb-3">
@@ -143,7 +185,7 @@ function ChangePassword({ isOpen, onClose }) {
                     style={{ color: '#888', borderTopRightRadius: '0.5rem', borderBottomRightRadius: '0.5rem' }}
                     onClick={() => setShowCurrent((v) => !v)}
                   >
-                    <i className={`bi bi-eye${showCurrent ? '-slash' : ''}`}></i>
+                    <i className={`fas fa-eye${showCurrent ? '-slash' : ''}`}></i>
                   </Button>
                 </div>
               </Form.Group>
@@ -165,9 +207,20 @@ function ChangePassword({ isOpen, onClose }) {
                     style={{ color: '#888', borderTopRightRadius: '0.5rem', borderBottomRightRadius: '0.5rem' }}
                     onClick={() => setShowNew((v) => !v)}
                   >
-                    <i className={`bi bi-eye${showNew ? '-slash' : ''}`}></i>
+                    <i className={`fas fa-eye${showNew ? '-slash' : ''}`}></i>
                   </Button>
                 </div>
+                {form.newPassword && (
+                  <div className="mt-2">
+                    <small className={`fw-semibold ${
+                      passwordStrength === 'weak' ? 'text-danger' : 
+                      passwordStrength === 'medium' ? 'text-warning' : 
+                      'text-success'
+                    }`}>
+                      Password Strength: {passwordStrength.charAt(0).toUpperCase() + passwordStrength.slice(1)}
+                    </small>
+                  </div>
+                )}
               </Form.Group>
               <Form.Group className="mb-3">
                 <Form.Label className="fw-semibold">Confirm New Password</Form.Label>
@@ -187,7 +240,7 @@ function ChangePassword({ isOpen, onClose }) {
                     style={{ color: '#888', borderTopRightRadius: '0.5rem', borderBottomRightRadius: '0.5rem' }}
                     onClick={() => setShowConfirm((v) => !v)}
                   >
-                    <i className={`bi bi-eye${showConfirm ? '-slash' : ''}`}></i>
+                    <i className={`fas fa-eye${showConfirm ? '-slash' : ''}`}></i>
                   </Button>
                 </div>
               </Form.Group>
@@ -211,14 +264,14 @@ function ChangePassword({ isOpen, onClose }) {
                   </>
                 ) : (
                   <>
-                    <i className="bi bi-save me-2"></i>
+                    <i className="fas fa-save me-2"></i>
                     Change Password
                   </>
                 )}
               </Button>
             </div>
           </Form>
-        </div>
+        </Card>
       </div>
     </div>
   );

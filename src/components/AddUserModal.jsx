@@ -1,15 +1,83 @@
 import React, { useState, useEffect } from 'react';
-import { db, auth } from '../firebase/config';
-import { setDoc, doc } from 'firebase/firestore';
+import { Modal, Form, Button, Alert, Row, Col } from 'react-bootstrap';
+import { collection, addDoc, doc, updateDoc, getDocs } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { Modal, Form, Button, Row, Col, Alert, Spinner } from 'react-bootstrap';
+import { db, auth } from '../firebase/config';
 
-function AddUserModal({ isOpen, onClose, onAddUser, editUser, onEditUser }) {
-  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '', role: 'User', municipality: '', status: 'Active' });
-  const [showPassword, setShowPassword] = useState(false);
+function AddUserModal({ isOpen, onClose, onSave, editUser }) {
+  const [form, setForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    role: 'User',
+    municipality: '',
+    status: 'Active'
+  });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [municipalities, setMunicipalities] = useState([]);
+  const [loadingMunicipalities, setLoadingMunicipalities] = useState(true);
+
+  // Load municipalities from Firebase
+  useEffect(() => {
+    const loadMunicipalities = async () => {
+      try {
+        setLoadingMunicipalities(true);
+        const querySnapshot = await getDocs(collection(db, 'municipality_privileges'));
+        const muniData = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        
+        // If no data in Firebase, use default municipalities
+        if (muniData.length === 0) {
+          const defaultMunicipalities = [
+            { id: 1, name: 'ABUCAY', status: 'Active' },
+            { id: 2, name: 'ORANI', status: 'Active' },
+            { id: 3, name: 'SAMAL', status: 'Active' },
+            { id: 4, name: 'HERMOSA', status: 'Active' },
+            { id: 5, name: 'BALANGA', status: 'Active' },
+            { id: 6, name: 'PILAR', status: 'Active' },
+            { id: 7, name: 'ORION', status: 'Active' },
+            { id: 8, name: 'LIMAY', status: 'Active' },
+            { id: 9, name: 'BAGAC', status: 'Active' },
+            { id: 10, name: 'DINALUPIHAN', status: 'Active' },
+            { id: 11, name: 'MARIVELES', status: 'Active' },
+            { id: 12, name: 'MORONG', status: 'Active' }
+          ];
+          setMunicipalities(defaultMunicipalities);
+        } else {
+          setMunicipalities(muniData);
+        }
+      } catch (error) {
+        console.error('Error loading municipalities:', error);
+        // Fallback to default municipalities
+        const defaultMunicipalities = [
+          { id: 1, name: 'ABUCAY', status: 'Active' },
+          { id: 2, name: 'ORANI', status: 'Active' },
+          { id: 3, name: 'SAMAL', status: 'Active' },
+          { id: 4, name: 'HERMOSA', status: 'Active' },
+          { id: 5, name: 'BALANGA', status: 'Active' },
+          { id: 6, name: 'PILAR', status: 'Active' },
+          { id: 7, name: 'ORION', status: 'Active' },
+          { id: 8, name: 'LIMAY', status: 'Active' },
+          { id: 9, name: 'BAGAC', status: 'Active' },
+          { id: 10, name: 'DINALUPIHAN', status: 'Active' },
+          { id: 11, name: 'MARIVELES', status: 'Active' },
+          { id: 12, name: 'MORONG', status: 'Active' }
+        ];
+        setMunicipalities(defaultMunicipalities);
+      } finally {
+        setLoadingMunicipalities(false);
+      }
+    };
+
+    if (isOpen) {
+      loadMunicipalities();
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (editUser) {
@@ -20,74 +88,77 @@ function AddUserModal({ isOpen, onClose, onAddUser, editUser, onEditUser }) {
         password: '',
         role: editUser.role || 'User',
         municipality: editUser.municipality || '',
-        status: editUser.status || 'Active',
+        status: editUser.status || 'Active'
       });
     } else {
-      setForm({ firstName: '', lastName: '', email: '', password: '', role: 'User', municipality: '', status: 'Active' });
+      setForm({
+        firstName: '',
+        lastName: '',
+        email: '',
+        password: '',
+        role: 'User',
+        municipality: '',
+        status: 'Active'
+      });
     }
     setError('');
     setSuccess('');
-    setLoading(false);
   }, [editUser, isOpen]);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
-    setError('');
-    setSuccess('');
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     setError('');
     setSuccess('');
-    setLoading(true);
-    if (!form.firstName || !form.lastName || !form.email || (!editUser && !form.password) || !form.role || !form.municipality || !form.status) {
-      setError('All fields are required');
-      setLoading(false);
-      return;
-    }
+
     try {
       if (editUser) {
-        await onEditUser({ ...editUser, ...form });
-        setSuccess('User updated successfully!');
-        setLoading(false);
-        setTimeout(() => setSuccess(''), 2000);
-      } else {
-        const userCredential = await createUserWithEmailAndPassword(auth, form.email, form.password);
-        const uid = userCredential.user.uid;
-        await setDoc(doc(db, 'users', uid), {
-          firstName: form.firstName || '',
-          lastName: form.lastName || '',
-          email: form.email,
-          role: form.role || 'User',
-          municipality: form.municipality || '',
-          status: form.status || 'Active',
-          createdAt: new Date(),
-          id: uid // Always set id to Auth UID
-        });
-        setSuccess('User added successfully!');
-        onAddUser({
-          name: `${form.firstName} ${form.lastName}`,
+        // Update existing user
+        const userRef = doc(db, 'users', editUser.id);
+        await updateDoc(userRef, {
+          firstName: form.firstName,
+          lastName: form.lastName,
           email: form.email,
           role: form.role,
           municipality: form.municipality,
-          id: uid, // Always use Auth UID
-          status: form.status || 'Active'
+          status: form.status,
+          updatedAt: new Date()
         });
-        setLoading(false);
-        // Do not close or reset the form here; keep the modal open and data as-is
-      }
-    } catch (err) {
-      if (editUser) {
-        setError('Failed to update user: ' + (err.message || err));
-      } else if (err.code === 'auth/email-already-in-use') {
-        setError('Email is already in use.');
-      } else if (err.code === 'auth/weak-password') {
-        setError('Password is too weak.');
+        setSuccess('User updated successfully!');
       } else {
-        setError('Failed to add user: ' + err.message);
+        // Create new user
+        if (!form.password) {
+          throw new Error('Password is required for new users');
+        }
+
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          form.email,
+          form.password
+        );
+
+        await addDoc(collection(db, 'users'), {
+          uid: userCredential.user.uid,
+          firstName: form.firstName,
+          lastName: form.lastName,
+          email: form.email,
+          role: form.role,
+          municipality: form.municipality,
+          status: form.status,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+        setSuccess('User created successfully!');
       }
+
+      setTimeout(() => {
+        handleClose();
+        if (onSave) onSave();
+      }, 1500);
+    } catch (err) {
+      console.error('Error saving user:', err);
+      setError(err.message || 'Failed to save user. Please try again.');
+    } finally {
       setLoading(false);
     }
   };
@@ -100,11 +171,35 @@ function AddUserModal({ isOpen, onClose, onAddUser, editUser, onEditUser }) {
     onClose();
   };
 
+  // Group municipalities by district
+  const groupMunicipalitiesByDistrict = () => {
+    const districts = {
+      '1st District': ['ABUCAY', 'HERMOSA', 'ORANI', 'SAMAL'],
+      '2nd District': ['BALANGA', 'LIMAY', 'ORION', 'PILAR'],
+      '3rd District': ['BAGAC', 'DINALUPIHAN', 'MARIVELES', 'MORONG']
+    };
+
+    const grouped = {};
+    municipalities.forEach(muni => {
+      for (const [district, muniList] of Object.entries(districts)) {
+        if (muniList.includes(muni.name)) {
+          if (!grouped[district]) {
+            grouped[district] = [];
+          }
+          grouped[district].push(muni);
+          break;
+        }
+      }
+    });
+
+    return grouped;
+  };
+
   if (!isOpen) return null;
 
   return (
-    <Modal show={isOpen} onHide={handleClose} centered size="md" backdropClassName="modal-backdrop" contentClassName="border-0 shadow-lg rounded-4" style={{ background: 'rgba(0,0,0,0.5)' }}>
-      <Modal.Header closeButton className="border-0 pb-0" style={{ background: '#f5f7fa', borderTopLeftRadius: '1rem', borderTopRightRadius: '1rem' }}>
+    <Modal show={isOpen} onHide={handleClose} centered size="md">
+      <Modal.Header closeButton className="border-0 pb-0">
         <Modal.Title className="d-flex align-items-center fw-bold">
           <i className={`fas fa-${editUser ? 'user-edit' : 'user-plus'} me-2 text-primary`} />
           {editUser ? 'Edit User' : 'Add New User'}
@@ -118,12 +213,11 @@ function AddUserModal({ isOpen, onClose, onAddUser, editUser, onEditUser }) {
                 <Form.Label className="fw-semibold">First Name</Form.Label>
                 <Form.Control
                   type="text"
-                  name="firstName"
+                  placeholder="Enter first name"
                   value={form.firstName}
-                  onChange={handleInputChange}
+                  onChange={(e) => setForm({ ...form, firstName: e.target.value })}
                   required
-                  size="lg"
-                  className="rounded-3"
+                  className="rounded-3 border-0 shadow-sm"
                 />
               </Form.Group>
             </Col>
@@ -132,113 +226,103 @@ function AddUserModal({ isOpen, onClose, onAddUser, editUser, onEditUser }) {
                 <Form.Label className="fw-semibold">Last Name</Form.Label>
                 <Form.Control
                   type="text"
-                  name="lastName"
+                  placeholder="Enter last name"
                   value={form.lastName}
-                  onChange={handleInputChange}
+                  onChange={(e) => setForm({ ...form, lastName: e.target.value })}
                   required
-                  size="lg"
-                  className="rounded-3"
+                  className="rounded-3 border-0 shadow-sm"
                 />
               </Form.Group>
             </Col>
           </Row>
-          <Form.Group className="mb-3" controlId="email">
+
+          <Form.Group className="mb-3">
             <Form.Label className="fw-semibold">Email</Form.Label>
             <Form.Control
               type="email"
-              name="email"
+              placeholder="Enter email address"
               value={form.email}
-              onChange={handleInputChange}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
               required
-              size="lg"
-              className="rounded-3"
-              disabled={!!editUser}
+              className="rounded-3 border-0 shadow-sm"
             />
           </Form.Group>
+
           {!editUser && (
-            <Form.Group className="mb-3" controlId="password">
+            <Form.Group className="mb-3">
               <Form.Label className="fw-semibold">Password</Form.Label>
-              <div className="d-flex align-items-center">
-                <Form.Control
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  value={form.password}
-                  onChange={handleInputChange}
-                  required
-                  size="lg"
-                  className="rounded-3"
-                  style={{ borderTopRightRadius: 0, borderBottomRightRadius: 0 }}
-                />
-                <Button
-                  variant="outline-secondary"
-                  className="border-0 bg-transparent input-group-text"
-                  tabIndex={-1}
-                  style={{ color: '#888', borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
-                  onClick={() => setShowPassword((v) => !v)}
-                >
-                  <i className={`fas fa-${showPassword ? 'eye-slash' : 'eye'}`}></i>
-                </Button>
-              </div>
+              <Form.Control
+                type="password"
+                placeholder="Enter password"
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                required
+                className="rounded-3 border-0 shadow-sm"
+              />
             </Form.Group>
           )}
-          <Form.Group className="mb-3" controlId="role">
-            <Form.Label className="fw-semibold">Role</Form.Label>
-            <Form.Select
-              name="role"
-              value={form.role}
-              onChange={handleInputChange}
-              size="lg"
-              className="rounded-3"
-            >
-              <option value="User">User</option>
-              <option value="Administrator">Administrator</option>
-            </Form.Select>
-          </Form.Group>
-          <Form.Group className="mb-3" controlId="status">
-            <Form.Label className="fw-semibold">Status</Form.Label>
-            <Form.Select
-              name="status"
-              value={form.status}
-              onChange={handleInputChange}
-              required
-              size="lg"
-              className="rounded-3"
-              disabled={!!editUser}
-            >
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </Form.Select>
-          </Form.Group>
-          <Form.Group className="mb-3" controlId="municipality">
+
+          <Row className="mb-3">
+            <Col md={6} className="mb-2 mb-md-0">
+              <Form.Group controlId="role">
+                <Form.Label className="fw-semibold">Role</Form.Label>
+                <Form.Select
+                  value={form.role}
+                  onChange={(e) => setForm({ ...form, role: e.target.value })}
+                  className="rounded-3 border-0 shadow-sm"
+                >
+                  <option value="User">User</option>
+                  <option value="Administrator">Administrator</option>
+                </Form.Select>
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group controlId="status">
+                <Form.Label className="fw-semibold">Status</Form.Label>
+                <Form.Select
+                  value={form.status}
+                  onChange={(e) => setForm({ ...form, status: e.target.value })}
+                  className="rounded-3 border-0 shadow-sm"
+                >
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </Form.Select>
+              </Form.Group>
+            </Col>
+          </Row>
+
+          <Form.Group className="mb-3">
             <Form.Label className="fw-semibold">Municipality</Form.Label>
             <Form.Select
-              name="municipality"
               value={form.municipality}
-              onChange={handleInputChange}
-              required
-              size="lg"
-              className="rounded-3"
+              onChange={(e) => setForm({ ...form, municipality: e.target.value })}
+              className="rounded-3 border-0 shadow-sm"
+              disabled={loadingMunicipalities}
             >
-              <option value="">Select Municipality</option>
-              <optgroup label="1st District">
-                <option value="Abucay">Abucay</option>
-                <option value="Hermosa">Hermosa</option>
-                <option value="Orani">Orani</option>
-                <option value="Samal">Samal</option>
-              </optgroup>
-              <optgroup label="2nd District">
-                <option value="Balanga">Balanga</option>
-                <option value="Limay">Limay</option>
-                <option value="Orion">Orion</option>
-                <option value="Pilar">Pilar</option>
-              </optgroup>
-              <optgroup label="3rd District">
-                <option value="Bagac">Bagac</option>
-                <option value="Dinalupihan">Dinalupihan</option>
-                <option value="Mariveles">Mariveles</option>
-                <option value="Morong">Morong</option>
-              </optgroup>
+              <option value="">
+                {loadingMunicipalities ? 'Loading municipalities...' : 'Select Municipality'}
+              </option>
+              {!loadingMunicipalities && (() => {
+                const grouped = groupMunicipalitiesByDistrict();
+                return Object.entries(grouped).map(([district, muniList]) => (
+                  <optgroup key={district} label={district}>
+                    {muniList
+                      .filter(muni => muni.status === 'Active')
+                      .map(muni => (
+                        <option key={muni.id} value={muni.name}>
+                          {muni.name}
+                        </option>
+                      ))}
+                  </optgroup>
+                ));
+              })()}
             </Form.Select>
+            {loadingMunicipalities && (
+              <small className="text-muted">
+                <i className="fas fa-spinner fa-spin me-1"></i>
+                Loading municipalities from system settings...
+              </small>
+            )}
           </Form.Group>
           {error && <Alert variant="danger" className="text-center mb-3">{error}</Alert>}
           {success && <Alert variant="success" className="text-center mb-3">{success}</Alert>}
@@ -247,16 +331,16 @@ function AddUserModal({ isOpen, onClose, onAddUser, editUser, onEditUser }) {
           <Button variant="secondary" className="px-4 py-2 rounded-3" onClick={handleClose} disabled={loading}>
             Cancel
           </Button>
-          <Button type="submit" variant="primary" className="px-4 py-2 rounded-3 ms-2 d-flex align-items-center" disabled={loading}>
+          <Button type="submit" variant="primary" className="px-4 py-2 rounded-3 ms-2" disabled={loading}>
             {loading ? (
               <>
-                <Spinner animation="border" size="sm" className="me-2" />
-                {editUser ? 'Saving...' : 'Creating User...'}
+                <i className="fas fa-spinner fa-spin me-2"></i>
+                {editUser ? 'Updating...' : 'Creating...'}
               </>
             ) : (
               <>
-                <i className={`fas fa-${editUser ? 'save' : 'plus'} me-2`}></i>
-                {editUser ? 'Save Changes' : 'Add User'}
+                <i className={`fas fa-${editUser ? 'save' : 'user-plus'} me-2`}></i>
+                {editUser ? 'Update User' : 'Create User'}
               </>
             )}
           </Button>

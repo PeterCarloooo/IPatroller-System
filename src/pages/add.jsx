@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Modal, Button, Form, Alert } from 'react-bootstrap';
 
 const districts = [
   {
@@ -21,14 +22,18 @@ function AddModal({ isOpen, onClose, onSave, initialData }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // When initialData changes (edit mode), clear counts and date
-  React.useEffect(() => {
-    setCounts({});
-    setDate('');
-  }, [initialData, isOpen]);
+  // Reset form when modal opens/closes
+  useEffect(() => {
+    if (isOpen) {
+      setDate('');
+      setCounts({});
+      setError('');
+      setSuccess('');
+    }
+  }, [isOpen]);
 
   // When date changes, if initialData is present, pre-fill counts for that day
-  React.useEffect(() => {
+  useEffect(() => {
     if (initialData && date) {
       // initialData is an object: { MUNICIPALITY: [countForDay1, countForDay2, ...] }
       // Find the index of the selected date in the month
@@ -92,76 +97,71 @@ function AddModal({ isOpen, onClose, onSave, initialData }) {
     setError('');
     onSave(entries);
     setSuccess('Successfully Added');
-    setTimeout(() => setSuccess(''), 2500);
-    setDate('');
-    setCounts({});
-    // Do not close the modal
+    setTimeout(() => {
+      setSuccess('');
+      setDate('');
+      setCounts({});
+    }, 2500);
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="modal fade show" tabIndex="-1" style={{ display: 'block', background: 'rgba(0,0,0,0.5)' }}>
-      <div className="modal-dialog modal-dialog-centered modal-lg">
-        <div className="modal-content border-0 shadow-lg rounded-4" style={{ background: '#fff' }}>
-          <div className="modal-header border-0 pb-0" style={{ background: '#f5f7fa', borderTopLeftRadius: '1rem', borderTopRightRadius: '1rem' }}>
-            <h5 className="modal-title fw-bold">{initialData ? 'Edit Daily Count' : 'Add Daily Count'}</h5>
-            <button type="button" className="btn-close" onClick={onClose} aria-label="Close"></button>
-          </div>
-          <form onSubmit={handleSubmit}>
-            <div className="modal-body" style={{ maxHeight: '70vh', overflowY: 'auto', padding: '1.5rem' }}>
-              {success && <div className="alert alert-success text-center mb-3">{success}</div>}
-              <div className="mb-3">
-                <label className="form-label fw-semibold">Date</label>
-                <input
-                  type="date"
-                  className="form-control form-control-lg rounded-3"
-                  value={date}
-                  onChange={e => setDate(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="mb-3">
-                <label className="form-label fw-semibold">Counts per Municipality</label>
-                <div className="row">
-                  {districts.map(d => (
-                    <div className="col-12 mb-2" key={d.name}>
-                      <div className="fw-bold text-success mb-2">{d.name.replace('ST', 'st').replace('ND', 'nd').replace('RD', 'rd')}</div>
-                      <div className="row g-2">
-                        {d.municipalities.map(muni => (
-                          <div className="col-md-6 col-lg-3" key={muni}>
-                            <div className="d-flex flex-column align-items-stretch">
-                              <div className="text-center fw-semibold mb-1">{muni}</div>
-                              <input
-                                type="number"
-                                className="form-control"
-                                min={0}
-                                value={counts[muni] || ''}
-                                onChange={e => handleCountChange(muni, e.target.value)}
-                                placeholder="Count"
-                              />
-                            </div>
-                          </div>
-                        ))}
+    <Modal show={isOpen} onHide={onClose} size="lg" centered>
+      <Modal.Header closeButton>
+        <Modal.Title>{initialData ? 'Edit Daily Count' : 'Add Daily Count'}</Modal.Title>
+      </Modal.Header>
+      <form onSubmit={handleSubmit}>
+        <Modal.Body>
+          {success && <Alert variant="success" className="text-center">{success}</Alert>}
+          {error && <Alert variant="danger" className="text-center">{error}</Alert>}
+          
+          <Form.Group className="mb-3">
+            <Form.Label className="fw-semibold">Date</Form.Label>
+            <Form.Control
+              type="date"
+              size="lg"
+              value={date}
+              onChange={e => setDate(e.target.value)}
+              required
+            />
+          </Form.Group>
+          
+          <Form.Group className="mb-3">
+            <Form.Label className="fw-semibold">Counts per Municipality</Form.Label>
+            <div className="row">
+              {districts.map(d => (
+                <div className="col-12 mb-3" key={d.name}>
+                  <div className="fw-bold text-success mb-2">{d.name.replace('ST', 'st').replace('ND', 'nd').replace('RD', 'rd')}</div>
+                  <div className="row g-2">
+                    {d.municipalities.map(muni => (
+                      <div className="col-md-6 col-lg-3" key={muni}>
+                        <div className="d-flex flex-column align-items-stretch">
+                          <div className="text-center fw-semibold mb-1">{muni}</div>
+                          <Form.Control
+                            type="number"
+                            min={0}
+                            value={counts[muni] || ''}
+                            onChange={e => handleCountChange(muni, e.target.value)}
+                            placeholder="Count"
+                          />
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-              {error && <div className="alert alert-danger text-center mb-3">{error}</div>}
+              ))}
             </div>
-            <div className="modal-footer border-0 pt-0 pb-4 px-4">
-              <button type="button" className="btn btn-secondary px-4 py-2 rounded-3" onClick={onClose}>
-                Cancel
-              </button>
-              <button type="submit" className="btn btn-primary px-4 py-2 rounded-3 ms-2">
-                Save
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button variant="primary" type="submit">
+            Save
+          </Button>
+        </Modal.Footer>
+      </form>
+    </Modal>
   );
 }
 
