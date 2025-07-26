@@ -45,7 +45,67 @@ function Settings() {
         [setting]: value
       }
     }));
+    
+    // Show success message for important changes
+    if (setting === 'twoFactorAuth' && value) {
+      alert('🔐 Two-Factor Authentication has been enabled for enhanced security!');
+    } else if (setting === 'email' && value) {
+      alert('📧 Email notifications have been enabled!');
+    } else if (setting === 'push' && value) {
+      alert('🔔 Push notifications have been enabled!');
+    }
   };
+
+  const saveSettings = () => {
+    // Save settings to localStorage
+    localStorage.setItem('userSettings', JSON.stringify(settings));
+    alert('✅ Settings saved successfully!');
+  };
+
+  const loadSettings = () => {
+    const savedSettings = localStorage.getItem('userSettings');
+    if (savedSettings) {
+      setSettings(JSON.parse(savedSettings));
+    }
+  };
+
+  const resetSettings = () => {
+    if (window.confirm('⚠️ Are you sure you want to reset all settings to default?\n\nThis action cannot be undone.')) {
+      setSettings({
+        notifications: {
+          email: true,
+          push: false,
+          sms: false,
+          systemAlerts: true
+        },
+        security: {
+          twoFactorAuth: false,
+          sessionTimeout: 30,
+          loginNotifications: true,
+          passwordExpiry: 90
+        },
+        appearance: {
+          theme: 'light',
+          fontSize: 'medium',
+          compactMode: false,
+          showAnimations: true
+        },
+        privacy: {
+          dataCollection: true,
+          analytics: false,
+          locationSharing: false,
+          profileVisibility: 'public'
+        }
+      });
+      localStorage.removeItem('userSettings');
+      alert('✅ Settings have been reset to default values!');
+    }
+  };
+
+  // Load settings on component mount
+  React.useEffect(() => {
+    loadSettings();
+  }, []);
 
   const settingsCards = [
     {
@@ -374,31 +434,91 @@ function Settings() {
                   </div>
                 </div>
                 
-                <div className="system-info">
-                  <div className="d-flex justify-content-between align-items-center p-2 mb-2 rounded-3" style={{ background: 'rgba(102, 126, 234, 0.1)' }}>
-                    <small className="fw-semibold">Last Login</small>
-                    <small className="text-muted">Today, 9:30 AM</small>
+                                  <div className="system-info">
+                    <div className="d-flex justify-content-between align-items-center p-2 mb-2 rounded-3" style={{ background: 'rgba(102, 126, 234, 0.1)' }}>
+                      <small className="fw-semibold">Last Login</small>
+                      <small className="text-muted">{new Date().toLocaleDateString()}, {new Date().toLocaleTimeString()}</small>
+                    </div>
+                    <div className="d-flex justify-content-between align-items-center p-2 mb-2 rounded-3" style={{ background: 'rgba(40, 167, 69, 0.1)' }}>
+                      <small className="fw-semibold">Session Time</small>
+                      <small className="text-muted">Active now</small>
+                    </div>
+                    <div className="d-flex justify-content-between align-items-center p-2 mb-2 rounded-3" style={{ background: 'rgba(255, 193, 7, 0.1)' }}>
+                      <small className="fw-semibold">Active Features</small>
+                      <small className="text-muted">
+                        {Object.values(settings.notifications).filter(Boolean).length + 
+                         Object.values(settings.security).filter(Boolean).length + 
+                         Object.values(settings.appearance).filter(Boolean).length}/12 enabled
+                      </small>
+                    </div>
+                    <div className="d-flex justify-content-between align-items-center p-2 rounded-3" style={{ background: 'rgba(23, 162, 184, 0.1)' }}>
+                      <small className="fw-semibold">System Status</small>
+                      <Badge bg="success" className="rounded-pill">
+                        <i className="fas fa-check me-1"></i>
+                        Online
+                      </Badge>
+                    </div>
                   </div>
-                  <div className="d-flex justify-content-between align-items-center p-2 mb-2 rounded-3" style={{ background: 'rgba(40, 167, 69, 0.1)' }}>
-                    <small className="fw-semibold">Session Time</small>
-                    <small className="text-muted">2 hours 15 min</small>
-                  </div>
-                  <div className="d-flex justify-content-between align-items-center p-2 mb-2 rounded-3" style={{ background: 'rgba(255, 193, 7, 0.1)' }}>
-                    <small className="fw-semibold">Active Features</small>
-                    <small className="text-muted">8/12 enabled</small>
-                  </div>
-                  <div className="d-flex justify-content-between align-items-center p-2 rounded-3" style={{ background: 'rgba(23, 162, 184, 0.1)' }}>
-                    <small className="fw-semibold">System Status</small>
-                    <Badge bg="success" className="rounded-pill">
-                      <i className="fas fa-check me-1"></i>
-                      Online
-                    </Badge>
-                  </div>
-                </div>
               </Card.Body>
             </Card>
           </Col>
         </Row>
+
+        {/* Save All Settings Button */}
+        <div className="text-center mt-5">
+          <div className="d-flex justify-content-center gap-3">
+            <Button 
+              variant="primary" 
+              size="lg"
+              onClick={saveSettings}
+              className="rounded-pill px-5 py-3"
+              style={{
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                border: 'none',
+                boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)',
+                fontWeight: '600',
+                fontSize: '1.1rem',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-3px)';
+                e.target.style.boxShadow = '0 12px 35px rgba(102, 126, 234, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.3)';
+              }}
+            >
+              <i className="fas fa-save me-3"></i>
+              Save All Settings
+            </Button>
+            
+            <Button 
+              variant="outline-secondary" 
+              size="lg"
+              onClick={resetSettings}
+              className="rounded-pill px-5 py-3"
+              style={{
+                border: '2px solid rgba(102, 126, 234, 0.3)',
+                color: '#667eea',
+                fontWeight: '600',
+                fontSize: '1.1rem',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-3px)';
+                e.target.style.background = 'rgba(102, 126, 234, 0.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.background = 'transparent';
+              }}
+            >
+              <i className="fas fa-undo me-3"></i>
+              Reset to Default
+            </Button>
+          </div>
+        </div>
 
         <ChangePasswordTest isOpen={showChangePassword} onClose={() => setShowChangePassword(false)} />
         
@@ -478,7 +598,10 @@ function Settings() {
             <Button variant="secondary" onClick={() => setShowNotifications(false)}>
               Close
             </Button>
-            <Button variant="warning" onClick={() => setShowNotifications(false)}>
+            <Button variant="warning" onClick={() => {
+              saveSettings();
+              setShowNotifications(false);
+            }}>
               <i className="fas fa-save me-2"></i>
               Save Changes
             </Button>
@@ -563,7 +686,10 @@ function Settings() {
             <Button variant="secondary" onClick={() => setShowSecurity(false)}>
               Close
             </Button>
-            <Button variant="success" onClick={() => setShowSecurity(false)}>
+            <Button variant="success" onClick={() => {
+              saveSettings();
+              setShowSecurity(false);
+            }}>
               <i className="fas fa-save me-2"></i>
               Save Changes
             </Button>
@@ -646,7 +772,10 @@ function Settings() {
             <Button variant="secondary" onClick={() => setShowAppearance(false)}>
               Close
             </Button>
-            <Button variant="info" onClick={() => setShowAppearance(false)}>
+            <Button variant="info" onClick={() => {
+              saveSettings();
+              setShowAppearance(false);
+            }}>
               <i className="fas fa-save me-2"></i>
               Save Changes
             </Button>
@@ -717,7 +846,10 @@ function Settings() {
             <Button variant="secondary" onClick={() => setShowLanguage(false)}>
               Close
             </Button>
-            <Button variant="primary" onClick={() => setShowLanguage(false)}>
+            <Button variant="primary" onClick={() => {
+              saveSettings();
+              setShowLanguage(false);
+            }}>
               <i className="fas fa-save me-2"></i>
               Save Changes
             </Button>
@@ -740,7 +872,13 @@ function Settings() {
                     <i className="fas fa-book text-primary fs-2 mb-3"></i>
                     <h6 className="fw-semibold mb-2">Documentation</h6>
                     <p className="text-muted small mb-3">User guides and tutorials</p>
-                    <Button variant="outline-primary" size="sm">
+                    <Button 
+                      variant="outline-primary" 
+                      size="sm"
+                      onClick={() => {
+                        alert('📚 Opening documentation...\n\nThis would open the user documentation in a new tab.');
+                      }}
+                    >
                       <i className="fas fa-external-link-alt me-2"></i>
                       View Docs
                     </Button>
@@ -753,7 +891,13 @@ function Settings() {
                     <i className="fas fa-headset text-success fs-2 mb-3"></i>
                     <h6 className="fw-semibold mb-2">Contact Support</h6>
                     <p className="text-muted small mb-3">Get help from our team</p>
-                    <Button variant="outline-success" size="sm">
+                    <Button 
+                      variant="outline-success" 
+                      size="sm"
+                      onClick={() => {
+                        alert('📧 Contact Support\n\nEmail: support@ipatroller.com\nPhone: +63 123 456 7890\nHours: Mon-Fri 8AM-6PM');
+                      }}
+                    >
                       <i className="fas fa-envelope me-2"></i>
                       Contact Us
                     </Button>
@@ -766,7 +910,13 @@ function Settings() {
                     <i className="fas fa-question text-warning fs-2 mb-3"></i>
                     <h6 className="fw-semibold mb-2">FAQ</h6>
                     <p className="text-muted small mb-3">Frequently asked questions</p>
-                    <Button variant="outline-warning" size="sm">
+                    <Button 
+                      variant="outline-warning" 
+                      size="sm"
+                      onClick={() => {
+                        alert('❓ Frequently Asked Questions\n\nQ: How do I change my password?\nA: Go to Settings > Change Password\n\nQ: How do I enable notifications?\nA: Go to Settings > Notifications\n\nQ: How do I contact support?\nA: Go to Settings > Help & Support');
+                      }}
+                    >
                       <i className="fas fa-search me-2"></i>
                       Browse FAQ
                     </Button>
@@ -779,7 +929,13 @@ function Settings() {
                     <i className="fas fa-play-circle text-info fs-2 mb-3"></i>
                     <h6 className="fw-semibold mb-2">Video Tutorials</h6>
                     <p className="text-muted small mb-3">Step-by-step guides</p>
-                    <Button variant="outline-info" size="sm">
+                    <Button 
+                      variant="outline-info" 
+                      size="sm"
+                      onClick={() => {
+                        alert('🎥 Video Tutorials\n\n• Getting Started Guide\n• How to Use Reports\n• Security Best Practices\n• Advanced Features\n\nVideos would open in a new tab.');
+                      }}
+                    >
                       <i className="fas fa-video me-2"></i>
                       Watch Videos
                     </Button>
