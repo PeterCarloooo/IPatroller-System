@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../components/DashboardLayout';
-import { Card, Row, Col, Button, Table, Badge, Stack, Alert } from 'react-bootstrap';
+import { Card, Row, Col, Button, Table, Badge, Stack, Alert, Nav, Form } from 'react-bootstrap';
 import AddUserModal from '../components/AddUserModal';
 import { collection, getDocs, doc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
 import { db } from '../firebase/config';
@@ -12,6 +12,8 @@ function Users() {
   const [showModal, setShowModal] = useState(false);
   const [editUser, setEditUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('all');
+  const [selectedMunicipality, setSelectedMunicipality] = useState('');
   const { 
     userRole, 
     userMunicipality, 
@@ -121,6 +123,31 @@ function Users() {
 
   const usersByMunicipality = getUsersByMunicipality();
 
+  // Get users grouped by municipality
+  const getUsersGroupedByMunicipality = () => {
+    const grouped = {};
+    users.forEach(user => {
+      if (user.municipality) {
+        if (!grouped[user.municipality]) {
+          grouped[user.municipality] = [];
+        }
+        grouped[user.municipality].push(user);
+      }
+    });
+    return grouped;
+  };
+
+  // Get filtered users based on selected municipality
+  const getFilteredUsers = () => {
+    if (activeTab === 'municipality' && selectedMunicipality) {
+      return users.filter(user => user.municipality === selectedMunicipality);
+    }
+    return users;
+  };
+
+  const groupedUsers = getUsersGroupedByMunicipality();
+  const filteredUsers = getFilteredUsers();
+
   // Check if user has access to this page
   if (!canAccessFeature('view-users')) {
     return (
@@ -209,6 +236,76 @@ function Users() {
           </Col>
         </Row>
 
+        {/* Tabs Navigation */}
+        <Card className="shadow-sm border-0 rounded-3 mb-4">
+          <Card.Body className="p-0">
+            <Nav variant="tabs" className="border-0">
+              <Nav.Item>
+                <Nav.Link 
+                  active={activeTab === 'all'}
+                  onClick={() => setActiveTab('all')}
+                  className="border-0 fw-semibold"
+                  style={{
+                    color: activeTab === 'all' ? '#667eea' : '#6c757d',
+                    borderBottom: activeTab === 'all' ? '3px solid #667eea' : 'none',
+                    background: activeTab === 'all' ? 'rgba(102, 126, 234, 0.1)' : 'transparent'
+                  }}
+                >
+                  <i className="fas fa-users me-2"></i>
+                  All Users
+                </Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link 
+                  active={activeTab === 'municipality'}
+                  onClick={() => setActiveTab('municipality')}
+                  className="border-0 fw-semibold"
+                  style={{
+                    color: activeTab === 'municipality' ? '#667eea' : '#6c757d',
+                    borderBottom: activeTab === 'municipality' ? '3px solid #667eea' : 'none',
+                    background: activeTab === 'municipality' ? 'rgba(102, 126, 234, 0.1)' : 'transparent'
+                  }}
+                >
+                  <i className="fas fa-map-marker-alt me-2"></i>
+                  By Municipality
+                </Nav.Link>
+              </Nav.Item>
+            </Nav>
+          </Card.Body>
+        </Card>
+
+        {/* Municipality Filter - Only show when municipality tab is active */}
+        {activeTab === 'municipality' && (
+          <Card className="shadow-sm border-0 rounded-3 mb-4">
+            <Card.Body className="p-4">
+              <div className="d-flex align-items-center gap-3">
+                <div className="d-flex align-items-center justify-content-center bg-info bg-opacity-10 rounded-circle shadow" style={{ width: 48, height: 48 }}>
+                  <i className="fas fa-filter text-info fs-5"></i>
+                </div>
+                <div className="flex-grow-1">
+                  <h6 className="fw-bold mb-1">Filter by Municipality</h6>
+                  <p className="text-muted mb-0 small">Select a municipality to view its users</p>
+                </div>
+                <div style={{ width: '300px' }}>
+                  <Form.Select 
+                    value={selectedMunicipality}
+                    onChange={(e) => setSelectedMunicipality(e.target.value)}
+                    className="rounded-3 border-0 shadow-sm"
+                    style={{ background: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)' }}
+                  >
+                    <option value="">Select Municipality</option>
+                    {Object.keys(groupedUsers).map(municipality => (
+                      <option key={municipality} value={municipality}>
+                        {municipality} ({groupedUsers[municipality].length} users)
+                      </option>
+                    ))}
+                  </Form.Select>
+                </div>
+              </div>
+            </Card.Body>
+          </Card>
+        )}
+
         {/* Add User Button - Only show if user has permission */}
         {canAccessFeature('add-user') && (
           <div className="d-flex justify-content-end mb-4">
@@ -221,6 +318,35 @@ function Users() {
         
         <Card className="shadow-sm border-0 rounded-3">
           <Card.Body className="p-3">
+            {/* Municipality View - Show when municipality tab is active and municipality is selected */}
+            {activeTab === 'municipality' && selectedMunicipality && (
+              <div className="mb-4">
+                <div className="d-flex align-items-center justify-content-between mb-3">
+                  <div className="d-flex align-items-center gap-3">
+                    <div className="d-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle shadow" style={{ width: 56, height: 56 }}>
+                      <i className="fas fa-map-marker-alt text-primary fs-4"></i>
+                    </div>
+                    <div>
+                      <h4 className="fw-bold mb-1">{selectedMunicipality}</h4>
+                      <p className="text-muted mb-0">
+                        {groupedUsers[selectedMunicipality]?.length || 0} users in this municipality
+                      </p>
+                    </div>
+                  </div>
+                  <div className="d-flex gap-2">
+                    <Badge bg="info" className="px-3 py-2">
+                      <i className="fas fa-users me-2"></i>
+                      {groupedUsers[selectedMunicipality]?.filter(u => u.status === 'Active').length || 0} Active
+                    </Badge>
+                    <Badge bg="secondary" className="px-3 py-2">
+                      <i className="fas fa-user-tie me-2"></i>
+                      {groupedUsers[selectedMunicipality]?.filter(u => u.role === 'Administrator').length || 0} Admins
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="table-responsive">
               <Table hover responsive className="align-middle mb-0">
                 <thead className="table-light">
@@ -230,13 +356,13 @@ function Users() {
                     <th>Email</th>
                     <th>Role</th>
                     <th>Status</th>
-                    <th>Municipality</th>
+                    {activeTab === 'all' && <th>Municipality</th>}
                     <th>Privileges</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map((user, idx) => {
+                  {filteredUsers.map((user, idx) => {
                     const userPrivileges = getUserMunicipalityPrivileges(user.municipality);
                     const canEdit = canPerformAction('update', 'user', user);
                     const canDelete = canAccessFeature('delete-user');
@@ -265,18 +391,20 @@ function Users() {
                             </Badge>
                           )}
                         </td>
-                        <td>
-                          {user.municipality ? (
-                            <div>
-                              <div className="fw-semibold">{user.municipality}</div>
-                              <small className="text-muted">
-                                {usersByMunicipality[user.municipality] || 0} user(s)
-                              </small>
-                            </div>
-                          ) : (
-                            <span className="text-muted">Not assigned</span>
-                          )}
-                        </td>
+                        {activeTab === 'all' && (
+                          <td>
+                            {user.municipality ? (
+                              <div>
+                                <div className="fw-semibold">{user.municipality}</div>
+                                <small className="text-muted">
+                                  {usersByMunicipality[user.municipality] || 0} user(s)
+                                </small>
+                              </div>
+                            ) : (
+                              <span className="text-muted">Not assigned</span>
+                            )}
+                          </td>
+                        )}
                         <td>
                           {user.role === 'Administrator' ? (
                             <Badge bg="primary">All Privileges</Badge>
@@ -333,20 +461,30 @@ function Users() {
               </Table>
             </div>
 
-            {users.length === 0 && !loading && (
+            {filteredUsers.length === 0 && !loading && (
               <div className="text-center py-5">
                 <i className="fas fa-users text-muted fs-1 mb-3"></i>
-                <h5 className="text-muted">No users found</h5>
+                <h5 className="text-muted">
+                  {activeTab === 'municipality' && selectedMunicipality 
+                    ? `No users found in ${selectedMunicipality}`
+                    : 'No users found'
+                  }
+                </h5>
                 <p className="text-muted">
-                  {userRole === 'Administrator' 
-                    ? 'Start by adding your first user account.' 
-                    : `No users found in your municipality (${userMunicipality}).`
+                  {activeTab === 'municipality' && selectedMunicipality
+                    ? `No users are currently assigned to ${selectedMunicipality}.`
+                    : userRole === 'Administrator' 
+                      ? 'Start by adding your first user account.' 
+                      : `No users found in your municipality (${userMunicipality}).`
                   }
                 </p>
                 {canAccessFeature('add-user') && (
                   <Button variant="primary" onClick={openAddModal}>
                     <i className="fas fa-user-plus me-2"></i>
-                    Add First User
+                    {activeTab === 'municipality' && selectedMunicipality 
+                      ? `Add User to ${selectedMunicipality}`
+                      : 'Add First User'
+                    }
                   </Button>
                 )}
               </div>
