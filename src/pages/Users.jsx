@@ -45,6 +45,7 @@ function Users() {
         id: doc.id,
         ...doc.data()
       }));
+      console.log('Fetched users:', usersData.length, usersData); // Debug log
       setUsers(usersData);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -142,11 +143,19 @@ function Users() {
     if (activeTab === 'municipality' && selectedMunicipality) {
       return users.filter(user => user.municipality === selectedMunicipality);
     }
+    // Show all users for both 'all' tab and when no municipality is selected in 'municipality' tab
     return users;
   };
 
   const groupedUsers = getUsersGroupedByMunicipality();
   const filteredUsers = getFilteredUsers();
+  
+  // Debug logs
+  console.log('Active tab:', activeTab);
+  console.log('Selected municipality:', selectedMunicipality);
+  console.log('Total users:', users.length);
+  console.log('Filtered users:', filteredUsers.length);
+  console.log('Grouped users:', Object.keys(groupedUsers));
 
   // Check if user has access to this page
   if (!canAccessFeature('view-users')) {
@@ -347,6 +356,25 @@ function Users() {
               </div>
             )}
 
+            {/* Municipality Tab Active but No Municipality Selected */}
+            {activeTab === 'municipality' && !selectedMunicipality && (
+              <div className="mb-4">
+                <Alert variant="info" className="border-0 rounded-3">
+                  <div className="d-flex align-items-center gap-3">
+                    <div className="d-flex align-items-center justify-content-center bg-info bg-opacity-10 rounded-circle" style={{ width: 48, height: 48 }}>
+                      <i className="fas fa-info-circle text-info fs-5"></i>
+                    </div>
+                    <div>
+                      <h6 className="fw-bold mb-1">Select a Municipality</h6>
+                      <p className="text-muted mb-0 small">
+                        Choose a municipality from the dropdown above to view its users. You can see all available municipalities and their user counts.
+                      </p>
+                    </div>
+                  </div>
+                </Alert>
+              </div>
+            )}
+
             <div className="table-responsive">
               <Table hover responsive className="align-middle mb-0">
                 <thead className="table-light">
@@ -467,12 +495,16 @@ function Users() {
                 <h5 className="text-muted">
                   {activeTab === 'municipality' && selectedMunicipality 
                     ? `No users found in ${selectedMunicipality}`
+                    : activeTab === 'municipality' && !selectedMunicipality
+                    ? 'Please select a municipality to view users'
                     : 'No users found'
                   }
                 </h5>
                 <p className="text-muted">
                   {activeTab === 'municipality' && selectedMunicipality
                     ? `No users are currently assigned to ${selectedMunicipality}.`
+                    : activeTab === 'municipality' && !selectedMunicipality
+                    ? 'Choose a municipality from the dropdown above to see its users.'
                     : userRole === 'Administrator' 
                       ? 'Start by adding your first user account.' 
                       : `No users found in your municipality (${userMunicipality}).`
