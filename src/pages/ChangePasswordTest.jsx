@@ -109,66 +109,190 @@ function ChangePasswordTest({ isOpen, onClose }) {
       left: 0, 
       right: 0, 
       bottom: 0, 
-      background: 'rgba(0,0,0,0.5)', 
+      background: 'rgba(0,0,0,0.6)', 
       display: 'flex', 
       alignItems: 'center', 
       justifyContent: 'center',
-      zIndex: 1050
+      zIndex: 1050,
+      backdropFilter: 'blur(5px)'
     }}>
-      <Card style={{ width: '400px', maxWidth: '90vw' }}>
-        <Card.Header>
-          <h5 className="mb-0">Change Password (Test)</h5>
+      <Card style={{ 
+        width: '450px', 
+        maxWidth: '90vw',
+        borderRadius: '16px',
+        border: 'none',
+        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+        background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)'
+      }}>
+        <Card.Header className="border-0 pb-0" style={{ background: 'transparent' }}>
+          <div className="d-flex align-items-center gap-3">
+            <div className="d-flex align-items-center justify-content-center rounded-circle" style={{
+              width: 48,
+              height: 48,
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)'
+            }}>
+              <i className="fas fa-key text-white"></i>
+            </div>
+            <div>
+              <h5 className="fw-bold mb-1">Change Password</h5>
+              <p className="text-muted mb-0 small">Update your account password for enhanced security</p>
+            </div>
+          </div>
         </Card.Header>
-        <Card.Body>
+        <Card.Body className="pt-3">
           <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3">
-              <Form.Label>Current Password</Form.Label>
+            <Form.Group className="mb-4">
+              <Form.Label className="fw-semibold mb-2">
+                <i className="fas fa-lock me-2" style={{ color: '#667eea' }}></i>
+                Current Password
+              </Form.Label>
               <Form.Control
                 type="password"
                 name="currentPassword"
                 value={form.currentPassword}
                 onChange={handleInputChange}
                 required
+                className="rounded-3"
+                style={{
+                  border: '2px solid rgba(102, 126, 234, 0.1)',
+                  padding: '0.75rem 1rem',
+                  transition: 'all 0.3s ease'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = 'rgba(102, 126, 234, 0.3)';
+                  e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = 'rgba(102, 126, 234, 0.1)';
+                  e.target.style.boxShadow = 'none';
+                }}
               />
             </Form.Group>
 
-            <Form.Group className="mb-3">
-              <Form.Label>New Password</Form.Label>
+            <Form.Group className="mb-4">
+              <Form.Label className="fw-semibold mb-2">
+                <i className="fas fa-key me-2" style={{ color: '#28a745' }}></i>
+                New Password
+              </Form.Label>
               <Form.Control
                 type="password"
                 name="newPassword"
                 value={form.newPassword}
                 onChange={handleInputChange}
                 required
+                className="rounded-3"
+                style={{
+                  border: '2px solid rgba(102, 126, 234, 0.1)',
+                  padding: '0.75rem 1rem',
+                  transition: 'all 0.3s ease'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = 'rgba(102, 126, 234, 0.3)';
+                  e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = 'rgba(102, 126, 234, 0.1)';
+                  e.target.style.boxShadow = 'none';
+                }}
               />
             </Form.Group>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Confirm New Password</Form.Label>
+            <Form.Group className="mb-4">
+              <Form.Label className="fw-semibold mb-2">
+                <i className="fas fa-check-circle me-2" style={{ color: '#20c997' }}></i>
+                Confirm New Password
+              </Form.Label>
               <Form.Control
                 type="password"
                 name="confirmPassword"
                 value={form.confirmPassword}
                 onChange={handleInputChange}
                 required
+                className="rounded-3"
+                style={{
+                  border: '2px solid rgba(102, 126, 234, 0.1)',
+                  padding: '0.75rem 1rem',
+                  transition: 'all 0.3s ease'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = 'rgba(102, 126, 234, 0.3)';
+                  e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = 'rgba(102, 126, 234, 0.1)';
+                  e.target.style.boxShadow = 'none';
+                }}
               />
             </Form.Group>
 
-            {error && <Alert variant="danger">{error}</Alert>}
-            {success && <Alert variant="success">{success}</Alert>}
+            {error && (
+              <Alert variant="danger" className="rounded-3 border-0" style={{ background: 'rgba(220, 53, 69, 0.1)', color: '#dc3545' }}>
+                <i className="fas fa-exclamation-triangle me-2"></i>
+                {error}
+              </Alert>
+            )}
+            {success && (
+              <Alert variant="success" className="rounded-3 border-0" style={{ background: 'rgba(40, 167, 69, 0.1)', color: '#28a745' }}>
+                <i className="fas fa-check-circle me-2"></i>
+                {success}
+              </Alert>
+            )}
 
-            <div className="d-flex gap-2">
-              <Button variant="secondary" onClick={handleClose} disabled={loading}>
+            <div className="d-flex gap-3 mt-4">
+              <Button 
+                variant="outline-secondary" 
+                onClick={handleClose} 
+                disabled={loading}
+                className="flex-fill rounded-pill"
+                style={{
+                  border: '2px solid rgba(102, 126, 234, 0.2)',
+                  color: '#667eea',
+                  fontWeight: '600',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'rgba(102, 126, 234, 0.1)';
+                  e.target.style.borderColor = 'rgba(102, 126, 234, 0.3)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'transparent';
+                  e.target.style.borderColor = 'rgba(102, 126, 234, 0.2)';
+                }}
+              >
                 Cancel
               </Button>
-              <Button type="submit" variant="primary" disabled={loading}>
+              <Button 
+                type="submit" 
+                variant="primary" 
+                disabled={loading}
+                className="flex-fill rounded-pill"
+                style={{
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  border: 'none',
+                  fontWeight: '600',
+                  boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.3)';
+                }}
+              >
                 {loading ? (
                   <>
                     <Spinner animation="border" size="sm" className="me-2" />
                     Changing...
                   </>
                 ) : (
-                  'Change Password'
+                  <>
+                    <i className="fas fa-save me-2"></i>
+                    Change Password
+                  </>
                 )}
               </Button>
             </div>

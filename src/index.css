@@ -171,3 +171,91 @@ button {
 .backup-container .card:hover::after {
   opacity: 1;
 }
+
+/* Settings UI Enhancements */
+.settings-container {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.settings-card {
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.settings-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.6s;
+}
+
+.settings-card:hover::before {
+  left: 100%;
+}
+
+.settings-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15) !important;
+}
+
+.features-list {
+  text-align: left;
+}
+
+.setting-item {
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.setting-item:hover {
+  border-color: rgba(102, 126, 234, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.system-info {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.system-info::-webkit-scrollbar {
+  width: 4px;
+}
+
+.system-info::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.system-info::-webkit-scrollbar-thumb {
+  background: rgba(102, 126, 234, 0.3);
+  border-radius: 2px;
+}
+
+.system-info::-webkit-scrollbar-thumb:hover {
+  background: rgba(102, 126, 234, 0.5);
+}
+
+/* Enhanced form controls */
+.settings-container .form-check-input:checked {
+  background-color: #667eea;
+  border-color: #667eea;
+}
+
+.settings-container .form-check-input:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+}
+
+/* Badge enhancements */
+.settings-container .badge {
+  transition: all 0.3s ease;
+}
+
+.settings-container .badge:hover {
+  transform: scale(1.05);
+}
