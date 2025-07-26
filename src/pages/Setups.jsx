@@ -325,24 +325,34 @@ function Setups() {
 
   // Create backup of IPatroller data
   const createBackup = () => {
-    const backupData = {
-      timestamp: new Date().toISOString(),
-      data: allData,
-      settings: systemSettings,
-      version: '1.0.0'
-    };
-    
-    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `ipatroller-backup-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    alert('Backup created successfully!');
+    try {
+      const backupData = {
+        timestamp: new Date().toISOString(),
+        data: allData,
+        settings: systemSettings,
+        version: '1.0.0',
+        municipalities: municipalities,
+        totalRecords: Object.keys(allData).length,
+        backupType: 'Full System Backup'
+      };
+      
+      const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ipatroller-backup-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      // Show success message with more details
+      const successMessage = `✅ Backup created successfully!\n\n📊 Backup Details:\n• ${Object.keys(allData).length} months of data\n• ${municipalities.length} municipalities\n• System settings included\n• Created: ${new Date().toLocaleString()}`;
+      alert(successMessage);
+    } catch (error) {
+      console.error('Backup creation error:', error);
+      alert('❌ Error creating backup. Please try again.');
+    }
   };
 
   // Restore data from backup
@@ -355,13 +365,15 @@ function Setups() {
       try {
         const backupData = JSON.parse(e.target.result);
         if (backupData.data && backupData.timestamp) {
-          // Here you would implement the actual restore logic
-          alert(`Backup from ${new Date(backupData.timestamp).toLocaleDateString()} loaded successfully!`);
+          // Validate backup data structure
+          const validationMessage = `📋 Backup Validation:\n\n✅ Valid backup file detected\n📅 Created: ${new Date(backupData.timestamp).toLocaleString()}\n📊 Data: ${Object.keys(backupData.data).length} months\n🏛️ Municipalities: ${backupData.municipalities?.length || 'N/A'}\n🔧 Settings: ${backupData.settings ? 'Included' : 'Not included'}\n\n⚠️ Note: This is a preview. Actual restore functionality would be implemented here.`;
+          alert(validationMessage);
         } else {
-          alert('Invalid backup file format.');
+          alert('❌ Invalid backup file format. Please ensure this is a valid IPatroller backup file.');
         }
       } catch (error) {
-        alert('Error reading backup file. Please check the file format.');
+        console.error('Restore error:', error);
+        alert('❌ Error reading backup file. Please check the file format and try again.');
       }
     };
     reader.readAsText(file);
