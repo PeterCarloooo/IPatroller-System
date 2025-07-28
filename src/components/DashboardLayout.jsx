@@ -233,9 +233,29 @@ function DashboardLayout({ children, activePage }) {
   // };
 
   return (
-    <div className={darkMode ? 'dark-mode' : ''} style={{ minHeight: '100vh', width: '100vw', background: darkMode ? 'linear-gradient(135deg, #23272f 0%, #2d3748 100%)' : 'linear-gradient(135deg, #f8fafc 0%, #e9ecef 100%)', fontFamily: 'Inter, Segoe UI, Roboto, Arial, sans-serif', padding: 0, margin: 0, overflowX: 'hidden', transition: 'background 0.3s' }}>
+    <div className={darkMode ? 'dark-mode' : ''} style={{ 
+      minHeight: '100vh', 
+      width: '100vw', 
+      background: darkMode ? 'linear-gradient(135deg, #23272f 0%, #2d3748 100%)' : 'linear-gradient(135deg, #f8fafc 0%, #e9ecef 100%)', 
+      fontFamily: 'Inter, Segoe UI, Roboto, Arial, sans-serif', 
+      padding: 0, 
+      margin: 0, 
+      overflowX: 'hidden', 
+      transition: 'background 0.3s',
+      display: 'flex',
+      flexDirection: 'column'
+    }}>
       {/* Top Navigation */}
-      <div className="shadow-sm bg-white position-fixed" style={{ zIndex: 1100, height: 64, left: sidebarCollapsed ? 64 : 240, right: 0, top: 0, borderBottom: '1px solid #e0e7ef', transition: 'left 0.3s cubic-bezier(.4,0,.2,1)', width: 'auto' }}>
+      <div className="shadow-sm bg-white position-fixed" style={{ 
+        zIndex: 1100, 
+        height: 64, 
+        left: sidebarCollapsed ? 64 : 240, 
+        right: 0, 
+        top: 0, 
+        borderBottom: '1px solid #e0e7ef', 
+        transition: 'left 0.3s cubic-bezier(.4,0,.2,1)', 
+        width: 'auto' 
+      }}>
         <div className="d-flex align-items-center justify-content-between h-100 px-4" style={{ width: '100%' }}>
           <div className="d-flex align-items-center gap-3">
             <Button variant="link" className="d-lg-none" onClick={toggleSidebar} style={{ padding: '0.5rem', color: '#4a5568' }}>
@@ -281,9 +301,24 @@ function DashboardLayout({ children, activePage }) {
       </div>
 
       {/* Main content wrapper with proper spacing */}
-      <div className="d-flex flex-row w-100 min-vh-100" style={{ boxSizing: 'border-box', overflowX: 'hidden', paddingTop: '64px' }}>
+      <div className="d-flex flex-grow-1" style={{ 
+        marginTop: '64px',
+        marginLeft: sidebarCollapsed ? '64px' : '240px',
+        transition: 'margin-left 0.3s cubic-bezier(.4,0,.2,1)',
+        position: 'relative',
+        height: 'calc(100vh - 64px)',
+        overflow: 'hidden'
+      }}>
         {/* Sidebar */}
-        <div className="bg-white shadow-sm position-fixed" style={{ left: 0, top: 0, height: '100vh', width: sidebarCollapsed ? 64 : 240, borderRight: '1.5px solid #e0e7ef', zIndex: 1000, transition: 'width 0.3s cubic-bezier(.4,0,.2,1)' }}>
+        <div className="bg-white shadow-sm position-fixed" style={{ 
+          left: 0, 
+          top: 0, 
+          height: '100vh', 
+          width: sidebarCollapsed ? 64 : 240, 
+          borderRight: '1.5px solid #e0e7ef', 
+          zIndex: 1000, 
+          transition: 'width 0.3s cubic-bezier(.4,0,.2,1)'
+        }}>
           <div className="d-flex align-items-center justify-content-between border-bottom px-4" style={{ height: 64 }}>
             <Button variant="link" onClick={toggleSidebar} style={{ color: '#4a5568' }} aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
               <i className={`fas fa-chevron-${sidebarCollapsed ? 'right' : 'left'}`} style={{ fontSize: '1.25rem', transition: 'transform 0.3s', transform: sidebarCollapsed ? 'rotate(180deg)' : 'none' }} />
@@ -356,14 +391,13 @@ function DashboardLayout({ children, activePage }) {
           </div>
         </div>
 
-        {/* Main content area with proper margin */}
+        {/* Main content area with scrolling */}
         <div style={{ 
-          marginLeft: sidebarCollapsed ? '64px' : '240px',
-          marginTop: '0',
           width: '100%',
+          height: '100%',
           padding: '1.5rem',
-          transition: 'margin-left 0.3s cubic-bezier(.4,0,.2,1)',
-          position: 'relative'
+          overflowY: 'auto',
+          overflowX: 'hidden'
         }}>
           {children}
         </div>
