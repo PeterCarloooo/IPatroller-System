@@ -9,6 +9,88 @@ import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
+// Add common styles at the top of the file
+const COMMON_STYLES = {
+  tableHeader: {
+    position: 'sticky',
+    top: 0,
+    zIndex: 10,
+  },
+  fixedColumn: {
+    position: 'sticky',
+    left: 0,
+    zIndex: 5,
+    minWidth: '180px',
+    width: '180px',
+    fontSize: '0.9em',
+    boxShadow: '2px 0 5px -2px rgba(0,0,0,0.1)',
+    borderRight: '1px solid #dee2e6'
+  },
+  districtHeader: {
+    background: 'linear-gradient(135deg, #007bff, #0056b3)',
+    color: 'white',
+    position: 'sticky',
+    left: 0,
+    zIndex: 5,
+    fontSize: '1.05em',
+    textShadow: '0 1px 2px rgba(0,0,0,0.3)',
+    boxShadow: '2px 0 5px -2px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2)',
+    padding: '12px 16px'
+  },
+  tableCell: {
+    minWidth: '160px',
+    width: '160px',
+    fontSize: '0.9em',
+    padding: '8px 4px'
+  },
+  cardContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    flex: 1,
+    minHeight: 0
+  },
+  tableContainer: {
+    height: '100%',
+    minHeight: 0,
+    overflowY: 'auto'
+  },
+  pageHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.75rem',
+    marginBottom: '1rem',
+    padding: '0.75rem',
+    background: 'white',
+    borderRadius: '0.5rem',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+    border: '1px solid #e5e7eb'
+  },
+  headerIcon: {
+    width: 56,
+    height: 56,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: '50%',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+  },
+  monthSelector: {
+    background: '#e9eef6',
+    borderRadius: '0.75rem',
+    padding: '4px 8px',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+  },
+  actionButton: {
+    width: 40,
+    height: 40,
+    borderRadius: '0.5rem',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+  }
+};
+
 const districts = [
   {
     name: '1ST DISTRICT',
@@ -828,10 +910,10 @@ function IPatrollerStatus() {
         display: 'flex',
         flexDirection: 'column'
       }}>
-        <div className="page-container" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <div className="page-container" style={COMMON_STYLES.cardContainer}>
           {/* Header */}
-          <div className="d-flex align-items-center gap-3 mb-4 p-3 bg-white rounded-3 shadow-sm border">
-            <div className="d-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle shadow" style={{ width: 56, height: 56 }}>
+          <div style={COMMON_STYLES.pageHeader}>
+            <div className="bg-primary bg-opacity-10" style={COMMON_STYLES.headerIcon}>
               <i className="fas fa-shield-alt text-primary fs-4"></i>
             </div>
             <div>
@@ -853,7 +935,7 @@ function IPatrollerStatus() {
               </Nav.Item>
             </Nav>
             
-            <div className="d-flex align-items-center gap-2" style={{ background: '#e9eef6', borderRadius: '0.75rem', padding: '4px 8px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+            <div className="d-flex align-items-center gap-2" style={COMMON_STYLES.monthSelector}>
               <Form.Select
                 size="sm"
                 value={selectedMonth}
@@ -879,7 +961,7 @@ function IPatrollerStatus() {
                 variant="info"
                 size="sm"
                 onClick={() => document.getElementById('excel-import').click()}
-                style={{ width: 40, height: 40, borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
+                style={COMMON_STYLES.actionButton}
                 title="Import Excel"
               >
                 <i className="fas fa-file-excel"></i>
@@ -888,7 +970,7 @@ function IPatrollerStatus() {
                 variant="success"
                 size="sm"
                 onClick={handleAddClick}
-                style={{ width: 40, height: 40, borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
+                style={COMMON_STYLES.actionButton}
                 title="Add"
               >
                 <i className="fas fa-plus"></i>
@@ -897,7 +979,7 @@ function IPatrollerStatus() {
                 variant="primary"
                 size="sm"
                 onClick={handleEditClick}
-                style={{ width: 40, height: 40, borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
+                style={COMMON_STYLES.actionButton}
                 title="Edit"
               >
                 <i className="fas fa-edit"></i>
@@ -906,7 +988,7 @@ function IPatrollerStatus() {
                 variant="warning"
                 size="sm"
                 onClick={() => window.location.reload()}
-                style={{ width: 40, height: 40, borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
+                style={COMMON_STYLES.actionButton}
                 title="Refresh Data"
               >
                 <i className="fas fa-sync-alt"></i>
@@ -915,7 +997,7 @@ function IPatrollerStatus() {
                 variant="danger"
                 size="sm"
                 onClick={handleDeleteData}
-                style={{ width: 40, height: 40, borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
+                style={COMMON_STYLES.actionButton}
                 title="Delete Data"
               >
                 <i className="fas fa-trash-alt"></i>
@@ -924,7 +1006,7 @@ function IPatrollerStatus() {
                 variant="info"
                 size="sm"
                 onClick={handleReportClick}
-                style={{ width: 40, height: 40, borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
+                style={COMMON_STYLES.actionButton}
                 title="Generate Report"
               >
                 <i className="fas fa-chart-line"></i>
@@ -946,31 +1028,29 @@ function IPatrollerStatus() {
             </div>
           )}
 
-          {/* Content area with proper scrolling */}
-          <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+          {/* Content area */}
+          <div style={COMMON_STYLES.cardContainer}>
             {activeTab === 'status' && (
-              <Card className="shadow-sm border-0 rounded-3 flex-grow-1" style={{ display: 'flex', flexDirection: 'column' }}>
-                <Card.Body className="p-3" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+              <Card className="shadow-sm border-0 rounded-3" style={COMMON_STYLES.cardContainer}>
+                <Card.Body className="p-3" style={COMMON_STYLES.cardContainer}>
                   <h4 className="fw-bold mb-3">Patroller Status Overview</h4>
-                  <div ref={mainTableRef} style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+                  <div ref={mainTableRef} style={COMMON_STYLES.cardContainer}>
+                    <div style={COMMON_STYLES.tableContainer}>
                       <Card className="shadow-sm rounded-4 mb-0 p-3 bg-white border-0 h-100">
-                        <div className="table-responsive" style={{ height: '100%', minHeight: 0 }}>
+                        <div className="table-responsive" style={COMMON_STYLES.tableContainer}>
                           <Table className="table-bordered align-middle table-hover mb-0" style={{ minWidth: 1200 }}>
-                            <thead className="table-success" style={{ position: 'sticky', top: 0, zIndex: 10 }}>
+                            <thead className="table-success" style={COMMON_STYLES.tableHeader}>
                               <tr>
-                                <th className="text-center fw-bold" style={{ 
-                                  background: '#d1e7dd', 
-                                  position: 'sticky', 
-                                  left: 0, 
-                                  zIndex: 11, 
-                                  minWidth: '180px', 
-                                  width: '180px', 
-                                  fontSize: '0.9em',
-                                  boxShadow: '2px 0 5px -2px rgba(0,0,0,0.1)'
+                                <th className="text-center fw-bold" style={{
+                                  ...COMMON_STYLES.fixedColumn,
+                                  background: '#d1e7dd',
+                                  zIndex: 11
                                 }}>MUNICIPALITY</th>
                                 {validDateHeaders.map((date, idx) => (
-                                  <th key={idx} className="text-center fw-bold small" style={{ background: '#d1e7dd', minWidth: '160px', width: '160px', fontSize: '0.8em', padding: '8px 4px' }}>
+                                  <th key={idx} className="text-center fw-bold small" style={{
+                                    ...COMMON_STYLES.tableCell,
+                                    background: '#d1e7dd'
+                                  }}>
                                     {date}
                                   </th>
                                 ))}
@@ -980,17 +1060,7 @@ function IPatrollerStatus() {
                               {districts.map((district, dIdx) => (
                                 <React.Fragment key={district.name}>
                                   <tr>
-                                    <td colSpan={validDateHeaders.length + 1} className="fw-bold text-start" style={{ 
-                                      background: 'linear-gradient(135deg, #007bff, #0056b3)', 
-                                      color: 'white',
-                                      position: 'sticky', 
-                                      left: 0, 
-                                      zIndex: 5, 
-                                      fontSize: '1.05em',
-                                      textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-                                      boxShadow: '2px 0 5px -2px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2)',
-                                      padding: '12px 16px'
-                                    }}>
+                                    <td colSpan={validDateHeaders.length + 1} style={COMMON_STYLES.districtHeader}>
                                       {(() => {
                                         const n = dIdx + 1;
                                         const ord = n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th';
@@ -999,27 +1069,20 @@ function IPatrollerStatus() {
                                     </td>
                                   </tr>
                                   {district.municipalities.map((muni, rowIdx) => (
-                                    <tr key={muni} style={{ transition: 'background 0.2s', backgroundColor: rowIdx % 2 === 0 ? '#f8f9fa' : 'white' }}>
-                                      <td className="fw-bold text-start" style={{ 
-                                        background: '#f8f9fa', 
-                                        position: 'sticky', 
-                                        left: 0, 
-                                        zIndex: 5, 
-                                        minWidth: '180px', 
-                                        width: '180px', 
-                                        fontSize: '0.9em',
-                                        boxShadow: '2px 0 5px -2px rgba(0,0,0,0.1)',
-                                        borderRight: '1px solid #dee2e6'
+                                    <tr key={muni} style={{ backgroundColor: rowIdx % 2 === 0 ? '#f8f9fa' : 'white' }}>
+                                      <td className="fw-bold text-start" style={{
+                                        ...COMMON_STYLES.fixedColumn,
+                                        background: '#f8f9fa'
                                       }}>{muni}</td>
                                       {validDateHeaders.map((_, i) => {
                                         const count = validData[muni]?.[i];
                                         if (count === '' || count === undefined || count === null) {
-                                          return <td key={i} className="text-center text-muted" style={{ minWidth: '160px', width: '160px', fontSize: '0.9em', padding: '8px 4px' }}>-</td>;
+                                          return <td key={i} className="text-center text-muted" style={COMMON_STYLES.tableCell}>-</td>;
                                         }
                                         if (Number(count) >= 5) {
-                                          return <td key={i} className="text-center" style={{ minWidth: '160px', width: '160px', fontSize: '0.9em', padding: '8px 4px' }}><Badge bg="success">Active</Badge></td>;
+                                          return <td key={i} className="text-center" style={COMMON_STYLES.tableCell}><Badge bg="success">Active</Badge></td>;
                                         }
-                                        return <td key={i} className="text-center" style={{ minWidth: '160px', width: '160px', fontSize: '0.9em', padding: '8px 4px' }}><Badge bg="danger">Inactive</Badge></td>;
+                                        return <td key={i} className="text-center" style={COMMON_STYLES.tableCell}><Badge bg="danger">Inactive</Badge></td>;
                                       })}
                                     </tr>
                                   ))}
@@ -1036,15 +1099,15 @@ function IPatrollerStatus() {
             )}
 
             {activeTab === 'dailyCounts' && (
-              <Card className="shadow-sm border-0 rounded-3 flex-grow-1" style={{ display: 'flex', flexDirection: 'column' }}>
-                <Card.Body className="p-3" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+              <Card className="shadow-sm border-0 rounded-3" style={COMMON_STYLES.cardContainer}>
+                <Card.Body className="p-3" style={COMMON_STYLES.cardContainer}>
                   <h4 className="fw-bold mb-3">Daily Patroller Counts</h4>
-                  <div ref={mainTableRef} style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+                  <div ref={mainTableRef} style={COMMON_STYLES.cardContainer}>
+                    <div style={COMMON_STYLES.tableContainer}>
                       <Card className="shadow-sm rounded-4 mb-0 p-3 bg-white border-0 h-100">
-                        <div className="table-responsive" style={{ height: '100%', minHeight: 0 }}>
+                        <div className="table-responsive" style={COMMON_STYLES.tableContainer}>
                           <Table className="table-bordered align-middle table-hover mb-0" style={{ minWidth: 1200 }}>
-                            <thead className="table-primary" style={{ position: 'sticky', top: 0, zIndex: 10 }}>
+                            <thead className="table-primary" style={COMMON_STYLES.tableHeader}>
                               <tr>
                                 <th className="text-center fw-bold" style={{ background: '#cce5ff', position: 'sticky', left: 0, zIndex: 11, minWidth: '180px', width: '180px', fontSize: '0.9em' }}>MUNICIPALITY</th>
                                 {validDateHeaders.map((date, idx) => (
@@ -1058,17 +1121,7 @@ function IPatrollerStatus() {
                               {districts.map((district, dIdx) => (
                                 <React.Fragment key={district.name}>
                                   <tr>
-                                    <td colSpan={validDateHeaders.length + 1} className="fw-bold text-start" style={{ 
-                                      background: 'linear-gradient(135deg, #007bff, #0056b3)', 
-                                      color: 'white',
-                                      position: 'sticky', 
-                                      left: 0, 
-                                      zIndex: 5, 
-                                      fontSize: '1.05em',
-                                      textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-                                      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.2)',
-                                      padding: '12px 16px'
-                                    }}>
+                                    <td colSpan={validDateHeaders.length + 1} style={COMMON_STYLES.districtHeader}>
                                       {(() => {
                                         const n = dIdx + 1;
                                         const ord = n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th';
@@ -1077,12 +1130,12 @@ function IPatrollerStatus() {
                                     </td>
                                   </tr>
                                   {district.municipalities.map((muni, rowIdx) => (
-                                    <tr key={muni} style={{ transition: 'background 0.2s', backgroundColor: rowIdx % 2 === 0 ? '#f8f9fa' : 'white' }}>
+                                    <tr key={muni} style={{ backgroundColor: rowIdx % 2 === 0 ? '#f8f9fa' : 'white' }}>
                                       <td className="fw-bold text-start" style={{ background: '#f8f9fa', position: 'sticky', left: 0, zIndex: 5, minWidth: '180px', width: '180px', fontSize: '0.9em' }}>{muni}</td>
                                       {validDateHeaders.map((_, i) => {
                                         const count = validData[muni]?.[i];
                                         return (
-                                          <td key={i} className="text-center" style={{ minWidth: '160px', width: '160px', fontSize: '0.9em', padding: '8px 4px' }}>
+                                          <td key={i} className="text-center" style={COMMON_STYLES.tableCell}>
                                             {count === '' || count === undefined || count === null ? '-' : count}
                                           </td>
                                         );
@@ -1102,15 +1155,15 @@ function IPatrollerStatus() {
             )}
 
             {activeTab === 'summary' && (
-              <Card className="shadow-sm border-0 rounded-3 flex-grow-1" style={{ display: 'flex', flexDirection: 'column' }}>
-                <Card.Body className="p-3" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+              <Card className="shadow-sm border-0 rounded-3" style={COMMON_STYLES.cardContainer}>
+                <Card.Body className="p-3" style={COMMON_STYLES.cardContainer}>
                   <h4 className="fw-bold mb-3">Patroller Summary Overview</h4>
-                  <div ref={mainTableRef} style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+                  <div ref={mainTableRef} style={COMMON_STYLES.cardContainer}>
+                    <div style={COMMON_STYLES.tableContainer}>
                       <Card className="shadow-sm rounded-4 mb-0 p-3 bg-white border-0 h-100">
-                        <div className="table-responsive" style={{ height: '100%', minHeight: 0 }}>
+                        <div className="table-responsive" style={COMMON_STYLES.tableContainer}>
                           <Table className="table-bordered align-middle table-hover mb-0" style={{ minWidth: 1000 }}>
-                            <thead className="table-dark" style={{ position: 'sticky', top: 0, zIndex: 10 }}>
+                            <thead className="table-dark" style={COMMON_STYLES.tableHeader}>
                               <tr>
                                 <th className="text-center fw-bold" style={{ background: '#343a40', position: 'sticky', left: 0, zIndex: 11, minWidth: '200px', width: '200px', fontSize: '0.9em' }}>MUNICIPALITY</th>
                                 <th className="text-center fw-bold" style={{ background: '#343a40', minWidth: '120px', width: '120px', fontSize: '0.9em' }}>DISTRICT</th>
@@ -1126,21 +1179,11 @@ function IPatrollerStatus() {
                               {districts.map((district, dIdx) => (
                                 <React.Fragment key={district.name}>
                                   <tr>
-                                    <td colSpan={8} className="fw-bold text-start" style={{ 
-                                      background: 'linear-gradient(135deg, #6f42c1, #5a2d91)', 
-                                      color: 'white',
-                                      position: 'sticky', 
-                                      left: 0, 
-                                      zIndex: 5, 
-                                      fontSize: '1.05em',
-                                      textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-                                      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.2)',
-                                      padding: '12px 16px'
-                                    }}>
+                                    <td colSpan={8} style={COMMON_STYLES.districtHeader}>
                                       {(() => {
                                         const n = dIdx + 1;
                                         const ord = n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th';
-                                        return `${n}${ord} District`;
+                                        return `${n}${ord}`;
                                       })()}
                                     </td>
                                   </tr>
@@ -1154,7 +1197,7 @@ function IPatrollerStatus() {
                                     const performance = averageDaily >= 5 ? 'Excellent' : averageDaily >= 3 ? 'Good' : averageDaily >= 1 ? 'Fair' : 'Poor';
                                     
                                     return (
-                                      <tr key={muni} style={{ transition: 'background 0.2s', backgroundColor: rowIdx % 2 === 0 ? '#f8f9fa' : 'white' }}>
+                                      <tr key={muni} style={{ backgroundColor: rowIdx % 2 === 0 ? '#f8f9fa' : 'white' }}>
                                         <td className="fw-bold text-start" style={{ background: '#f8f9fa', position: 'sticky', left: 0, zIndex: 5, minWidth: '200px', width: '200px', fontSize: '0.9em' }}>{muni}</td>
                                         <td className="text-center" style={{ minWidth: '120px', width: '120px', fontSize: '0.9em' }}>
                                           {(() => {
@@ -1482,9 +1525,8 @@ function IPatrollerStatus() {
           </Modal.Footer>
         </Modal>
       </div>
-    </div>
-  </DashboardLayout>
-);
+    </DashboardLayout>
+  );
 }
 
 export default IPatrollerStatus; 
