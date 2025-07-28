@@ -123,15 +123,13 @@ const months = [
 
 function getDateHeaders(monthValue) {
   try {
-    if (!monthValue || typeof monthValue !== 'string') {
-      console.warn('Invalid monthValue provided to getDateHeaders:', monthValue);
+    if (!monthValue || typeof monthValue !== 'string' || !monthValue.match(/^\d{4}-\d{2}$/)) {
       return [];
     }
     
     const [year, month] = monthValue.split('-').map(Number);
     
     if (isNaN(year) || isNaN(month) || year < 2000 || year > 2100 || month < 1 || month > 12) {
-      console.warn('Invalid year or month in getDateHeaders:', { year, month });
       return [];
     }
     
@@ -148,33 +146,24 @@ function getDateHeaders(monthValue) {
       }));
     }
     
-    console.log(`Generated ${dateHeaders.length} date headers for ${monthValue}`);
     return dateHeaders;
   } catch (error) {
-    console.error('Error in getDateHeaders:', error);
     return [];
   }
 }
 
 function getEmptyData(monthValue) {
   try {
-    console.log('getEmptyData called with:', monthValue);
-    
-    // Validate month value
     if (!monthValue || typeof monthValue !== 'string' || !monthValue.match(/^\d{4}-\d{2}$/)) {
-      console.warn('Invalid monthValue format:', monthValue);
-      // Return safe fallback with current month
       const now = new Date();
       const year = now.getFullYear();
       const month = String(now.getMonth() + 1).padStart(2, '0');
       monthValue = `${year}-${month}`;
     }
     
-    // Get the number of days in the month
     const [year, month] = monthValue.split('-').map(Number);
     const daysInMonth = new Date(year, month, 0).getDate();
     
-    // Create empty arrays for each municipality with the correct number of days
     const emptyData = {
       'ABUCAY': new Array(daysInMonth).fill(''),
       'ORANI': new Array(daysInMonth).fill(''),
@@ -190,11 +179,8 @@ function getEmptyData(monthValue) {
       'MORONG': new Array(daysInMonth).fill('')
     };
     
-    console.log(`Created empty data structure with ${daysInMonth} days for ${monthValue}`);
     return emptyData;
   } catch (error) {
-    console.error('Error in getEmptyData:', error);
-    // Return safe fallback with 31 days (maximum possible)
     const safeData = {
       'ABUCAY': new Array(31).fill(''),
       'ORANI': new Array(31).fill(''),
@@ -242,9 +228,6 @@ function EditModal({ isOpen, onClose, onSave, initialData, selectedMonth }) {
     e.preventDefault();
     const changedEntries = [];
     
-    console.log('Original data:', originalData);
-    console.log('Current counts:', counts);
-    
     // Save all non-empty entries (simplified approach)
     Object.keys(counts).forEach(municipality => {
       counts[municipality].forEach((newCount, dateIndex) => {
@@ -263,8 +246,6 @@ function EditModal({ isOpen, onClose, onSave, initialData, selectedMonth }) {
         }
       });
     });
-
-    console.log('Entries to save:', changedEntries);
 
     if (changedEntries.length === 0) {
       setError('Please enter at least one count.');
@@ -368,28 +349,17 @@ function IPatrollerStatus() {
     selectedMonth: contextSelectedMonth,
     setSelectedMonth,
     allData,
-    setAllData,
     updateMonthData,
     updateMultipleMonths,
     clearMonthData,
     clearAllData,
-    getCurrentMonthData,
   } = useIPatrollerData();
 
   const selectedMonth = contextSelectedMonth || defaultMonth;
   const dateHeaders = getDateHeaders(selectedMonth);
   const data = allData[selectedMonth] || getEmptyData(selectedMonth);
 
-  // Debug logging
-  console.log('Current State:', {
-    selectedMonth,
-    dateHeaders,
-    data,
-    allData
-  });
-
   useEffect(() => {
-    // Initialize with default data if empty
     if (!allData[selectedMonth]) {
       const emptyData = getEmptyData(selectedMonth);
       updateMonthData(selectedMonth, emptyData);
@@ -405,7 +375,6 @@ function IPatrollerStatus() {
     }
   };
 
-  // Ensure we have valid data structures
   const validDateHeaders = dateHeaders || [];
   const validData = data || getEmptyData(selectedMonth);
 
@@ -489,7 +458,6 @@ function IPatrollerStatus() {
         }
       });
       updateMonthData(monthToFetch, monthData);
-      console.log(`Loaded data for ${monthToFetch}:`, monthData);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -499,48 +467,28 @@ function IPatrollerStatus() {
     const file = event.target.files[0];
     if (!file) return;
     
-    console.log('📁 Excel file selected:', file.name, file.size, 'bytes');
     setLoadingExcel(true);
     
     try {
-      // Show immediate feedback
-      console.log('🔄 Starting Excel import...');
-      
       const allMonthsData = await readExcelFile(file);
-      console.log('📊 All months data from Excel:', allMonthsData);
       
       if (allMonthsData && Object.keys(allMonthsData).length > 0) {
-        console.log('✅ Valid data found in Excel file');
-        console.log('📅 Months found:', Object.keys(allMonthsData));
-        
-        // Skip Firebase saving for faster import - use localStorage only
-        console.log('💾 Saving to localStorage only for faster import...');
-        
-        // Use the context function to update multiple months and save to localStorage
-        console.log('🔄 Updating context with imported data...');
         await updateMultipleMonths(allMonthsData);
         
         const importedMonths = Object.keys(allMonthsData);
         if (importedMonths.length > 0) {
-          console.log(`📅 Setting selected month to: ${importedMonths[0]}`);
           setSelectedMonth(importedMonths[0]);
         }
         
-        console.log('✅ Data imported and saved successfully!');
-        
-        const monthCount = importedMonths.length;
-        alert(`Excel data imported successfully! Found and imported ${monthCount} month(s): ${importedMonths.join(', ')}\n\nData has been saved to localStorage and will persist.`);
+        alert(`Excel data imported successfully! Found and imported ${importedMonths.length} month(s): ${importedMonths.join(', ')}\n\nData has been saved to localStorage and will persist.`);
       } else {
-        console.log('❌ No valid data found in Excel file');
         alert('No valid data found in the Excel file. Please check the file format.');
       }
     } catch (error) {
-      console.error('❌ Error importing Excel:', error);
       alert('Error importing Excel file. Please check the file format and try again.');
     }
     
     setLoadingExcel(false);
-    // Reset file input
     event.target.value = '';
   };
 
@@ -565,7 +513,6 @@ function IPatrollerStatus() {
 
   const detectAndExtractAllSheetsData = (workbook) => {
     const sheetNames = workbook.SheetNames;
-    console.log('Available sheets:', sheetNames);
     
     const allMonthsData = {};
     
@@ -580,7 +527,6 @@ function IPatrollerStatus() {
           
           if (monthData && Object.keys(monthData).length > 0) {
             allMonthsData[monthInfo.monthKey] = monthData;
-            console.log(`Successfully processed sheet: ${sheetName} for month: ${monthInfo.monthKey}`);
           }
         } catch (error) {
           console.warn(`Error processing sheet ${sheetName}:`, error);
@@ -637,12 +583,10 @@ function IPatrollerStatus() {
   };
 
   const parseExcelDataForMonth = (jsonData, monthKey) => {
-    console.log(`🔄 Parsing Excel data for month: ${monthKey}`);
     
     const monthData = getEmptyData(monthKey);
     
     if (!jsonData || jsonData.length === 0) {
-      console.log('❌ No data to parse for month:', monthKey);
       return monthData;
     }
     
@@ -730,7 +674,6 @@ function IPatrollerStatus() {
       }
     }
     
-    console.log(`✅ Parsed ${monthKey} with ${Object.keys(monthData).length} municipalities`);
     return monthData;
   };
 
@@ -787,10 +730,7 @@ function IPatrollerStatus() {
         }
       }
       
-      console.log('Attempting to commit import batch to Firestore:', entries);
       await batch.commit();
-      console.log(`✅ Imported ${entries.length} records to Firebase`);
-      // alert(`Successfully imported ${entries.length} records to Firebase!`); // Moved outside
     }
   };
 
@@ -820,7 +760,6 @@ function IPatrollerStatus() {
         }
       });
       
-      console.log('✅ Data saved to context and localStorage');
       alert('Data saved successfully!');
     } catch (error) {
       console.error('❌ Error saving data:', error);
@@ -830,35 +769,23 @@ function IPatrollerStatus() {
 
   const handleEditSave = async (entries) => {
     try {
-      console.log('handleEditSave called with:', entries);
-      console.log('Current selectedMonth:', selectedMonth);
-      
       // Update data using context
       const monthData = allData[selectedMonth] ? { ...allData[selectedMonth] } : getEmptyData(selectedMonth);
-      console.log('Current monthData before update:', monthData);
       
       // Update entries using dateIndex directly
       entries.forEach(entry => {
-        console.log('Processing entry:', entry);
         
         if (monthData[entry.municipality]) {
           // Use dateIndex directly for simpler update
           const muniArr = [...monthData[entry.municipality]];
-          console.log(`Before update: ${entry.municipality}[${entry.dateIndex}] = ${muniArr[entry.dateIndex]}`);
           muniArr[entry.dateIndex] = entry.count;
-          console.log(`After update: ${entry.municipality}[${entry.dateIndex}] = ${muniArr[entry.dateIndex]}`);
           monthData[entry.municipality] = muniArr;
-        } else {
-          console.log(`Municipality ${entry.municipality} not found in monthData`);
         }
       });
-      
-      console.log('Updated monthData:', monthData);
       
       // Update using context
       updateMonthData(selectedMonth, monthData);
       
-      console.log(`✅ ${entries.length} entries saved to context and localStorage`);
       alert(`Successfully updated ${entries.length} entries!`);
       
       setShowEditModal(false);
