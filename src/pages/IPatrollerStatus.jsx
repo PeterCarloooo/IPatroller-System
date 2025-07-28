@@ -78,6 +78,16 @@ function getEmptyData(monthValue) {
   try {
     console.log('getEmptyData called with:', monthValue);
     
+    // Validate month value
+    if (!monthValue || typeof monthValue !== 'string' || !monthValue.match(/^\d{4}-\d{2}$/)) {
+      console.warn('Invalid monthValue format:', monthValue);
+      // Return safe fallback with current month
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      monthValue = `${year}-${month}`;
+    }
+    
     // Get the number of days in the month
     const [year, month] = monthValue.split('-').map(Number);
     const daysInMonth = new Date(year, month, 0).getDate();
@@ -95,28 +105,29 @@ function getEmptyData(monthValue) {
       'BAGAC': new Array(daysInMonth).fill(''),
       'DINALUPIHAN': new Array(daysInMonth).fill(''),
       'MARIVELES': new Array(daysInMonth).fill(''),
-      'MORONG': new Array(daysInMonth).fill(''),
+      'MORONG': new Array(daysInMonth).fill('')
     };
     
     console.log(`Created empty data structure with ${daysInMonth} days for ${monthValue}`);
     return emptyData;
   } catch (error) {
     console.error('Error in getEmptyData:', error);
-    // Return safe fallback
-    return {
-      'ABUCAY': [],
-      'ORANI': [],
-      'SAMAL': [],
-      'HERMOSA': [],
-      'BALANGA': [],
-      'PILAR': [],
-      'ORION': [],
-      'LIMAY': [],
-      'BAGAC': [],
-      'DINALUPIHAN': [],
-      'MARIVELES': [],
-      'MORONG': [],
+    // Return safe fallback with 31 days (maximum possible)
+    const safeData = {
+      'ABUCAY': new Array(31).fill(''),
+      'ORANI': new Array(31).fill(''),
+      'SAMAL': new Array(31).fill(''),
+      'HERMOSA': new Array(31).fill(''),
+      'BALANGA': new Array(31).fill(''),
+      'PILAR': new Array(31).fill(''),
+      'ORION': new Array(31).fill(''),
+      'LIMAY': new Array(31).fill(''),
+      'BAGAC': new Array(31).fill(''),
+      'DINALUPIHAN': new Array(31).fill(''),
+      'MARIVELES': new Array(31).fill(''),
+      'MORONG': new Array(31).fill('')
     };
+    return safeData;
   }
 }
 
@@ -264,7 +275,12 @@ function IPatrollerStatus() {
   const mainTableRef = useRef(null);
 
   // Get data from shared context
-  const defaultMonth = months[0]?.value || Object.keys(allData)[0] || '';
+  const defaultMonth = months[0]?.value || (() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    return `${year}-${month}`;
+  })();
   const {
     selectedMonth: contextSelectedMonth,
     setSelectedMonth,
@@ -310,13 +326,17 @@ function IPatrollerStatus() {
     console.log('📅 localStorage selectedMonth:', localStorage.getItem('selectedMonth'));
     
     // Auto-select first available month if no month is currently selected
-    if ((!contextSelectedMonth || contextSelectedMonth.trim() === '') && (Object.keys(allData).length > 0 || months.length > 0)) {
-      const availableMonths = Object.keys(allData).length > 0 ? Object.keys(allData).sort() : months.map(m => m.value);
+    if ((!contextSelectedMonth || contextSelectedMonth.trim() === '')) {
+      const availableMonths = Object.keys(allData).length > 0 
+        ? Object.keys(allData).sort() 
+        : [defaultMonth];
+      
       if (availableMonths.length > 0) {
+        console.log('Setting default month:', availableMonths[0]);
         setSelectedMonth(availableMonths[0]);
       }
     }
-  }, [allData, contextSelectedMonth, setSelectedMonth]);
+  }, [allData, contextSelectedMonth, setSelectedMonth, defaultMonth]);
 
   const handleMonthChange = (e) => {
     const month = e.target.value;
