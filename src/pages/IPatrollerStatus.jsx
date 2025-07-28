@@ -918,14 +918,16 @@ function IPatrollerStatus() {
     <DashboardLayout activePage="ipatroller-status">
       <div style={{
         width: '100%',
-        minHeight: '100vh',
+        height: '100%',
         boxSizing: 'border-box',
         overflowX: 'hidden',
-        padding: '0 0.5rem',
+        padding: '1rem',
+        display: 'flex',
+        flexDirection: 'column'
       }}>
-        <div className="page-container">
+        <div className="page-container" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           {/* Header */}
-          <div className="d-flex align-items-center gap-3 mb-4 p-3 bg-white rounded-3 shadow-sm border" style={{ minHeight: 72, marginTop: '0.5rem' }}>
+          <div className="d-flex align-items-center gap-3 mb-4 p-3 bg-white rounded-3 shadow-sm border">
             <div className="d-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle shadow" style={{ width: 56, height: 56 }}>
               <i className="fas fa-shield-alt text-primary fs-4"></i>
             </div>
@@ -1051,258 +1053,280 @@ function IPatrollerStatus() {
             </div>
           )}
 
-          {activeTab === 'status' && (
-            <Card className="shadow-sm border-0 rounded-3" style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}>
-              <Card.Body className="p-3">
-                <h4 className="fw-bold mb-3">Patroller Status Overview</h4>
-                {validDateHeaders.length === 0 ? (
-                  <div className="text-center py-5">
-                    <i className="fas fa-calendar-alt text-muted" style={{ fontSize: '3rem', marginBottom: '1rem' }}></i>
-                    <h5 className="text-muted">No Month Selected</h5>
-                    <p className="text-muted">Please select a month from the dropdown above to view patroller status data.</p>
-                  </div>
-                ) : (
-                  <div ref={mainTableRef}>
-                    <div style={{ maxHeight: 'calc(100vh - 180px)', minHeight: 0, overflowY: 'auto' }}>
-                      <Card className="shadow-sm rounded-4 mb-4 p-3 bg-white border-0" style={{ height: '100%', minHeight: 0 }}>
-                        <div className="table-responsive" style={{ width: '100%', maxWidth: '100%', overflowX: 'auto', boxSizing: 'border-box', borderRadius: '0.75rem', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', maxHeight: '60vh' }}>
-                          <Table className="table-bordered align-middle table-hover mb-0" style={{ minWidth: 1200 }}>
-                            <thead className="table-success" style={{ position: 'sticky', top: 0, zIndex: 10 }}>
-                              <tr>
-                                <th className="text-center fw-bold" style={{ background: '#d1e7dd', position: 'sticky', left: 0, zIndex: 11, minWidth: '180px', width: '180px', fontSize: '0.9em' }}>MUNICIPALITY</th>
-                                {validDateHeaders.map((date, idx) => (
-                                  <th key={idx} className="text-center fw-bold small" style={{ background: '#d1e7dd', minWidth: '160px', width: '160px', fontSize: '0.8em', padding: '8px 4px' }}>
-                                    {date}
-                                  </th>
-                                ))}
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {districts.map((district, dIdx) => (
-                                <React.Fragment key={district.name}>
-                                  <tr>
-                                    <td colSpan={dateHeaders.length + 1} className="fw-bold text-start" style={{ 
-                                      background: 'linear-gradient(135deg, #007bff, #0056b3)', 
-                                      color: 'white',
-                                      position: 'sticky', 
-                                      left: 0, 
-                                      zIndex: 5, 
-                                      fontSize: '1.05em',
-                                      textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-                                      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.2)',
-                                      padding: '12px 16px'
-                                    }}>
-                                      {(() => {
-                                        const n = dIdx + 1;
-                                        const ord = n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th';
-                                        return `${n}${ord} District`;
-                                      })()}
-                                    </td>
-                                  </tr>
-                                  {district.municipalities.map((muni, rowIdx) => (
-                                    <tr key={muni} style={{ transition: 'background 0.2s', backgroundColor: rowIdx % 2 === 0 ? '#f8f9fa' : 'white' }}>
-                                      <td className="fw-bold text-start" style={{ background: '#f8f9fa', position: 'sticky', left: 0, zIndex: 5, minWidth: '180px', width: '180px', fontSize: '0.9em' }}>{muni}</td>
-                                      {validDateHeaders.map((_, i) => {
-                                        const count = validData[muni]?.[i];
-                                        if (count === '' || count === undefined || count === null) {
-                                          return <td key={i} className="text-center text-muted" style={{ minWidth: '160px', width: '160px', fontSize: '0.9em', padding: '8px 4px' }}>-</td>;
-                                        }
-                                        if (Number(count) >= 5) {
-                                          return <td key={i} className="text-center" style={{ minWidth: '160px', width: '160px', fontSize: '0.9em', padding: '8px 4px' }}><Badge bg="success">Active</Badge></td>;
-                                        }
-                                        return <td key={i} className="text-center" style={{ minWidth: '160px', width: '160px', fontSize: '0.9em', padding: '8px 4px' }}><Badge bg="danger">Inactive</Badge></td>;
-                                      })}
-                                    </tr>
-                                  ))}
-                                </React.Fragment>
-                              ))}
-                            </tbody>
-                          </Table>
-                        </div>
-                      </Card>
+          {/* Content area with proper scrolling */}
+          <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+            {activeTab === 'status' && (
+              <Card className="shadow-sm border-0 rounded-3 flex-grow-1" style={{ display: 'flex', flexDirection: 'column' }}>
+                <Card.Body className="p-3" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                  <h4 className="fw-bold mb-3">Patroller Status Overview</h4>
+                  {validDateHeaders.length === 0 ? (
+                    <div className="text-center py-5">
+                      <i className="fas fa-calendar-alt text-muted" style={{ fontSize: '3rem', marginBottom: '1rem' }}></i>
+                      <h5 className="text-muted">No Month Selected</h5>
+                      <p className="text-muted">Please select a month from the dropdown above to view patroller status data.</p>
                     </div>
-                  </div>
-                )}
-              </Card.Body>
-            </Card>
-          )}
-
-          {activeTab === 'dailyCounts' && (
-            <Card className="shadow-sm border-0 rounded-3" style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}>
-              <Card.Body className="p-3">
-                <h4 className="fw-bold mb-3">Daily Patroller Counts</h4>
-                {validDateHeaders.length === 0 ? (
-                  <div className="text-center py-5">
-                    <i className="fas fa-calendar-alt text-muted" style={{ fontSize: '3rem', marginBottom: '1rem' }}></i>
-                    <h5 className="text-muted">No Month Selected</h5>
-                    <p className="text-muted">Please select a month from the dropdown above to view daily patroller counts.</p>
-                  </div>
-                ) : (
-                  <div ref={mainTableRef}>
-                    <div style={{ maxHeight: 'calc(100vh - 180px)', minHeight: 0, overflowY: 'auto' }}>
-                      <Card className="shadow-sm rounded-4 mb-4 p-3 bg-white border-0" style={{ height: '100%', minHeight: 0 }}>
-                        <div className="table-responsive" style={{ width: '100%', maxWidth: '100%', overflowX: 'auto', boxSizing: 'border-box', borderRadius: '0.75rem', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', maxHeight: '60vh' }}>
-                          <Table className="table-bordered align-middle table-hover mb-0" style={{ minWidth: 1200 }}>
-                            <thead className="table-primary" style={{ position: 'sticky', top: 0, zIndex: 10 }}>
-                              <tr>
-                                <th className="text-center fw-bold" style={{ background: '#cce5ff', position: 'sticky', left: 0, zIndex: 11, minWidth: '180px', width: '180px', fontSize: '0.9em' }}>MUNICIPALITY</th>
-                                {validDateHeaders.map((date, idx) => (
-                                  <th key={idx} className="text-center fw-bold small" style={{ background: '#cce5ff', minWidth: '160px', width: '160px', fontSize: '0.8em', padding: '8px 4px' }}>
-                                    {date}
-                                  </th>
-                                ))}
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {districts.map((district, dIdx) => (
-                                <React.Fragment key={district.name}>
-                                  <tr>
-                                    <td colSpan={validDateHeaders.length + 1} className="fw-bold text-start" style={{ 
-                                      background: 'linear-gradient(135deg, #007bff, #0056b3)', 
-                                      color: 'white',
-                                      position: 'sticky', 
-                                      left: 0, 
-                                      zIndex: 5, 
-                                      fontSize: '1.05em',
-                                      textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-                                      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.2)',
-                                      padding: '12px 16px'
-                                    }}>
-                                      {(() => {
-                                        const n = dIdx + 1;
-                                        const ord = n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th';
-                                        return `${n}${ord} District`;
-                                      })()}
-                                    </td>
-                                  </tr>
-                                  {district.municipalities.map((muni, rowIdx) => (
-                                    <tr key={muni} style={{ transition: 'background 0.2s', backgroundColor: rowIdx % 2 === 0 ? '#f8f9fa' : 'white' }}>
-                                      <td className="fw-bold text-start" style={{ background: '#f8f9fa', position: 'sticky', left: 0, zIndex: 5, minWidth: '180px', width: '180px', fontSize: '0.9em' }}>{muni}</td>
-                                      {validDateHeaders.map((_, i) => {
-                                        const count = validData[muni]?.[i];
-                                        return (
-                                          <td key={i} className="text-center" style={{ minWidth: '160px', width: '160px', fontSize: '0.9em', padding: '8px 4px' }}>
-                                            {count === '' || count === undefined || count === null ? '-' : count}
-                                          </td>
-                                        );
-                                      })}
-                                    </tr>
+                  ) : (
+                    <div ref={mainTableRef} style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+                        <Card className="shadow-sm rounded-4 mb-0 p-3 bg-white border-0 h-100">
+                          <div className="table-responsive" style={{ height: '100%', minHeight: 0 }}>
+                            <Table className="table-bordered align-middle table-hover mb-0" style={{ minWidth: 1200 }}>
+                              <thead className="table-success" style={{ position: 'sticky', top: 0, zIndex: 10 }}>
+                                <tr>
+                                  <th className="text-center fw-bold" style={{ 
+                                    background: '#d1e7dd', 
+                                    position: 'sticky', 
+                                    left: 0, 
+                                    zIndex: 11, 
+                                    minWidth: '180px', 
+                                    width: '180px', 
+                                    fontSize: '0.9em',
+                                    boxShadow: '2px 0 5px -2px rgba(0,0,0,0.1)'
+                                  }}>MUNICIPALITY</th>
+                                  {validDateHeaders.map((date, idx) => (
+                                    <th key={idx} className="text-center fw-bold small" style={{ background: '#d1e7dd', minWidth: '160px', width: '160px', fontSize: '0.8em', padding: '8px 4px' }}>
+                                      {date}
+                                    </th>
                                   ))}
-                                </React.Fragment>
-                              ))}
-                            </tbody>
-                          </Table>
-                        </div>
-                      </Card>
-                    </div>
-                  </div>
-                )}
-              </Card.Body>
-            </Card>
-          )}
-
-          {activeTab === 'summary' && (
-            <Card className="shadow-sm border-0 rounded-3" style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}>
-              <Card.Body className="p-3">
-                <h4 className="fw-bold mb-3">Patroller Summary Overview</h4>
-                {validDateHeaders.length === 0 ? (
-                  <div className="text-center py-5">
-                    <i className="fas fa-calendar-alt text-muted" style={{ fontSize: '3rem', marginBottom: '1rem' }}></i>
-                    <h5 className="text-muted">No Month Selected</h5>
-                    <p className="text-muted">Please select a month from the dropdown above to view summary data.</p>
-                  </div>
-                ) : (
-                  <div ref={mainTableRef}>
-                    <div style={{ maxHeight: 'calc(100vh - 180px)', minHeight: 0, overflowY: 'auto' }}>
-                      <Card className="shadow-sm rounded-4 mb-4 p-3 bg-white border-0" style={{ height: '100%', minHeight: 0 }}>
-                        <div className="table-responsive" style={{ width: '100%', maxWidth: '100%', overflowX: 'auto', boxSizing: 'border-box', borderRadius: '0.75rem', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', maxHeight: '60vh' }}>
-                          <Table className="table-bordered align-middle table-hover mb-0" style={{ minWidth: 1000 }}>
-                            <thead className="table-dark" style={{ position: 'sticky', top: 0, zIndex: 10 }}>
-                              <tr>
-                                <th className="text-center fw-bold" style={{ background: '#343a40', position: 'sticky', left: 0, zIndex: 11, minWidth: '200px', width: '200px', fontSize: '0.9em' }}>MUNICIPALITY</th>
-                                <th className="text-center fw-bold" style={{ background: '#343a40', minWidth: '120px', width: '120px', fontSize: '0.9em' }}>DISTRICT</th>
-                                <th className="text-center fw-bold" style={{ background: '#343a40', minWidth: '120px', width: '120px', fontSize: '0.9em' }}>TOTAL PATROLLERS</th>
-                                <th className="text-center fw-bold" style={{ background: '#343a40', minWidth: '120px', width: '120px', fontSize: '0.9em' }}>ACTIVE DAYS</th>
-                                <th className="text-center fw-bold" style={{ background: '#343a40', minWidth: '120px', width: '120px', fontSize: '0.9em' }}>INACTIVE DAYS</th>
-                                <th className="text-center fw-bold" style={{ background: '#343a40', minWidth: '120px', width: '120px', fontSize: '0.9em' }}>AVERAGE DAILY</th>
-                                <th className="text-center fw-bold" style={{ background: '#343a40', minWidth: '120px', width: '120px', fontSize: '0.9em' }}>STATUS</th>
-                                <th className="text-center fw-bold" style={{ background: '#343a40', minWidth: '120px', width: '120px', fontSize: '0.9em' }}>PERFORMANCE</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {districts.map((district, dIdx) => (
-                                <React.Fragment key={district.name}>
-                                  <tr>
-                                    <td colSpan={8} className="fw-bold text-start" style={{ 
-                                      background: 'linear-gradient(135deg, #6f42c1, #5a2d91)', 
-                                      color: 'white',
-                                      position: 'sticky', 
-                                      left: 0, 
-                                      zIndex: 5, 
-                                      fontSize: '1.05em',
-                                      textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-                                      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.2)',
-                                      padding: '12px 16px'
-                                    }}>
-                                      {(() => {
-                                        const n = dIdx + 1;
-                                        const ord = n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th';
-                                        return `${n}${ord} District`;
-                                      })()}
-                                    </td>
-                                  </tr>
-                                  {district.municipalities.map((muni, rowIdx) => {
-                                    const municipalityData = validData[muni] || [];
-                                    const totalPatrollers = municipalityData.reduce((sum, count) => sum + (parseInt(count) || 0), 0);
-                                    const activeDays = municipalityData.filter(count => (parseInt(count) || 0) >= 5).length;
-                                    const inactiveDays = municipalityData.filter(count => (parseInt(count) || 0) < 5 && (parseInt(count) || 0) > 0).length;
-                                    const averageDaily = municipalityData.length > 0 ? (totalPatrollers / municipalityData.length).toFixed(1) : 0;
-                                    const status = totalPatrollers >= 5 ? 'Active' : 'Inactive';
-                                    const performance = averageDaily >= 5 ? 'Excellent' : averageDaily >= 3 ? 'Good' : averageDaily >= 1 ? 'Fair' : 'Poor';
-                                    
-                                    return (
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {districts.map((district, dIdx) => (
+                                  <React.Fragment key={district.name}>
+                                    <tr>
+                                      <td colSpan={dateHeaders.length + 1} className="fw-bold text-start" style={{ 
+                                        background: 'linear-gradient(135deg, #007bff, #0056b3)', 
+                                        color: 'white',
+                                        position: 'sticky', 
+                                        left: 0, 
+                                        zIndex: 5, 
+                                        fontSize: '1.05em',
+                                        textShadow: '0 1px 2px rgba(0,0,0,0.3)',
+                                        boxShadow: '2px 0 5px -2px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2)',
+                                        padding: '12px 16px'
+                                      }}>
+                                        {(() => {
+                                          const n = dIdx + 1;
+                                          const ord = n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th';
+                                          return `${n}${ord} District`;
+                                        })()}
+                                      </td>
+                                    </tr>
+                                    {district.municipalities.map((muni, rowIdx) => (
                                       <tr key={muni} style={{ transition: 'background 0.2s', backgroundColor: rowIdx % 2 === 0 ? '#f8f9fa' : 'white' }}>
-                                        <td className="fw-bold text-start" style={{ background: '#f8f9fa', position: 'sticky', left: 0, zIndex: 5, minWidth: '200px', width: '200px', fontSize: '0.9em' }}>{muni}</td>
-                                        <td className="text-center" style={{ minWidth: '120px', width: '120px', fontSize: '0.9em' }}>
-                                          {(() => {
-                                            const n = dIdx + 1;
-                                            const ord = n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th';
-                                            return `${n}${ord}`;
-                                          })()}
-                                        </td>
-                                        <td className="text-center fw-bold" style={{ minWidth: '120px', width: '120px', fontSize: '0.9em' }}>{totalPatrollers}</td>
-                                        <td className="text-center" style={{ minWidth: '120px', width: '120px', fontSize: '0.9em' }}>
-                                          <Badge bg="success">{activeDays}</Badge>
-                                        </td>
-                                        <td className="text-center" style={{ minWidth: '120px', width: '120px', fontSize: '0.9em' }}>
-                                          <Badge bg="warning">{inactiveDays}</Badge>
-                                        </td>
-                                        <td className="text-center fw-bold" style={{ minWidth: '120px', width: '120px', fontSize: '0.9em' }}>{averageDaily}</td>
-                                        <td className="text-center" style={{ minWidth: '120px', width: '120px', fontSize: '0.9em' }}>
-                                          <Badge bg={status === 'Active' ? 'success' : 'danger'}>{status}</Badge>
-                                        </td>
-                                        <td className="text-center" style={{ minWidth: '120px', width: '120px', fontSize: '0.9em' }}>
-                                          <Badge bg={
-                                            performance === 'Excellent' ? 'success' : 
-                                            performance === 'Good' ? 'primary' : 
-                                            performance === 'Fair' ? 'warning' : 'danger'
-                                          }>{performance}</Badge>
-                                        </td>
+                                        <td className="fw-bold text-start" style={{ 
+                                          background: '#f8f9fa', 
+                                          position: 'sticky', 
+                                          left: 0, 
+                                          zIndex: 5, 
+                                          minWidth: '180px', 
+                                          width: '180px', 
+                                          fontSize: '0.9em',
+                                          boxShadow: '2px 0 5px -2px rgba(0,0,0,0.1)',
+                                          borderRight: '1px solid #dee2e6'
+                                        }}>{muni}</td>
+                                        {validDateHeaders.map((_, i) => {
+                                          const count = validData[muni]?.[i];
+                                          if (count === '' || count === undefined || count === null) {
+                                            return <td key={i} className="text-center text-muted" style={{ minWidth: '160px', width: '160px', fontSize: '0.9em', padding: '8px 4px' }}>-</td>;
+                                          }
+                                          if (Number(count) >= 5) {
+                                            return <td key={i} className="text-center" style={{ minWidth: '160px', width: '160px', fontSize: '0.9em', padding: '8px 4px' }}><Badge bg="success">Active</Badge></td>;
+                                          }
+                                          return <td key={i} className="text-center" style={{ minWidth: '160px', width: '160px', fontSize: '0.9em', padding: '8px 4px' }}><Badge bg="danger">Inactive</Badge></td>;
+                                        })}
                                       </tr>
-                                    );
-                                  })}
-                                </React.Fragment>
-                              ))}
-                            </tbody>
-                          </Table>
-                        </div>
-                      </Card>
+                                    ))}
+                                  </React.Fragment>
+                                ))}
+                              </tbody>
+                            </Table>
+                          </div>
+                        </Card>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </Card.Body>
-            </Card>
-          )}
+                  )}
+                </Card.Body>
+              </Card>
+            )}
+
+            {activeTab === 'dailyCounts' && (
+              <Card className="shadow-sm border-0 rounded-3 flex-grow-1" style={{ display: 'flex', flexDirection: 'column' }}>
+                <Card.Body className="p-3" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                  <h4 className="fw-bold mb-3">Daily Patroller Counts</h4>
+                  {validDateHeaders.length === 0 ? (
+                    <div className="text-center py-5">
+                      <i className="fas fa-calendar-alt text-muted" style={{ fontSize: '3rem', marginBottom: '1rem' }}></i>
+                      <h5 className="text-muted">No Month Selected</h5>
+                      <p className="text-muted">Please select a month from the dropdown above to view daily patroller counts.</p>
+                    </div>
+                  ) : (
+                    <div ref={mainTableRef} style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+                        <Card className="shadow-sm rounded-4 mb-0 p-3 bg-white border-0 h-100">
+                          <div className="table-responsive" style={{ height: '100%', minHeight: 0 }}>
+                            <Table className="table-bordered align-middle table-hover mb-0" style={{ minWidth: 1200 }}>
+                              <thead className="table-primary" style={{ position: 'sticky', top: 0, zIndex: 10 }}>
+                                <tr>
+                                  <th className="text-center fw-bold" style={{ background: '#cce5ff', position: 'sticky', left: 0, zIndex: 11, minWidth: '180px', width: '180px', fontSize: '0.9em' }}>MUNICIPALITY</th>
+                                  {validDateHeaders.map((date, idx) => (
+                                    <th key={idx} className="text-center fw-bold small" style={{ background: '#cce5ff', minWidth: '160px', width: '160px', fontSize: '0.8em', padding: '8px 4px' }}>
+                                      {date}
+                                    </th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {districts.map((district, dIdx) => (
+                                  <React.Fragment key={district.name}>
+                                    <tr>
+                                      <td colSpan={validDateHeaders.length + 1} className="fw-bold text-start" style={{ 
+                                        background: 'linear-gradient(135deg, #007bff, #0056b3)', 
+                                        color: 'white',
+                                        position: 'sticky', 
+                                        left: 0, 
+                                        zIndex: 5, 
+                                        fontSize: '1.05em',
+                                        textShadow: '0 1px 2px rgba(0,0,0,0.3)',
+                                        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.2)',
+                                        padding: '12px 16px'
+                                      }}>
+                                        {(() => {
+                                          const n = dIdx + 1;
+                                          const ord = n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th';
+                                          return `${n}${ord} District`;
+                                        })()}
+                                      </td>
+                                    </tr>
+                                    {district.municipalities.map((muni, rowIdx) => (
+                                      <tr key={muni} style={{ transition: 'background 0.2s', backgroundColor: rowIdx % 2 === 0 ? '#f8f9fa' : 'white' }}>
+                                        <td className="fw-bold text-start" style={{ background: '#f8f9fa', position: 'sticky', left: 0, zIndex: 5, minWidth: '180px', width: '180px', fontSize: '0.9em' }}>{muni}</td>
+                                        {validDateHeaders.map((_, i) => {
+                                          const count = validData[muni]?.[i];
+                                          return (
+                                            <td key={i} className="text-center" style={{ minWidth: '160px', width: '160px', fontSize: '0.9em', padding: '8px 4px' }}>
+                                              {count === '' || count === undefined || count === null ? '-' : count}
+                                            </td>
+                                          );
+                                        })}
+                                      </tr>
+                                    ))}
+                                  </React.Fragment>
+                                ))}
+                              </tbody>
+                            </Table>
+                          </div>
+                        </Card>
+                      </div>
+                    </div>
+                  )}
+                </Card.Body>
+              </Card>
+            )}
+
+            {activeTab === 'summary' && (
+              <Card className="shadow-sm border-0 rounded-3 flex-grow-1" style={{ display: 'flex', flexDirection: 'column' }}>
+                <Card.Body className="p-3" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                  <h4 className="fw-bold mb-3">Patroller Summary Overview</h4>
+                  {validDateHeaders.length === 0 ? (
+                    <div className="text-center py-5">
+                      <i className="fas fa-calendar-alt text-muted" style={{ fontSize: '3rem', marginBottom: '1rem' }}></i>
+                      <h5 className="text-muted">No Month Selected</h5>
+                      <p className="text-muted">Please select a month from the dropdown above to view summary data.</p>
+                    </div>
+                  ) : (
+                    <div ref={mainTableRef} style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+                        <Card className="shadow-sm rounded-4 mb-0 p-3 bg-white border-0 h-100">
+                          <div className="table-responsive" style={{ height: '100%', minHeight: 0 }}>
+                            <Table className="table-bordered align-middle table-hover mb-0" style={{ minWidth: 1000 }}>
+                              <thead className="table-dark" style={{ position: 'sticky', top: 0, zIndex: 10 }}>
+                                <tr>
+                                  <th className="text-center fw-bold" style={{ background: '#343a40', position: 'sticky', left: 0, zIndex: 11, minWidth: '200px', width: '200px', fontSize: '0.9em' }}>MUNICIPALITY</th>
+                                  <th className="text-center fw-bold" style={{ background: '#343a40', minWidth: '120px', width: '120px', fontSize: '0.9em' }}>DISTRICT</th>
+                                  <th className="text-center fw-bold" style={{ background: '#343a40', minWidth: '120px', width: '120px', fontSize: '0.9em' }}>TOTAL PATROLLERS</th>
+                                  <th className="text-center fw-bold" style={{ background: '#343a40', minWidth: '120px', width: '120px', fontSize: '0.9em' }}>ACTIVE DAYS</th>
+                                  <th className="text-center fw-bold" style={{ background: '#343a40', minWidth: '120px', width: '120px', fontSize: '0.9em' }}>INACTIVE DAYS</th>
+                                  <th className="text-center fw-bold" style={{ background: '#343a40', minWidth: '120px', width: '120px', fontSize: '0.9em' }}>AVERAGE DAILY</th>
+                                  <th className="text-center fw-bold" style={{ background: '#343a40', minWidth: '120px', width: '120px', fontSize: '0.9em' }}>STATUS</th>
+                                  <th className="text-center fw-bold" style={{ background: '#343a40', minWidth: '120px', width: '120px', fontSize: '0.9em' }}>PERFORMANCE</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {districts.map((district, dIdx) => (
+                                  <React.Fragment key={district.name}>
+                                    <tr>
+                                      <td colSpan={8} className="fw-bold text-start" style={{ 
+                                        background: 'linear-gradient(135deg, #6f42c1, #5a2d91)', 
+                                        color: 'white',
+                                        position: 'sticky', 
+                                        left: 0, 
+                                        zIndex: 5, 
+                                        fontSize: '1.05em',
+                                        textShadow: '0 1px 2px rgba(0,0,0,0.3)',
+                                        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.2)',
+                                        padding: '12px 16px'
+                                      }}>
+                                        {(() => {
+                                          const n = dIdx + 1;
+                                          const ord = n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th';
+                                          return `${n}${ord} District`;
+                                        })()}
+                                      </td>
+                                    </tr>
+                                    {district.municipalities.map((muni, rowIdx) => {
+                                      const municipalityData = validData[muni] || [];
+                                      const totalPatrollers = municipalityData.reduce((sum, count) => sum + (parseInt(count) || 0), 0);
+                                      const activeDays = municipalityData.filter(count => (parseInt(count) || 0) >= 5).length;
+                                      const inactiveDays = municipalityData.filter(count => (parseInt(count) || 0) < 5 && (parseInt(count) || 0) > 0).length;
+                                      const averageDaily = municipalityData.length > 0 ? (totalPatrollers / municipalityData.length).toFixed(1) : 0;
+                                      const status = totalPatrollers >= 5 ? 'Active' : 'Inactive';
+                                      const performance = averageDaily >= 5 ? 'Excellent' : averageDaily >= 3 ? 'Good' : averageDaily >= 1 ? 'Fair' : 'Poor';
+                                      
+                                      return (
+                                        <tr key={muni} style={{ transition: 'background 0.2s', backgroundColor: rowIdx % 2 === 0 ? '#f8f9fa' : 'white' }}>
+                                          <td className="fw-bold text-start" style={{ background: '#f8f9fa', position: 'sticky', left: 0, zIndex: 5, minWidth: '200px', width: '200px', fontSize: '0.9em' }}>{muni}</td>
+                                          <td className="text-center" style={{ minWidth: '120px', width: '120px', fontSize: '0.9em' }}>
+                                            {(() => {
+                                              const n = dIdx + 1;
+                                              const ord = n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th';
+                                              return `${n}${ord}`;
+                                            })()}
+                                          </td>
+                                          <td className="text-center fw-bold" style={{ minWidth: '120px', width: '120px', fontSize: '0.9em' }}>{totalPatrollers}</td>
+                                          <td className="text-center" style={{ minWidth: '120px', width: '120px', fontSize: '0.9em' }}>
+                                            <Badge bg="success">{activeDays}</Badge>
+                                          </td>
+                                          <td className="text-center" style={{ minWidth: '120px', width: '120px', fontSize: '0.9em' }}>
+                                            <Badge bg="warning">{inactiveDays}</Badge>
+                                          </td>
+                                          <td className="text-center fw-bold" style={{ minWidth: '120px', width: '120px', fontSize: '0.9em' }}>{averageDaily}</td>
+                                          <td className="text-center" style={{ minWidth: '120px', width: '120px', fontSize: '0.9em' }}>
+                                            <Badge bg={status === 'Active' ? 'success' : 'danger'}>{status}</Badge>
+                                          </td>
+                                          <td className="text-center" style={{ minWidth: '120px', width: '120px', fontSize: '0.9em' }}>
+                                            <Badge bg={
+                                              performance === 'Excellent' ? 'success' : 
+                                              performance === 'Good' ? 'primary' : 
+                                              performance === 'Fair' ? 'warning' : 'danger'
+                                            }>{performance}</Badge>
+                                          </td>
+                                        </tr>
+                                      );
+                                    })}
+                                  </React.Fragment>
+                                ))}
+                              </tbody>
+                            </Table>
+                          </div>
+                        </Card>
+                      </div>
+                    </div>
+                  )}
+                </Card.Body>
+              </Card>
+            )}
+          </div>
 
           <AddModal isOpen={showAddModal} onClose={handleModalClose} onSave={handleSave} initialData={data} />
           <EditModal isOpen={showEditModal} onClose={handleEditModalClose} onSave={handleEditSave} initialData={editData} selectedMonth={selectedMonth} />
