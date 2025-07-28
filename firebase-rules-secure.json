@@ -1,0 +1,28 @@
+{
+  "rules": {
+    "ipatroller": {
+      "data": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      },
+      "metadata": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      }
+    },
+    "users": {
+      "online": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      },
+      "activity": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      }
+    },
+    "system": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    }
+  }
+} 

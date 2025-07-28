@@ -1,0 +1,86 @@
+// @import "../node_modules/bootstrap/scss/functions";
+// $primary: #900;
+// $enable-shadows: true;
+// $prefix: "mo-";
+// @import "../node_modules/bootstrap/scss/variables";
+// @import "../node_modules/bootstrap/scss/variables-dark";
+// @import "../node_modules/bootstrap/scss/maps";
+// @import "../node_modules/bootstrap/scss/mixins";
+// @import "../node_modules/bootstrap/scss/root";
+// @import "../node_modules/bootstrap/scss/utilities";
+// @import "../node_modules/bootstrap/scss/reboot";
+// @import "../node_modules/bootstrap/scss/containers";
+// @import "../node_modules/bootstrap/scss/grid";
+// @import "../node_modules/bootstrap/scss/helpers";
+// @import "../node_modules/bootstrap/scss/utilities/api"; 
+
+$primary: #6366f1;
+$secondary: #7c3aed;
+$success: #22c55e;
+$danger: #ef4444;
+$warning: #f59e42;
+$info: #38bdf8;
+$light: #f8fafc;
+$dark: #2c3e50;
+
+$font-family-base: 'Inter', 'Segoe UI', 'Roboto', Arial, sans-serif;
+$border-radius: 1rem;
+$border-radius-lg: 1.5rem;
+$border-radius-sm: 0.5rem;
+$box-shadow: 0 4px 24px rgba(76, 81, 255, 0.08);
+
+// Custom card
+.card, .Card {
+  border-radius: 1rem !important;
+  box-shadow: 0 4px 24px rgba(76, 81, 255, 0.08);
+  border: none;
+}
+
+// Custom button
+.btn, .Button {
+  border-radius: 0.5rem !important;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(76, 81, 255, 0.06);
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+.btn-primary, .Button.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+}
+.btn-primary:hover, .Button.btn-primary:hover {
+  background: linear-gradient(135deg, #5a67d8 0%, #6d28d9 100%);
+}
+
+// Custom nav
+.nav, .Nav {
+  border-radius: 0.75rem;
+  background: #f8fafc;
+  box-shadow: 0 2px 8px rgba(76, 81, 255, 0.04);
+}
+
+// Custom modal
+.modal-content {
+  border-radius: 1.25rem;
+  box-shadow: 0 8px 32px rgba(76, 81, 255, 0.12);
+}
+
+// Custom table
+.table {
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: #fff;
+}
+
+// Custom input
+input, select, textarea {
+  border-radius: 0.5rem !important;
+  border: 1px solid #e0e7ef;
+  padding: 0.75em 1em;
+  font-size: 1em;
+  background: #f8fafc;
+  transition: border 0.2s;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: #6366f1;
+  outline: none;
+} 

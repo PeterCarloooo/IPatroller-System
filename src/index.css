@@ -1,0 +1,433 @@
+/* Global styles for proper window fitting */
+:root {
+  --primary-color: #0d6efd;
+  --secondary-color: #6c757d;
+  --success-color: #198754;
+  --danger-color: #dc3545;
+  --warning-color: #ffc107;
+  --info-color: #0dcaf0;
+  --light-color: #f8f9fa;
+  --dark-color: #212529;
+}
+
+html {
+  box-sizing: border-box;
+  font-family: 'Inter', 'Segoe UI', 'Roboto', Arial, sans-serif;
+  background: #f8fafc;
+  color: #222;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: #f8fafc;
+  color: #222;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid #e0e7ef;
+  margin: 2rem 0;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #e0e7ef;
+  border-radius: 8px;
+}
+
+.spacing-lg { margin-bottom: 2rem; }
+.spacing-md { margin-bottom: 1rem; }
+.spacing-sm { margin-bottom: 0.5rem; }
+
+.transition { transition: all 0.2s cubic-bezier(.4,0,.2,1); }
+
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Ensure all links are properly styled */
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+a:hover {
+  color: #0a58ca;
+  text-decoration: underline;
+}
+
+/* Ensure all headings are properly styled */
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+/* Ensure all buttons are properly styled */
+button {
+  cursor: pointer;
+}
+
+/* Responsive breakpoints */
+@media (max-width: 576px) {
+  body {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    font-size: 15px;
+  }
+}
+
+@media (min-width: 769px) {
+  body {
+    font-size: 16px;
+  }
+}
+
+/* Backup UI Enhancements */
+.backup-container {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.backup-container .card {
+  transition: all 0.3s ease;
+}
+
+.backup-container .card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15) !important;
+}
+
+.municipalities-list {
+  max-height: 300px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(102, 126, 234, 0.3) transparent;
+}
+
+.municipalities-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.municipalities-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.municipalities-list::-webkit-scrollbar-thumb {
+  background: rgba(102, 126, 234, 0.3);
+  border-radius: 3px;
+}
+
+.municipalities-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(102, 126, 234, 0.5);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Enhanced button animations */
+.backup-container .btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.backup-container .btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.backup-container .btn:hover::before {
+  left: 100%;
+}
+
+/* Card hover effects */
+.backup-container .card {
+  position: relative;
+}
+
+.backup-container .card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.backup-container .card:hover::after {
+  opacity: 1;
+}
+
+/* Users Page Tabs */
+.nav-tabs .nav-link {
+  border: none;
+  border-radius: 0;
+  padding: 1rem 1.5rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.nav-tabs .nav-link:hover {
+  background-color: rgba(102, 126, 234, 0.05);
+  color: #667eea;
+}
+
+.nav-tabs .nav-link.active {
+  background-color: rgba(102, 126, 234, 0.1);
+  color: #667eea;
+  border-bottom: 3px solid #667eea;
+}
+
+.nav-tabs .nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  border-radius: 2px;
+}
+
+/* Municipality Filter Styling */
+.municipality-filter {
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.municipality-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Settings UI Enhancements */
+.settings-container {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.settings-card {
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.settings-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.6s;
+}
+
+.settings-card:hover::before {
+  left: 100%;
+}
+
+.settings-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15) !important;
+}
+
+.features-list {
+  text-align: left;
+}
+
+.setting-item {
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.setting-item:hover {
+  border-color: rgba(102, 126, 234, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.system-info {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.system-info::-webkit-scrollbar {
+  width: 4px;
+}
+
+.system-info::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.system-info::-webkit-scrollbar-thumb {
+  background: rgba(102, 126, 234, 0.3);
+  border-radius: 2px;
+}
+
+.system-info::-webkit-scrollbar-thumb:hover {
+  background: rgba(102, 126, 234, 0.5);
+}
+
+/* Enhanced form controls */
+.settings-container .form-check-input:checked {
+  background-color: #667eea;
+  border-color: #667eea;
+}
+
+.settings-container .form-check-input:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+}
+
+/* Badge enhancements */
+.settings-container .badge {
+  transition: all 0.3s ease;
+}
+
+.settings-container .badge:hover {
+  transform: scale(1.05);
+}
+
+/* Enhanced Settings UI Animations */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+}
+
+.settings-card:hover .card-glow {
+  opacity: 0.1;
+}
+
+.settings-card:hover .d-flex.align-items-center.justify-content-center.rounded-circle {
+  transform: scale(1.1);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4) !important;
+}
+
+.setting-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  border-color: rgba(102, 126, 234, 0.3) !important;
+}
+
+/* Enhanced form controls */
+.settings-container .form-check-input {
+  transition: all 0.3s ease;
+}
+
+.settings-container .form-check-input:checked {
+  background-color: #667eea;
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+}
+
+.settings-container .form-check-input:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+}
+
+/* Modal enhancements */
+.modal-content {
+  border-radius: 20px !important;
+  border: none !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3) !important;
+}
+
+.modal-header {
+  border-radius: 20px 20px 0 0 !important;
+}
+
+.modal-footer {
+  border-radius: 0 0 20px 20px !important;
+}
+
+/* Enhanced button styles */
+.settings-container .btn {
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+  transition: all 0.3s ease !important;
+}
+
+.settings-container .btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Gradient text effects */
+.gradient-text {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Enhanced spacing and typography */
+.settings-container h1, .settings-container h2, .settings-container h3, 
+.settings-container h4, .settings-container h5, .settings-container h6 {
+  letter-spacing: -0.5px;
+}
+
+.settings-container p {
+  line-height: 1.7;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+  .settings-container .card-body {
+    padding: 1.5rem !important;
+  }
+  
+  .settings-container .d-flex.align-items-center.gap-4 {
+    gap: 1rem !important;
+  }
+  
+  .settings-container h3 {
+    font-size: 1.5rem !important;
+  }
+}

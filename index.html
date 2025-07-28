@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="1Bataan I-Patroller System - Provincial Government of Bataan">
+    <meta name="keywords" content="Bataan, I-Patroller, Provincial Government, Security, Monitoring">
+    <meta name="author" content="Provincial Government of Bataan">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="https://upload.wikimedia.org/wikipedia/commons/a/a2/Ph_seal_bataan2.png">
+    <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/a/a2/Ph_seal_bataan2.png">
+    
+    <!-- Title -->
+    <title>1Bataan I-Patroller System</title>
+    
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <!-- Bootstrap 5.3.7 CDN CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: white;
+            text-align: center;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            border-radius: 50%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+        
+        .status {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        .progress-bar {
+            width: 200px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: white;
+            width: 0%;
+            animation: progress 2s ease-in-out infinite;
+        }
+        
+        @keyframes progress {
+            0% { width: 0%; }
+            50% { width: 100%; }
+            100% { width: 0%; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading" class="loading-container">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Ph_seal_bataan2.png" alt="Bataan Seal" class="logo">
+        <div class="title">1Bataan I-Patroller</div>
+        <div class="subtitle">Provincial Government of Bataan</div>
+        <div class="loading-spinner"></div>
+        <div class="status">Loading system...</div>
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+    </div>
+
+    <!-- React App Root -->
+    <div id="root"></div>
+
+    <!-- Scripts -->
+    <script type="module" src="/src/main.jsx"></script>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.8/umd/popper.min.js" 
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.7/js/bootstrap.min.js" 
+            crossorigin="anonymous"></script>
+    
+    <!-- Hide loading screen when app loads -->
+    <script>
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                const loading = document.getElementById('loading');
+                if (loading) {
+                    loading.style.opacity = '0';
+                    loading.style.transition = 'opacity 0.5s ease-out';
+                    setTimeout(function() {
+                        loading.style.display = 'none';
+                    }, 500);
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html> 

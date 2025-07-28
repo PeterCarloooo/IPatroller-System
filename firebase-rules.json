@@ -1,0 +1,28 @@
+{
+  "rules": {
+    "ipatroller": {
+      "data": {
+        ".read": true,
+        ".write": true
+      },
+      "metadata": {
+        ".read": true,
+        ".write": true
+      }
+    },
+    "users": {
+      "online": {
+        ".read": true,
+        ".write": true
+      },
+      "activity": {
+        ".read": true,
+        ".write": true
+      }
+    },
+    "system": {
+      ".read": true,
+      ".write": true
+    }
+  }
+} 
